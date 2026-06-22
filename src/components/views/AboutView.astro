@@ -14,7 +14,7 @@ const body = t('about.body') as string[];
   <div class="container hero-grid">
     <div class="hero-copy">
       <span class="eyebrow">{t('about.eyebrow')}</span>
-      <h1 class="display">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
+      <h1 class="hero-title">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
     </div>
     <div class="hero-visual" aria-hidden="true"></div>
   </div>

@@ -2,17 +2,20 @@
 // Particle constellation (DESIGN.md / Dala).
 //  variant="sphere" → rotating 3D globe of triangles
 //  variant="earth"  → rotating globe with continents (land bright, ocean faint)
-// Both: depth, palette, cursor parallax, scroll dispersion. Honors reduced-motion.
+//  variant="glyph"  → a letter formed from particles (set `letter`)
+// Depth, palette, cursor parallax, scroll dispersion. Honors reduced-motion.
 interface Props {
-  variant?: 'sphere' | 'earth';
+  variant?: 'sphere' | 'earth' | 'glyph';
+  letter?: string;
   density?: number;
   class?: string;
 }
-const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
+const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } = Astro.props;
 ---
 <canvas
   class={`particles js-particles ${className}`}
   data-variant={variant}
+  data-letter={letter}
   data-density={density}
   aria-hidden="true"
 ></canvas>
@@ -47,10 +50,9 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
   function buildSphere(n: number) {
     const pts: any[] = [];
     for (let i = 0; i < n; i++) {
-      const b = baseSpherePoint(i, n);
       const sa = Math.random() * Math.PI * 2;
       pts.push({
-        ...b, land: true, sax: Math.cos(sa), say: Math.sin(sa),
+        ...baseSpherePoint(i, n), land: true, sax: Math.cos(sa), say: Math.sin(sa),
         size: rand(2.0, 5.4), color: pickFrom(PALETTE), ang: Math.random() * 6.28,
         spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.18, tw: rand(0.6, 1), ph: Math.random() * 6.28,
       });
@@ -58,7 +60,6 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
     return pts;
   }
 
-  // Rough equirectangular land mask drawn from continent shapes.
   function landMask() {
     const MW = 360, MH = 180;
     const c = document.createElement('canvas'); c.width = MW; c.height = MH;
@@ -68,15 +69,15 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
     const poly = (pts: number[][]) => { o.beginPath(); pts.forEach(([a, b], i) => i ? o.lineTo(X(a), Y(b)) : o.moveTo(X(a), Y(b))); o.closePath(); o.fill(); };
     const ell = (lon: number, lat: number, rlon: number, rlat: number) => { o.beginPath(); o.ellipse(X(lon), Y(lat), rlon / 360 * MW, rlat / 180 * MH, 0, 0, Math.PI * 2); o.fill(); };
     o.fillStyle = '#fff';
-    poly([[-17, 15], [0, 30], [10, 36], [33, 32], [50, 12], [43, -12], [35, -34], [20, -35], [12, -18], [8, 4], [-8, 5], [-17, 15]]); // Africa
-    ell(12, 50, 28, 12); poly([[5, 55], [12, 71], [28, 70], [30, 55]]);                                                          // Europe
-    ell(95, 48, 58, 26); poly([[68, 8], [80, 30], [90, 22], [78, 8]]); ell(108, 18, 16, 12); ell(45, 30, 16, 12);                 // Asia + India + SE + ME
-    poly([[-165, 62], [-140, 70], [-95, 72], [-62, 60], [-58, 46], [-80, 24], [-100, 16], [-120, 30], [-140, 55], [-165, 62]]);   // N America
-    poly([[-100, 16], [-88, 14], [-78, 8], [-92, 12], [-100, 16]]);                                                              // C America
-    ell(-42, 72, 16, 10);                                                                                                        // Greenland
-    poly([[-80, 10], [-60, 8], [-50, 0], [-35, -8], [-50, -30], [-70, -54], [-72, -30], [-80, -5], [-80, 10]]);                   // S America
-    ell(133, -25, 22, 13);                                                                                                       // Australia
-    o.fillRect(0, Y(-65), MW, MH - Y(-65));                                                                                       // Antarctica
+    poly([[-17, 15], [0, 30], [10, 36], [33, 32], [50, 12], [43, -12], [35, -34], [20, -35], [12, -18], [8, 4], [-8, 5], [-17, 15]]);
+    ell(12, 50, 28, 12); poly([[5, 55], [12, 71], [28, 70], [30, 55]]);
+    ell(95, 48, 58, 26); poly([[68, 8], [80, 30], [90, 22], [78, 8]]); ell(108, 18, 16, 12); ell(45, 30, 16, 12);
+    poly([[-165, 62], [-140, 70], [-95, 72], [-62, 60], [-58, 46], [-80, 24], [-100, 16], [-120, 30], [-140, 55], [-165, 62]]);
+    poly([[-100, 16], [-88, 14], [-78, 8], [-92, 12], [-100, 16]]);
+    ell(-42, 72, 16, 10);
+    poly([[-80, 10], [-60, 8], [-50, 0], [-35, -8], [-50, -30], [-70, -54], [-72, -30], [-80, -5], [-80, 10]]);
+    ell(133, -25, 22, 13);
+    o.fillRect(0, Y(-65), MW, MH - Y(-65));
     return { data: o.getImageData(0, 0, MW, MH).data, MW, MH };
   }
 
@@ -93,7 +94,7 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
       const lat = Math.asin(clamp(b.uy, -1, 1)) * 180 / Math.PI;
       const lon = Math.atan2(b.uz, b.ux) * 180 / Math.PI;
       const land = isLand(lat, lon);
-      if (!land && Math.random() > 0.34) continue; // thin the ocean
+      if (!land && Math.random() > 0.34) continue;
       const sa = Math.random() * Math.PI * 2;
       pts.push({
         ...b, land, sax: Math.cos(sa), say: Math.sin(sa),
@@ -105,14 +106,42 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
     return pts;
   }
 
+  function buildGlyph(letter: string, n: number) {
+    const MW = 300, MH = 300;
+    const c = document.createElement('canvas'); c.width = MW; c.height = MH;
+    const o = c.getContext('2d')!;
+    o.fillStyle = '#fff';
+    o.textAlign = 'center'; o.textBaseline = 'middle';
+    o.font = `700 230px "Space Grotesk", system-ui, sans-serif`;
+    o.fillText(letter || 'N', MW / 2, MH / 2 + 6);
+    const data = o.getImageData(0, 0, MW, MH).data;
+    const cand: number[][] = [];
+    for (let y = 0; y < MH; y += 2) for (let x = 0; x < MW; x += 2) if (data[(y * MW + x) * 4 + 3] > 128) cand.push([x, y]);
+    for (let i = cand.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[cand[i], cand[j]] = [cand[j], cand[i]]; }
+    const take = Math.min(n, cand.length);
+    const pts: any[] = [];
+    for (let i = 0; i < take; i++) {
+      const [x, y] = cand[i];
+      const sa = Math.random() * Math.PI * 2;
+      pts.push({
+        nx: (x - MW / 2) / (MH / 2), ny: (y - MH / 2) / (MH / 2), depth: Math.random(),
+        sax: Math.cos(sa), say: Math.sin(sa),
+        size: rand(2.0, 4.6), color: pickFrom(PALETTE), ang: Math.random() * 6.28,
+        spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.2, tw: rand(0.6, 1), ph: Math.random() * 6.28, drift: rand(0.4, 1.6),
+      });
+    }
+    return pts;
+  }
+
   function initCanvas(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mode = canvas.dataset.variant === 'earth' ? 'earth' : 'sphere';
+    const mode = (canvas.dataset.variant as string) || 'sphere';
+    const letter = canvas.dataset.letter || 'N';
     const density = parseFloat(canvas.dataset.density || '1');
     const hero = canvas.closest('.hero') as HTMLElement | null;
-    let w = 0, h = 0, cxs = 0, cys = 0, radius = 0, pts: any[] = [];
+    let w = 0, h = 0, cxs = 0, cys = 0, radius = 0, S = 0, pts: any[] = [];
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let raf = 0, running = false;
     const m = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -125,13 +154,19 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx!.lineWidth = 1;
       const narrow = w < 760;
-      cxs = narrow ? w * 0.5 : w * 0.63;
+      cxs = (mode === 'glyph' || narrow) ? w * 0.5 : w * 0.63;
       cys = h * 0.5;
-      radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
       const area = w * h;
-      pts = mode === 'earth'
-        ? buildEarth(Math.round(clamp(area / 430 * density, 700, 2400)))
-        : buildSphere(Math.round(clamp(area / 560 * density, 420, 1800)));
+      if (mode === 'glyph') {
+        S = Math.min(h * 0.4, w * 0.36);
+        pts = buildGlyph(letter, Math.round(clamp(area / 360 * density, 280, 1300)));
+      } else if (mode === 'earth') {
+        radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
+        pts = buildEarth(Math.round(clamp(area / 430 * density, 700, 2400)));
+      } else {
+        radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
+        pts = buildSphere(Math.round(clamp(area / 560 * density, 420, 1800)));
+      }
     }
 
     function updateScroll() {
@@ -140,9 +175,7 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
       scrollP = clamp(-hb.top / (hb.height * 0.85), 0, 1);
     }
 
-    function frame(t: number, animate: boolean) {
-      ctx!.clearRect(0, 0, w, h);
-      m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
+    function render3D(t: number, animate: boolean) {
       const ry = (animate ? t * 0.00016 : 0.7) + m.x * 0.6;
       const rx = -0.16 + m.y * 0.4;
       const ca = Math.cos(ry), sa = Math.sin(ry), cb = Math.cos(rx), sb = Math.sin(rx);
@@ -163,6 +196,30 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
         if (animate) p.ang += p.spin * 16;
         tri(ctx!, sx, sy, s, p.ang, p.fill);
       }
+    }
+
+    function render2D(t: number, animate: boolean) {
+      const disp = scrollP, fade = 1 - disp * 0.85;
+      for (const p of pts) {
+        const dx = animate ? Math.sin(t * 0.0004 + p.ph) * p.drift : 0;
+        const dy = animate ? Math.cos(t * 0.00045 + p.ph * 1.2) * p.drift : 0;
+        const par = p.depth * 16;
+        let sx = cxs + p.nx * S + dx - m.x * par;
+        let sy = cys + p.ny * S + dy - m.y * par;
+        if (disp > 0) { sx += p.sax * disp * 200; sy += p.say * disp * 200; }
+        const s = p.size * (0.5 + p.depth * 0.8);
+        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
+        ctx!.globalAlpha = clamp((0.2 + p.depth * 0.8) * p.tw * tw * fade, 0, 1);
+        ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
+        if (animate) p.ang += p.spin * 16;
+        tri(ctx!, sx, sy, s, p.ang, p.fill);
+      }
+    }
+
+    function frame(t: number, animate: boolean) {
+      ctx!.clearRect(0, 0, w, h);
+      m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
+      mode === 'glyph' ? render2D(t, animate) : render3D(t, animate);
       ctx!.globalAlpha = 1;
       if (running) raf = requestAnimationFrame((tt) => frame(tt, true));
     }
@@ -172,6 +229,10 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
 
     layout(); updateScroll();
     if (reduce) frame(0, false);
+    // rebuild glyph once webfont is ready (sharper letter)
+    if (mode === 'glyph' && (document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(() => { layout(); if (reduce) frame(0, false); });
+    }
 
     let rt: number | undefined;
     window.addEventListener('resize', () => {

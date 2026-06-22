@@ -12,14 +12,14 @@ export const SITE = {
 // Footer social links — replace the URLs.
 export const SOCIALS = {
   github: 'https://github.com/your-handle',          // REPLACE
-  x: 'https://x.com/your-handle',                     // REPLACE
-  linkedin: 'https://linkedin.com/in/your-handle',    // REPLACE
-  email: 'mailto:hello@example.com',                  // REPLACE
+  x: 'https://x.com/damcux?s=11',
+  linkedin: 'https://www.linkedin.com/in/xondamir-begmatov-950b553a0',
+  email: 'mailto:moremaekjupls@gmail.com',
 };
 
 // The NURA project.
 export const PROJECT = {
-  liveUrl: '#', // REPLACE with the live NURA URL (e.g. https://nura.app)
+  liveUrl: 'https://calotrack-production.up.railway.app',
 };
 
 // Contact form — uses Formspree (free, no backend).
