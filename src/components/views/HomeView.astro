@@ -16,6 +16,7 @@ const titleLines = (t('hero.title') as string).split('\n');
 ---
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-bg"><Particles variant="sphere" density={1.25} /></div>
   <div class="container hero-grid">
     <div class="hero-copy">
       <span class="eyebrow">{t('hero.eyebrow')}</span>
@@ -26,10 +27,9 @@ const titleLines = (t('hero.title') as string).split('\n');
         <a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a>
       </div>
     </div>
-    <div class="hero-visual">
-      <Particles variant="brain" density={1.15} />
-    </div>
+    <div class="hero-visual" aria-hidden="true"></div>
   </div>
+  <div class="scroll-cue"><span class="dot"></span><span>Scroll</span></div>
 </section>
 
 <!-- FEATURED PROJECT -->

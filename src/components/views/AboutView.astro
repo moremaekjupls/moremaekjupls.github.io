@@ -10,12 +10,13 @@ const titleLines = (t('about.title') as string).split('\n');
 const body = t('about.body') as string[];
 ---
 <section class="hero" style="min-height:clamp(380px,52vh,500px);">
+  <div class="hero-bg"><Particles variant="sphere" density={1.1} /></div>
   <div class="container hero-grid">
     <div class="hero-copy">
       <span class="eyebrow">{t('about.eyebrow')}</span>
       <h1 class="display">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
     </div>
-    <div class="hero-visual"><Particles variant="brain" density={1} /></div>
+    <div class="hero-visual" aria-hidden="true"></div>
   </div>
 </section>
 

@@ -12,6 +12,7 @@ const order = ['problem', 'what', 'how', 'result'] as const;
 ---
 <!-- HEADER -->
 <section class="hero" style="min-height:clamp(440px,60vh,560px);">
+  <div class="hero-bg"><Particles variant="sphere" density={1.15} /></div>
   <div class="container hero-grid">
     <div class="hero-copy">
       <span class="eyebrow">{t('project.eyebrow')}</span>
@@ -21,7 +22,7 @@ const order = ['problem', 'what', 'how', 'result'] as const;
         <a class="btn btn-primary" href={PROJECT.liveUrl} target={PROJECT.liveUrl === '#' ? undefined : '_blank'} rel="noopener noreferrer">{t('project.live')}</a>
       </div>
     </div>
-    <div class="hero-visual"><Particles variant="spore" density={1.1} /></div>
+    <div class="hero-visual" aria-hidden="true"></div>
   </div>
 </section>
 

@@ -214,3 +214,76 @@ a.card:hover { transform: translateY(-2px); }
 .contact-form textarea { border-radius: 18px; resize: vertical; }
 .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--color-plum-voltage); }
 .contact-form button { margin-top: var(--s-6); }
+
+/* ============================================================
+   Motion layer — entrance, scroll reveal, hero density
+   (all gated on reduced-motion; aesthetic stays flat/void)
+   ============================================================ */
+
+/* Full-bleed particle backdrop for hero sections */
+.hero { overflow: hidden; }
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-bg .particles { position: absolute; inset: 0; }
+.hero .container { position: relative; z-index: 2; }
+/* Slightly tighter hero so the void doesn't read as dead */
+.hero { min-height: clamp(540px, 74vh, 700px); }
+
+/* Scroll cue */
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-smoke);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.scroll-cue .dot {
+  width: 22px; height: 34px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 14px;
+  position: relative;
+}
+.scroll-cue .dot::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 7px;
+  width: 3px; height: 6px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--color-plum-voltage);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes cueBounce { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(6px); opacity: 1; } }
+
+  .hero-copy > * { animation: fadeUp .75s cubic-bezier(.2,.7,.2,1) both; }
+  .hero-copy > .eyebrow { animation-delay: .05s; }
+  .hero-copy > h1, .hero-copy > .hero-title, .hero-copy > .display { animation-delay: .16s; }
+  .hero-copy > .hero-sub { animation-delay: .34s; }
+  .hero-copy > .hero-cta { animation-delay: .5s; }
+
+  .scroll-cue .dot::after { animation: cueBounce 1.8s ease-in-out infinite; }
+
+  /* scroll reveal — JS adds .is-visible */
+  .reveal-init { opacity: 0; transform: translateY(26px); }
+  .reveal-init.is-visible {
+    opacity: 1; transform: none;
+    transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+  }
+}
+
+/* On small screens drop the scroll cue (hero is shorter) */
+@media (max-width: 720px) { .scroll-cue { display: none; } }
