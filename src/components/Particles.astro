@@ -5,7 +5,7 @@
 //  variant="glyph"  → a letter formed from particles (set `letter`)
 // Depth, palette, cursor parallax, scroll dispersion. Honors reduced-motion.
 interface Props {
-  variant?: 'sphere' | 'earth' | 'glyph';
+  variant?: 'sphere' | 'earth' | 'glyph' | 'galaxy';
   letter?: string;
   density?: number;
   class?: string;
@@ -133,6 +133,44 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
     return pts;
   }
 
+  function gauss() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  function buildGalaxy(n: number) {
+    const CORE = ['#ffffff', '#ffe4aa', '#ffb829'];
+    const ARM = ['#8052ff', '#8052ff', '#ffffff', '#bdbdbd', '#15846e'];
+    const arms = 2, wind = 3.6;
+    const pts: any[] = [];
+    for (let i = 0; i < n; i++) {
+      let x: number, y: number, z: number, core = false, rc: number;
+      if (Math.random() < 0.20) {
+        const rr = Math.abs(gauss()) * 0.14;
+        const th = Math.random() * 6.283, ph = Math.random() * 6.283;
+        x = rr * Math.cos(th) * Math.cos(ph); z = rr * Math.sin(th) * Math.cos(ph); y = rr * Math.sin(ph) * 0.6;
+        core = true; rc = rr;
+      } else {
+        const r = Math.pow(Math.random(), 1.4);
+        const arm = (Math.random() * arms) | 0;
+        const ang = arm * (Math.PI * 2 / arms) + r * wind + gauss() * (0.18 + 0.5 * (1 - r));
+        x = r * Math.cos(ang); z = r * Math.sin(ang); y = gauss() * (0.02 + 0.05 * (1 - r)); rc = r;
+      }
+      const sa = Math.random() * Math.PI * 2;
+      const inner = rc < 0.16;
+      pts.push({
+        x, y, z, core, rc, sax: Math.cos(sa), say: Math.sin(sa),
+        size: core ? rand(2.0, 4.2) : rand(1.6, 4.2),
+        color: (core || inner ? CORE : ARM)[(Math.random() * (core || inner ? 3 : 5)) | 0],
+        ang: Math.random() * 6.28, spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.2,
+        tw: rand(0.6, 1), ph: Math.random() * 6.28,
+      });
+    }
+    return pts;
+  }
+
   function initCanvas(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -163,6 +201,9 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
       } else if (mode === 'earth') {
         radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
         pts = buildEarth(Math.round(clamp(area / 430 * density, 700, 2400)));
+      } else if (mode === 'galaxy') {
+        radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.4 : 0.46);
+        pts = buildGalaxy(Math.round(clamp(area / 360 * density, 1200, 3200)));
       } else {
         radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
         pts = buildSphere(Math.round(clamp(area / 560 * density, 420, 1800)));
@@ -216,10 +257,33 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
       }
     }
 
+    function renderGalaxy(t: number, animate: boolean) {
+      const spin = (animate ? t * 0.00007 : 0.3) + m.x * 0.5;
+      const tilt = 1.12 + m.y * 0.22;
+      const cs = Math.cos(spin), sn = Math.sin(spin), ct = Math.cos(tilt), st = Math.sin(tilt);
+      const disp = scrollP, ex = 1 + disp * 1.6, fade = 1 - disp * 0.85, fov = 2.6;
+      for (const p of pts) {
+        const x2 = p.x * cs + p.z * sn, z2 = -p.x * sn + p.z * cs, y2 = p.y;
+        const yy = y2 * ct - z2 * st, zz = y2 * st + z2 * ct;
+        const persp = fov / (fov - zz);
+        let sx = cxs + x2 * radius * persp * ex, sy = cys + yy * radius * persp * ex;
+        if (disp > 0) { sx += p.sax * disp * 220; sy += p.say * disp * 220; }
+        const dep = (zz + 1) / 2;
+        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
+        let s: number, a: number;
+        if (p.core) { s = p.size * (0.6 + dep * 0.6); a = (0.45 + dep * 0.55) * p.tw * tw * fade; }
+        else { s = p.size * (0.5 + dep * 0.7); a = (0.14 + dep * 0.66) * p.tw * tw * fade * (0.5 + 0.5 * (1 - p.rc)); }
+        ctx!.globalAlpha = clamp(a, 0, 1);
+        ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
+        if (animate) p.ang += p.spin * 16;
+        tri(ctx!, sx, sy, s, p.ang, p.fill);
+      }
+    }
+
     function frame(t: number, animate: boolean) {
       ctx!.clearRect(0, 0, w, h);
       m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
-      mode === 'glyph' ? render2D(t, animate) : render3D(t, animate);
+      mode === 'glyph' ? render2D(t, animate) : mode === 'galaxy' ? renderGalaxy(t, animate) : render3D(t, animate);
       ctx!.globalAlpha = 1;
       if (running) raf = requestAnimationFrame((tt) => frame(tt, true));
     }

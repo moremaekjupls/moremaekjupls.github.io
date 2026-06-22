@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
+import Starfield from '../components/Starfield.astro';
 import { altLangUrl, type Lang } from '../i18n/ui';
 import { SITE } from '../consts';
 
@@ -38,6 +39,7 @@ const enHref = SITE.domain + altLangUrl(path, 'en');
     <Analytics />
   </head>
   <body>
+    <Starfield />
     <Header lang={lang} path={path} />
     <main id="main">
       <slot />
