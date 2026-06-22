@@ -1,10 +1,10 @@
 ---
 // Particle constellation (DESIGN.md / Dala).
 //  variant="sphere" → rotating 3D globe of triangles
-//  variant="brain"  → particle field sampled from a brain silhouette
+//  variant="earth"  → rotating globe with continents (land bright, ocean faint)
 // Both: depth, palette, cursor parallax, scroll dispersion. Honors reduced-motion.
 interface Props {
-  variant?: 'sphere' | 'brain';
+  variant?: 'sphere' | 'earth';
   density?: number;
   class?: string;
 }
@@ -19,10 +19,12 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
 
 <script>
   const PALETTE = ['#8052ff', '#8052ff', '#8052ff', '#ffffff', '#ffffff', '#bdbdbd', '#ffb829', '#15846e'];
+  const LAND = ['#ffffff', '#ffffff', '#bdbdbd', '#15846e', '#ffb829'];
+  const OCEAN = ['#8052ff', '#8052ff', '#5a5a8c'];
   const GA = Math.PI * (3 - Math.sqrt(5));
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
   const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
-  const pick = () => PALETTE[(Math.random() * PALETTE.length) | 0];
+  const pickFrom = (arr: string[]) => arr[(Math.random() * arr.length) | 0];
 
   function tri(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, ang: number, fill: boolean) {
     ctx.beginPath();
@@ -35,92 +37,69 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
     fill ? ctx.fill() : ctx.stroke();
   }
 
-  // ---------- sphere point cloud ----------
+  function baseSpherePoint(i: number, n: number) {
+    const y = 1 - (i / (n - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const th = i * GA;
+    return { ux: Math.cos(th) * r, uy: y, uz: Math.sin(th) * r };
+  }
+
   function buildSphere(n: number) {
     const pts: any[] = [];
     for (let i = 0; i < n; i++) {
-      const y = 1 - (i / (n - 1)) * 2;
-      const r = Math.sqrt(Math.max(0, 1 - y * y));
-      const th = i * GA;
+      const b = baseSpherePoint(i, n);
       const sa = Math.random() * Math.PI * 2;
       pts.push({
-        ux: Math.cos(th) * r, uy: y, uz: Math.sin(th) * r,
-        sax: Math.cos(sa), say: Math.sin(sa),
-        size: rand(2.0, 5.4), color: pick(), ang: Math.random() * 6.28,
+        ...b, land: true, sax: Math.cos(sa), say: Math.sin(sa),
+        size: rand(2.0, 5.4), color: pickFrom(PALETTE), ang: Math.random() * 6.28,
         spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.18, tw: rand(0.6, 1), ph: Math.random() * 6.28,
       });
     }
     return pts;
   }
 
-  // ---------- brain silhouette → normalized point cloud ----------
-  function brainMask() {
-    const MW = 380, MH = 400, cx = MW / 2, cy = MH / 2;
-    const c = document.createElement('canvas');
-    c.width = MW; c.height = MH;
+  // Rough equirectangular land mask drawn from continent shapes.
+  function landMask() {
+    const MW = 360, MH = 180;
+    const c = document.createElement('canvas'); c.width = MW; c.height = MH;
     const o = c.getContext('2d')!;
-    o.clearRect(0, 0, MW, MH);
-    // body (bumpy, tapered top)
+    const X = (lon: number) => (lon + 180) / 360 * MW;
+    const Y = (lat: number) => (90 - lat) / 180 * MH;
+    const poly = (pts: number[][]) => { o.beginPath(); pts.forEach(([a, b], i) => i ? o.lineTo(X(a), Y(b)) : o.moveTo(X(a), Y(b))); o.closePath(); o.fill(); };
+    const ell = (lon: number, lat: number, rlon: number, rlat: number) => { o.beginPath(); o.ellipse(X(lon), Y(lat), rlon / 360 * MW, rlat / 180 * MH, 0, 0, Math.PI * 2); o.fill(); };
     o.fillStyle = '#fff';
-    o.beginPath();
-    const bumps = 54;
-    for (let i = 0; i <= bumps; i++) {
-      const a = (i / bumps) * Math.PI * 2;
-      const taper = 1 - 0.14 * Math.cos(a);
-      const lump = 1 + 0.06 * Math.sin(a * 7) + 0.04 * Math.sin(a * 3);
-      const x = cx + Math.cos(a) * 132 * taper * lump;
-      const y = cy + Math.sin(a) * 150 * lump;
-      i === 0 ? o.moveTo(x, y) : o.lineTo(x, y);
-    }
-    o.closePath(); o.fill();
-    // carve channels (fissure + sulci) as negative space
-    o.globalCompositeOperation = 'destination-out';
-    o.strokeStyle = '#000'; o.lineJoin = 'round'; o.lineCap = 'round';
-    o.lineWidth = 15;
-    o.beginPath();
-    for (let s = 0; s <= 40; s++) {
-      const t = s / 40, x = cx + Math.sin(t * Math.PI * 2) * 5, y = cy - 138 + t * 267;
-      s === 0 ? o.moveTo(x, y) : o.lineTo(x, y);
-    }
-    o.stroke();
-    o.lineWidth = 9;
-    for (const side of [-1, 1]) {
-      for (let k = 0; k < 6; k++) {
-        const yy = cy - 108 + k * 42;
-        const len = 132 * 0.92 * (0.7 + 0.3 * Math.random());
-        o.beginPath();
-        for (let s = 0; s <= 26; s++) {
-          const t = s / 26, x = cx + side * (16 + len * t), y = yy + Math.sin(t * Math.PI * 2.6) * 11;
-          s === 0 ? o.moveTo(x, y) : o.lineTo(x, y);
-        }
-        o.stroke();
-      }
-    }
-    o.globalCompositeOperation = 'source-over';
-    return { data: o.getImageData(0, 0, MW, MH).data, MW, MH, cx, cy };
+    poly([[-17, 15], [0, 30], [10, 36], [33, 32], [50, 12], [43, -12], [35, -34], [20, -35], [12, -18], [8, 4], [-8, 5], [-17, 15]]); // Africa
+    ell(12, 50, 28, 12); poly([[5, 55], [12, 71], [28, 70], [30, 55]]);                                                          // Europe
+    ell(95, 48, 58, 26); poly([[68, 8], [80, 30], [90, 22], [78, 8]]); ell(108, 18, 16, 12); ell(45, 30, 16, 12);                 // Asia + India + SE + ME
+    poly([[-165, 62], [-140, 70], [-95, 72], [-62, 60], [-58, 46], [-80, 24], [-100, 16], [-120, 30], [-140, 55], [-165, 62]]);   // N America
+    poly([[-100, 16], [-88, 14], [-78, 8], [-92, 12], [-100, 16]]);                                                              // C America
+    ell(-42, 72, 16, 10);                                                                                                        // Greenland
+    poly([[-80, 10], [-60, 8], [-50, 0], [-35, -8], [-50, -30], [-70, -54], [-72, -30], [-80, -5], [-80, 10]]);                   // S America
+    ell(133, -25, 22, 13);                                                                                                       // Australia
+    o.fillRect(0, Y(-65), MW, MH - Y(-65));                                                                                       // Antarctica
+    return { data: o.getImageData(0, 0, MW, MH).data, MW, MH };
   }
 
-  function buildBrain(n: number) {
-    const { data, MW, MH, cx, cy } = brainMask();
-    const cand: number[][] = [];
-    for (let y = 0; y < MH; y += 2) {
-      for (let x = 0; x < MW; x += 2) {
-        if (data[(y * MW + x) * 4 + 3] > 120) cand.push([x, y]);
-      }
-    }
-    for (let i = cand.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[cand[i], cand[j]] = [cand[j], cand[i]]; }
-    const take = Math.min(n, cand.length);
+  function buildEarth(n: number) {
+    const { data, MW, MH } = landMask();
+    const isLand = (lat: number, lon: number) => {
+      const mx = ((Math.round((lon + 180) / 360 * MW) % MW) + MW) % MW;
+      const my = clamp(Math.round((90 - lat) / 180 * MH), 0, MH - 1);
+      return data[(my * MW + mx) * 4 + 3] > 128;
+    };
     const pts: any[] = [];
-    for (let i = 0; i < take; i++) {
-      const [x, y] = cand[i];
+    for (let i = 0; i < n; i++) {
+      const b = baseSpherePoint(i, n);
+      const lat = Math.asin(clamp(b.uy, -1, 1)) * 180 / Math.PI;
+      const lon = Math.atan2(b.uz, b.ux) * 180 / Math.PI;
+      const land = isLand(lat, lon);
+      if (!land && Math.random() > 0.34) continue; // thin the ocean
       const sa = Math.random() * Math.PI * 2;
-      const depth = Math.random();
       pts.push({
-        nx: (x - cx) / 200, ny: (y - cy) / 200, depth,
-        sax: Math.cos(sa), say: Math.sin(sa),
-        size: rand(2.0, 5.0), color: pick(), ang: Math.random() * 6.28,
-        spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.18, tw: rand(0.6, 1),
-        ph: Math.random() * 6.28, drift: rand(0.5, 2.2),
+        ...b, land, sax: Math.cos(sa), say: Math.sin(sa),
+        size: land ? rand(2.4, 5.2) : rand(1.6, 3.2),
+        color: pickFrom(land ? LAND : OCEAN), ang: Math.random() * 6.28,
+        spin: rand(-0.0006, 0.0006), fill: land && Math.random() < 0.45, tw: rand(0.6, 1), ph: Math.random() * 6.28,
       });
     }
     return pts;
@@ -130,10 +109,10 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mode = canvas.dataset.variant === 'brain' ? 'brain' : 'sphere';
+    const mode = canvas.dataset.variant === 'earth' ? 'earth' : 'sphere';
     const density = parseFloat(canvas.dataset.density || '1');
     const hero = canvas.closest('.hero') as HTMLElement | null;
-    let w = 0, h = 0, cxs = 0, cys = 0, radius = 0, S = 0, pts: any[] = [];
+    let w = 0, h = 0, cxs = 0, cys = 0, radius = 0, pts: any[] = [];
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let raf = 0, running = false;
     const m = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -148,14 +127,11 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
       const narrow = w < 760;
       cxs = narrow ? w * 0.5 : w * 0.63;
       cys = h * 0.5;
+      radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
       const area = w * h;
-      if (mode === 'sphere') {
-        radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
-        pts = buildSphere(Math.round(clamp(area / 560 * density, 420, 1800)));
-      } else {
-        S = Math.min(h * 0.5, w * (narrow ? 0.42 : 0.34));
-        pts = buildBrain(Math.round(clamp(area / 520 * density, 500, 1900)));
-      }
+      pts = mode === 'earth'
+        ? buildEarth(Math.round(clamp(area / 430 * density, 700, 2400)))
+        : buildSphere(Math.round(clamp(area / 560 * density, 420, 1800)));
     }
 
     function updateScroll() {
@@ -164,10 +140,11 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
       scrollP = clamp(-hb.top / (hb.height * 0.85), 0, 1);
     }
 
-    function renderSphere(t: number, animate: boolean) {
+    function frame(t: number, animate: boolean) {
+      ctx!.clearRect(0, 0, w, h);
       m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
       const ry = (animate ? t * 0.00016 : 0.7) + m.x * 0.6;
-      const rx = -0.12 + m.y * 0.4;
+      const rx = -0.16 + m.y * 0.4;
       const ca = Math.cos(ry), sa = Math.sin(ry), cb = Math.cos(rx), sb = Math.sin(rx);
       const disp = scrollP, rad = radius * (1 + disp * 1.7), fade = 1 - disp * 0.85, fov = 2.4;
       for (const p of pts) {
@@ -176,37 +153,16 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
         const persp = fov / (fov - z);
         let sx = cxs + x * rad * persp, sy = cys + y * rad * persp;
         if (disp > 0) { sx += p.sax * disp * 220; sy += p.say * disp * 220; }
-        const depth = (z + 1) / 2, s = p.size * (0.45 + depth * 0.85) * persp * 0.7;
+        const depth = (z + 1) / 2;
         const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
-        ctx!.globalAlpha = clamp((0.12 + depth * 0.9) * p.tw * tw * fade, 0, 1);
+        let s: number, a: number;
+        if (p.land) { s = p.size * (0.5 + depth * 0.85) * persp * 0.7; a = (0.16 + depth * 0.84) * p.tw * tw * fade; }
+        else { s = p.size * (0.4 + depth * 0.7) * persp * 0.6; a = (0.07 + depth * 0.42) * p.tw * tw * fade; }
+        ctx!.globalAlpha = clamp(a, 0, 1);
         ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
         if (animate) p.ang += p.spin * 16;
         tri(ctx!, sx, sy, s, p.ang, p.fill);
       }
-    }
-
-    function renderBrain(t: number, animate: boolean) {
-      m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
-      const disp = scrollP, fade = 1 - disp * 0.85;
-      for (const p of pts) {
-        const dx = animate ? Math.sin(t * 0.0003 + p.ph) * p.drift : 0;
-        const dy = animate ? Math.cos(t * 0.00034 + p.ph * 1.2) * p.drift : 0;
-        const par = p.depth * 22;
-        let sx = cxs + p.nx * S + dx - m.x * par;
-        let sy = cys + p.ny * S + dy - m.y * par;
-        if (disp > 0) { sx += p.sax * disp * 240; sy += p.say * disp * 240; }
-        const s = p.size * (0.5 + p.depth * 0.8);
-        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
-        ctx!.globalAlpha = clamp((0.18 + p.depth * 0.8) * p.tw * tw * fade, 0, 1);
-        ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
-        if (animate) p.ang += p.spin * 16;
-        tri(ctx!, sx, sy, s, p.ang, p.fill);
-      }
-    }
-
-    function frame(t: number, animate: boolean) {
-      ctx!.clearRect(0, 0, w, h);
-      mode === 'sphere' ? renderSphere(t, animate) : renderBrain(t, animate);
       ctx!.globalAlpha = 1;
       if (running) raf = requestAnimationFrame((tt) => frame(tt, true));
     }
