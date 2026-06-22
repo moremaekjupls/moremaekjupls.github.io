@@ -1,10 +1,10 @@
 ---
-// Particle constellation — rotating 3D sphere of triangles (DESIGN.md / Dala).
-// Dense globe of outlined triangles with depth, palette color, cursor tilt,
-// and scroll-driven dispersion (the sphere scatters as you scroll past the hero).
-// Respects prefers-reduced-motion (calm static globe).
+// Particle constellation (DESIGN.md / Dala).
+//  variant="sphere" → rotating 3D globe of triangles
+//  variant="brain"  → particle field sampled from a brain silhouette
+// Both: depth, palette, cursor parallax, scroll dispersion. Honors reduced-motion.
 interface Props {
-  variant?: 'sphere' | 'brain' | 'spore';
+  variant?: 'sphere' | 'brain';
   density?: number;
   class?: string;
 }
@@ -18,37 +18,11 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
 ></canvas>
 
 <script>
-  interface P {
-    ux: number; uy: number; uz: number;      // unit vector on the sphere
-    sax: number; say: number;                // scatter direction (screen-space, for disperse)
-    size: number; color: string; ang: number; spin: number; fill: boolean; tw: number; ph: number;
-  }
   const PALETTE = ['#8052ff', '#8052ff', '#8052ff', '#ffffff', '#ffffff', '#bdbdbd', '#ffb829', '#15846e'];
-  const GA = Math.PI * (3 - Math.sqrt(5)); // golden angle
+  const GA = Math.PI * (3 - Math.sqrt(5));
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
-  const clamp = (v: number, a: number, b: number) => v < a ? a : v > b ? b : v;
-
-  function build(n: number): P[] {
-    const pts: P[] = [];
-    for (let i = 0; i < n; i++) {
-      const y = 1 - (i / (n - 1)) * 2;
-      const r = Math.sqrt(Math.max(0, 1 - y * y));
-      const th = i * GA;
-      const ux = Math.cos(th) * r, uy = y, uz = Math.sin(th) * r;
-      const sa = Math.random() * Math.PI * 2;
-      pts.push({
-        ux, uy, uz,
-        sax: Math.cos(sa), say: Math.sin(sa),
-        size: rand(2.0, 5.4),
-        color: PALETTE[(Math.random() * PALETTE.length) | 0],
-        ang: Math.random() * Math.PI * 2,
-        spin: rand(-0.0006, 0.0006),
-        fill: Math.random() < 0.18,
-        tw: rand(0.6, 1), ph: Math.random() * Math.PI * 2,
-      });
-    }
-    return pts;
-  }
+  const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
+  const pick = () => PALETTE[(Math.random() * PALETTE.length) | 0];
 
   function tri(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, ang: number, fill: boolean) {
     ctx.beginPath();
@@ -61,13 +35,105 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
     fill ? ctx.fill() : ctx.stroke();
   }
 
+  // ---------- sphere point cloud ----------
+  function buildSphere(n: number) {
+    const pts: any[] = [];
+    for (let i = 0; i < n; i++) {
+      const y = 1 - (i / (n - 1)) * 2;
+      const r = Math.sqrt(Math.max(0, 1 - y * y));
+      const th = i * GA;
+      const sa = Math.random() * Math.PI * 2;
+      pts.push({
+        ux: Math.cos(th) * r, uy: y, uz: Math.sin(th) * r,
+        sax: Math.cos(sa), say: Math.sin(sa),
+        size: rand(2.0, 5.4), color: pick(), ang: Math.random() * 6.28,
+        spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.18, tw: rand(0.6, 1), ph: Math.random() * 6.28,
+      });
+    }
+    return pts;
+  }
+
+  // ---------- brain silhouette → normalized point cloud ----------
+  function brainMask() {
+    const MW = 380, MH = 400, cx = MW / 2, cy = MH / 2;
+    const c = document.createElement('canvas');
+    c.width = MW; c.height = MH;
+    const o = c.getContext('2d')!;
+    o.clearRect(0, 0, MW, MH);
+    // body (bumpy, tapered top)
+    o.fillStyle = '#fff';
+    o.beginPath();
+    const bumps = 54;
+    for (let i = 0; i <= bumps; i++) {
+      const a = (i / bumps) * Math.PI * 2;
+      const taper = 1 - 0.14 * Math.cos(a);
+      const lump = 1 + 0.06 * Math.sin(a * 7) + 0.04 * Math.sin(a * 3);
+      const x = cx + Math.cos(a) * 132 * taper * lump;
+      const y = cy + Math.sin(a) * 150 * lump;
+      i === 0 ? o.moveTo(x, y) : o.lineTo(x, y);
+    }
+    o.closePath(); o.fill();
+    // carve channels (fissure + sulci) as negative space
+    o.globalCompositeOperation = 'destination-out';
+    o.strokeStyle = '#000'; o.lineJoin = 'round'; o.lineCap = 'round';
+    o.lineWidth = 15;
+    o.beginPath();
+    for (let s = 0; s <= 40; s++) {
+      const t = s / 40, x = cx + Math.sin(t * Math.PI * 2) * 5, y = cy - 138 + t * 267;
+      s === 0 ? o.moveTo(x, y) : o.lineTo(x, y);
+    }
+    o.stroke();
+    o.lineWidth = 9;
+    for (const side of [-1, 1]) {
+      for (let k = 0; k < 6; k++) {
+        const yy = cy - 108 + k * 42;
+        const len = 132 * 0.92 * (0.7 + 0.3 * Math.random());
+        o.beginPath();
+        for (let s = 0; s <= 26; s++) {
+          const t = s / 26, x = cx + side * (16 + len * t), y = yy + Math.sin(t * Math.PI * 2.6) * 11;
+          s === 0 ? o.moveTo(x, y) : o.lineTo(x, y);
+        }
+        o.stroke();
+      }
+    }
+    o.globalCompositeOperation = 'source-over';
+    return { data: o.getImageData(0, 0, MW, MH).data, MW, MH, cx, cy };
+  }
+
+  function buildBrain(n: number) {
+    const { data, MW, MH, cx, cy } = brainMask();
+    const cand: number[][] = [];
+    for (let y = 0; y < MH; y += 2) {
+      for (let x = 0; x < MW; x += 2) {
+        if (data[(y * MW + x) * 4 + 3] > 120) cand.push([x, y]);
+      }
+    }
+    for (let i = cand.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[cand[i], cand[j]] = [cand[j], cand[i]]; }
+    const take = Math.min(n, cand.length);
+    const pts: any[] = [];
+    for (let i = 0; i < take; i++) {
+      const [x, y] = cand[i];
+      const sa = Math.random() * Math.PI * 2;
+      const depth = Math.random();
+      pts.push({
+        nx: (x - cx) / 200, ny: (y - cy) / 200, depth,
+        sax: Math.cos(sa), say: Math.sin(sa),
+        size: rand(2.0, 5.0), color: pick(), ang: Math.random() * 6.28,
+        spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.18, tw: rand(0.6, 1),
+        ph: Math.random() * 6.28, drift: rand(0.5, 2.2),
+      });
+    }
+    return pts;
+  }
+
   function initCanvas(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mode = canvas.dataset.variant === 'brain' ? 'brain' : 'sphere';
     const density = parseFloat(canvas.dataset.density || '1');
     const hero = canvas.closest('.hero') as HTMLElement | null;
-    let w = 0, h = 0, cx = 0, cy = 0, radius = 0, pts: P[] = [];
+    let w = 0, h = 0, cxs = 0, cys = 0, radius = 0, S = 0, pts: any[] = [];
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let raf = 0, running = false;
     const m = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -80,73 +146,85 @@ const { variant = 'sphere', density = 1, class: className = '' } = Astro.props;
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx!.lineWidth = 1;
       const narrow = w < 760;
-      cx = narrow ? w * 0.5 : w * 0.62;
-      cy = h * 0.5;
-      radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
+      cxs = narrow ? w * 0.5 : w * 0.63;
+      cys = h * 0.5;
       const area = w * h;
-      const n = Math.round(clamp(area / 560 * density, 420, 1800));
-      pts = build(n);
+      if (mode === 'sphere') {
+        radius = Math.min(w, narrow ? h * 0.9 : h * 1.02) * (narrow ? 0.36 : 0.42);
+        pts = buildSphere(Math.round(clamp(area / 560 * density, 420, 1800)));
+      } else {
+        S = Math.min(h * 0.5, w * (narrow ? 0.42 : 0.34));
+        pts = buildBrain(Math.round(clamp(area / 520 * density, 500, 1900)));
+      }
     }
 
     function updateScroll() {
       if (!hero) return;
       const hb = hero.getBoundingClientRect();
-      const past = clamp(-hb.top / (hb.height * 0.85), 0, 1);
-      scrollP = past;
+      scrollP = clamp(-hb.top / (hb.height * 0.85), 0, 1);
     }
 
-    function render(t: number, animate: boolean) {
-      ctx!.clearRect(0, 0, w, h);
-      // eased pointer tilt
+    function renderSphere(t: number, animate: boolean) {
       m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
       const ry = (animate ? t * 0.00016 : 0.7) + m.x * 0.6;
       const rx = -0.12 + m.y * 0.4;
       const ca = Math.cos(ry), sa = Math.sin(ry), cb = Math.cos(rx), sb = Math.sin(rx);
-
-      const disp = scrollP;                      // 0..1 dispersion
-      const rad = radius * (1 + disp * 1.7);
-      const fade = 1 - disp * 0.85;
-      const fov = 2.4;
-
+      const disp = scrollP, rad = radius * (1 + disp * 1.7), fade = 1 - disp * 0.85, fov = 2.4;
       for (const p of pts) {
-        // rotate Y then X
-        let x = p.ux * ca + p.uz * sa;
-        let z = -p.ux * sa + p.uz * ca;
-        let y = p.uy * cb - z * sb;
-        z = p.uy * sb + z * cb;
-
-        const persp = fov / (fov - z);            // depth scale (front bigger)
-        let sx = cx + x * rad * persp;
-        let sy = cy + y * rad * persp;
-        // disperse outward along scatter dir
+        let x = p.ux * ca + p.uz * sa, z = -p.ux * sa + p.uz * ca;
+        let y = p.uy * cb - z * sb; z = p.uy * sb + z * cb;
+        const persp = fov / (fov - z);
+        let sx = cxs + x * rad * persp, sy = cys + y * rad * persp;
         if (disp > 0) { sx += p.sax * disp * 220; sy += p.say * disp * 220; }
-
-        const depth = (z + 1) / 2;                // 0 back .. 1 front
-        const s = p.size * (0.45 + depth * 0.85) * persp * 0.7;
-        const tw = animate ? (0.6 + 0.4 * Math.sin(t * 0.001 + p.ph)) : 1;
+        const depth = (z + 1) / 2, s = p.size * (0.45 + depth * 0.85) * persp * 0.7;
+        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
         ctx!.globalAlpha = clamp((0.12 + depth * 0.9) * p.tw * tw * fade, 0, 1);
         ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
         if (animate) p.ang += p.spin * 16;
         tri(ctx!, sx, sy, s, p.ang, p.fill);
       }
-      ctx!.globalAlpha = 1;
-      if (running) raf = requestAnimationFrame((tt) => render(tt, true));
     }
 
-    function start() { if (!running && !reduce) { running = true; raf = requestAnimationFrame((tt) => render(tt, true)); } }
+    function renderBrain(t: number, animate: boolean) {
+      m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
+      const disp = scrollP, fade = 1 - disp * 0.85;
+      for (const p of pts) {
+        const dx = animate ? Math.sin(t * 0.0003 + p.ph) * p.drift : 0;
+        const dy = animate ? Math.cos(t * 0.00034 + p.ph * 1.2) * p.drift : 0;
+        const par = p.depth * 22;
+        let sx = cxs + p.nx * S + dx - m.x * par;
+        let sy = cys + p.ny * S + dy - m.y * par;
+        if (disp > 0) { sx += p.sax * disp * 240; sy += p.say * disp * 240; }
+        const s = p.size * (0.5 + p.depth * 0.8);
+        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
+        ctx!.globalAlpha = clamp((0.18 + p.depth * 0.8) * p.tw * tw * fade, 0, 1);
+        ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
+        if (animate) p.ang += p.spin * 16;
+        tri(ctx!, sx, sy, s, p.ang, p.fill);
+      }
+    }
+
+    function frame(t: number, animate: boolean) {
+      ctx!.clearRect(0, 0, w, h);
+      mode === 'sphere' ? renderSphere(t, animate) : renderBrain(t, animate);
+      ctx!.globalAlpha = 1;
+      if (running) raf = requestAnimationFrame((tt) => frame(tt, true));
+    }
+
+    function start() { if (!running && !reduce) { running = true; raf = requestAnimationFrame((tt) => frame(tt, true)); } }
     function stop() { running = false; cancelAnimationFrame(raf); }
 
     layout(); updateScroll();
-    reduce ? render(0, false) : null;
+    if (reduce) frame(0, false);
 
     let rt: number | undefined;
     window.addEventListener('resize', () => {
       window.clearTimeout(rt);
-      rt = window.setTimeout(() => { stop(); layout(); updateScroll(); reduce ? render(0, false) : start(); }, 160);
+      rt = window.setTimeout(() => { stop(); layout(); updateScroll(); reduce ? frame(0, false) : start(); }, 160);
     });
 
     if (!reduce) {
-      window.addEventListener('scroll', () => { updateScroll(); }, { passive: true });
+      window.addEventListener('scroll', () => updateScroll(), { passive: true });
       window.addEventListener('pointermove', (e) => {
         m.tx = (e.clientX / window.innerWidth - 0.5) * 2;
         m.ty = (e.clientY / window.innerHeight - 0.5) * 2;

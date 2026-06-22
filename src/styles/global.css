@@ -287,3 +287,13 @@ a.card:hover { transform: translateY(-2px); }
 
 /* On small screens drop the scroll cue (hero is shorter) */
 @media (max-width: 720px) { .scroll-cue { display: none; } }
+
+/* ---------- Hero composition refinement ---------- */
+/* Smaller, controlled display type so long RU/EN words never overflow the column */
+.hero-title { font-size: clamp(36px, 4.8vw, 56px); line-height: 1.0; letter-spacing: -0.03em; }
+.hero-copy { max-width: 600px; }
+.hero { min-height: clamp(480px, 70vh, 660px); }
+.hero-sub { font-size: 17px; max-width: 460px; }
+@media (max-width: 900px) {
+  .hero-title { font-size: clamp(34px, 8vw, 52px); }
+}
