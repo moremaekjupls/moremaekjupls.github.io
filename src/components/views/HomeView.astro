@@ -19,7 +19,6 @@ const titleLines = (t('hero.title') as string).split('\n');
   <div class="hero-bg"><Particles variant="galaxy" density={1.2} /></div>
   <div class="container hero-grid">
     <div class="hero-copy">
-      <span class="eyebrow">{t('hero.eyebrow')}</span>
       <h1 class="hero-title">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
       <p class="hero-sub">{t('hero.sub')}</p>
       <div class="hero-cta">
