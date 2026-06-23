@@ -17,16 +17,6 @@ Your product is a thin layer over a model you don't control. We're used to two r
 
 For NURA this isn't abstract. If the multimodal model that reads a meal photo becomes unavailable in some region tomorrow, the product dies there — and my code has nothing to do with it. Depending on a single provider isn't a technical choice; it's a business risk that just happens to look like a line in a config file.
 
-## What to do about it
-
-Don't panic, and don't "go train your own model" — that's rarely justified (I wrote about that separately). Make the dependency manageable instead:
-
-- **An abstraction layer.** One interface in your code, behind which the model swaps with a single line, not a rewrite of half the app.
-- **A real fallback provider.** Not "we'll switch in theory," but a path that's wired and tested. A backup you've never run isn't a backup.
-- **Portable prompts.** The less you lean on one vendor's tricks, the cheaper the move.
-- **Your own eval set.** With 30 examples and expected outputs, switching models is a measurable evening's decision, not a leap in the dark.
-- **Watch more than price.** Geo-availability, terms of use, export limits — that's part of your risk map now.
-
 ## Takeaway
 
 The NSA headline will be forgotten in a week. The structural lesson won't.
