@@ -387,3 +387,40 @@ a.card:hover { transform: translateY(-2px); }
 .hero, .section, .page-intro, .site-footer { position: relative; z-index: 1; }
 /* Featured card stays transparent so the apple shows through behind it */
 .feature--apple { background: transparent; }
+
+/* ---------- Featured project teaser ---------- */
+.feature--teaser {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  grid-template-columns: none;
+  padding: clamp(40px, 6vw, 72px) var(--s-24);
+  min-height: 0;
+}
+.feature--teaser .eyebrow { margin: 0; }
+.feature-nura {
+  font-weight: var(--fw-extralight);
+  font-size: clamp(52px, 9vw, 92px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-bone);
+}
+.feature-tagline {
+  color: var(--color-ash);
+  font-size: clamp(16px, 2.2vw, 20px);
+  line-height: 1.5;
+  max-width: 42ch;
+  margin: 0;
+}
+.feature-stats {
+  display: flex;
+  gap: clamp(24px, 5vw, 48px);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 10px 0 12px;
+}
+.fstat { display: flex; flex-direction: column; align-items: center; }
+.fstat-num { font-size: clamp(24px, 3vw, 30px); font-weight: var(--fw-extralight); letter-spacing: -0.02em; color: var(--color-bone); }
+.fstat-label { font-size: 12px; color: var(--color-smoke); margin-top: 5px; letter-spacing: 0.05em; text-transform: uppercase; }

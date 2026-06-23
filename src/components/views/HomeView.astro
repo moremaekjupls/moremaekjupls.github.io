@@ -13,6 +13,7 @@ const posts = (await getCollection('blog', (e) => e.data.lang === lang && !e.dat
   .slice(0, 3);
 
 const titleLines = (t('hero.title') as string).split('\n');
+const stats = t('project.stats') as { num: string; label: string }[];
 ---
 <!-- HERO -->
 <section class="hero">
@@ -34,9 +35,17 @@ const titleLines = (t('hero.title') as string).split('\n');
 <!-- FEATURED PROJECT -->
 <section class="section">
   <div class="container">
-    <a class="feature feature--center" href={L('/project')} aria-label={t('featured.title')}>
-      <h2 class="feature-title">{t('featured.title')}</h2>
-    </a>
+    <div class="feature feature--teaser">
+      <span class="eyebrow">{t('featured.eyebrow')}</span>
+      <h2 class="feature-nura">{t('featured.title')}</h2>
+      <p class="feature-tagline">{t('featured.tagline')}</p>
+      <div class="feature-stats">
+        {stats.map((sx) => (
+          <div class="fstat"><span class="fstat-num">{sx.num}</span><span class="fstat-label">{sx.label}</span></div>
+        ))}
+      </div>
+      <a class="btn btn-primary" href={L('/project')}>{t('cta.viewProject')}</a>
+    </div>
   </div>
 </section>
 
