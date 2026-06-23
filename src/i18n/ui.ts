@@ -52,7 +52,7 @@ export const ui = {
     'hero.eyebrow': 'Дипломатия → продукты на ИИ',
     'hero.title': 'Строю продукты\nна стыке людей\nи искусственного\nинтеллекта.',
     'hero.sub':
-      'Хондамир Бегматов. Бэкграунд в международных отношениях, сегодня — создаю продукты с помощью ИИ и пишу о том, что это меняет.',
+      'Хондамир Бегматов. Из международных отношений — в продукты на ИИ. Строю, запускаю и пишу про то, что реально работает.',
 
     'featured.eyebrow': 'Избранный проект',
     'featured.title': 'NURA',
@@ -157,7 +157,7 @@ export const ui = {
     'hero.eyebrow': 'Diplomacy → AI products',
     'hero.title': 'Building products\nwhere people meet\nartificial\nintelligence.',
     'hero.sub':
-      'Khondamir Begmatov. A background in international relations, now building products with AI — and writing about what it changes.',
+      'Khondamir Begmatov. From international relations to AI products. I build, ship, and write about what actually works.',
 
     'featured.eyebrow': 'Featured project',
     'featured.title': 'NURA',
