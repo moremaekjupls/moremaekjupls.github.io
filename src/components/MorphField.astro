@@ -60,7 +60,7 @@
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx!.lineWidth = 1.2;
       const narrow = w < 760;
-      const n = Math.round(clamp((w * h) / 320, narrow ? 700 : 1600, narrow ? 1300 : 2800));
+      const n = Math.round(clamp((w * h) / 380, narrow ? 650 : 1300, narrow ? 1200 : 2300));
       const apple = applePoints();
       const arms = 2, wind = 3.6;
       pts = [];
@@ -91,14 +91,17 @@
       m.x += (m.tx - m.x) * 0.05; m.y += (m.ty - m.y) * 0.05;
       const vh = window.innerHeight || 800;
       const sf = (window.scrollY || 0) / vh;
-      const m1 = sstep(0.12, 0.7, sf);   // galaxy -> scatter
-      const m2 = sstep(0.82, 1.45, sf);  // scatter -> apple
-      const m3 = sstep(1.75, 2.45, sf);  // apple -> scatter again
+      const m1 = sstep(0.10, 0.60, sf);  // galaxy -> scatter
+      const m2 = sstep(0.78, 1.30, sf);  // scatter -> apple
+      const fade = 1 - sstep(1.7, 2.45, sf); // field fades out below the NURA card
+      if (fade <= 0.002) { if (running) raf = requestAnimationFrame((tt) => frame(tt, true)); return; }
 
-      const cx = w * 0.5, cy = h * 0.5;
-      const gRadius = Math.min(w, h) * 0.42;
-      const aS = Math.min(w, h) * 0.27;
-      const spin = (animate ? t * 0.00006 : 0.3) + m.x * 0.4;
+      const narrow = w < 760;
+      const gcx = narrow ? w * 0.5 : w * 0.62, gcy = h * 0.5;   // galaxy: smaller, to the right
+      const acx = w * 0.5, acy = h * 0.5;                       // apple: centered
+      const gRadius = Math.min(w, h) * (narrow ? 0.34 : 0.30);
+      const aS = Math.min(w, h) * 0.24;
+      const spin = (animate ? t * 0.00012 : 0.3) + m.x * 0.4;
       const tilt = 1.12 + m.y * 0.2;
       const cs = Math.cos(spin), sn = Math.sin(spin), ct = Math.cos(tilt), st = Math.sin(tilt);
       const fov = 2.6;
@@ -108,22 +111,22 @@
         const x2 = p.gx * cs + p.gz * sn, z2 = -p.gx * sn + p.gz * cs, y2 = p.gy;
         const yy = y2 * ct - z2 * st, zz = y2 * st + z2 * ct;
         const persp = fov / (fov - zz);
-        const gsx = cx + x2 * gRadius * persp, gsy = cy + yy * gRadius * persp;
+        const gsx = gcx + x2 * gRadius * persp, gsy = gcy + yy * gRadius * persp;
         const gdep = (zz + 1) / 2;
         // apple + scatter targets
-        const asx = cx + p.ax * aS, asy = cy + p.ay * aS;
+        const asx = acx + p.ax * aS, asy = acy + p.ay * aS;
         const ssx = p.fx * w, ssy = p.fy * h;
         // blend
-        let px = mix(gsx, ssx, m1); px = mix(px, asx, m2); px = mix(px, ssx, m3);
-        let py = mix(gsy, ssy, m1); py = mix(py, asy, m2); py = mix(py, ssy, m3);
+        let px = mix(gsx, ssx, m1); px = mix(px, asx, m2);
+        let py = mix(gsy, ssy, m1); py = mix(py, asy, m2);
         // parallax
         px -= m.x * 16 * (0.4 + gdep); py -= m.y * 16 * (0.4 + gdep);
         const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
         const s = p.size * mix(0.55 + gdep * 0.7, 1.0, m1);
         const gA = 0.22 + gdep * 0.78;
-        let al = mix(gA, 0.92, m1);
+        let al = mix(gA, 0.9, m1);
         al = mix(al, 0.95, m2 * 0.5);
-        al *= (0.7 + 0.3 * tw);
+        al *= (0.7 + 0.3 * tw) * fade;
         ctx!.globalAlpha = clamp(al, 0, 1);
         const col = m2 > 0.5 ? p.acolor : p.color;
         ctx!.strokeStyle = col; ctx!.fillStyle = col;
