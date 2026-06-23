@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import Particles from '../Particles.astro';
+import MorphField from '../MorphField.astro';
 import PostCard from '../PostCard.astro';
 import { useTranslations, localizeUrl, type Lang } from '../../i18n/ui';
 interface Props { lang: Lang; }
@@ -14,9 +14,10 @@ const posts = (await getCollection('blog', (e) => e.data.lang === lang && !e.dat
 
 const titleLines = (t('hero.title') as string).split('\n');
 ---
+<MorphField />
+
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg"><Particles variant="galaxy" density={1.2} /></div>
   <div class="container hero-grid">
     <div class="hero-copy">
       <h1 class="hero-title">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
@@ -35,7 +36,6 @@ const titleLines = (t('hero.title') as string).split('\n');
 <section class="section">
   <div class="container">
     <a class="feature feature--apple" href={L('/project')} aria-label={t('featured.title')}>
-      <div class="feature-apple-canvas"><Particles variant="apple" density={1.1} /></div>
       <h2 class="feature-title">{t('featured.title')}</h2>
     </a>
   </div>
