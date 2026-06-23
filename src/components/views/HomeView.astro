@@ -35,20 +35,9 @@ const titleLines = (t('hero.title') as string).split('\n');
 <!-- FEATURED PROJECT -->
 <section class="section">
   <div class="container">
-    <div class="feature">
-      <div>
-        <span class="eyebrow">{t('featured.eyebrow')}</span>
-        <h2 class="heading-lg">{t('featured.title')}</h2>
-        <p class="subheading" style="color:var(--color-ash);margin-top:10px;">{t('featured.tagline')}</p>
-        <p class="body body--muted" style="margin-top:18px;">{t('featured.desc')}</p>
-        <div class="hero-cta" style="margin-top:24px;">
-          <a class="btn btn-primary" href={L('/project')}>{t('cta.viewProject')}</a>
-        </div>
-      </div>
-      <div class="feature-visual">
-        <Particles variant="glyph" letter="N" density={1} />
-      </div>
-    </div>
+    <a class="feature feature--center" href={L('/project')} aria-label={t('featured.title')}>
+      <h2 class="feature-title">{t('featured.title')}</h2>
+    </a>
   </div>
 </section>
 

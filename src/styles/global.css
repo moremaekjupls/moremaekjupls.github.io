@@ -311,3 +311,21 @@ a.card:hover { transform: translateY(-2px); }
 #main { position: relative; z-index: 1; }
 .site-footer { position: relative; z-index: 1; }
 .site-header { z-index: 50; }
+
+/* ---------- Featured project (minimal, centered) ---------- */
+.feature--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 240px;
+  grid-template-columns: none;
+}
+.feature--center:hover { border-color: var(--hairline-strong); }
+.feature-title {
+  font-weight: var(--fw-extralight);
+  font-size: clamp(56px, 11vw, 120px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-bone);
+}
