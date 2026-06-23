@@ -5,7 +5,7 @@
 //  variant="glyph"  → a letter formed from particles (set `letter`)
 // Depth, palette, cursor parallax, scroll dispersion. Honors reduced-motion.
 interface Props {
-  variant?: 'sphere' | 'earth' | 'glyph' | 'galaxy';
+  variant?: 'sphere' | 'earth' | 'glyph' | 'galaxy' | 'apple';
   letter?: string;
   density?: number;
   class?: string;
@@ -133,6 +133,47 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
     return pts;
   }
 
+  function appleMask() {
+    const MW = 320, MH = 320, cx = 160, cy = 168;
+    const c = document.createElement('canvas'); c.width = MW; c.height = MH;
+    const o = c.getContext('2d')!;
+    const ell = (x: number, y: number, rx: number, ry: number) => { o.beginPath(); o.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); o.fill(); };
+    o.fillStyle = '#fff';
+    ell(cx - 40, cy + 6, 80, 80); ell(cx + 40, cy + 6, 80, 80);      // two lobes
+    ell(cx, cy + 31, 58, 61);                                       // body
+    o.beginPath(); o.moveTo(cx - 12, cy + 86); o.lineTo(cx + 12, cy + 86); o.lineTo(cx, cy + 104); o.closePath(); o.fill();
+    o.globalCompositeOperation = 'destination-out';
+    ell(cx, cy - 88, 22, 30);                                       // top dimple
+    ell(cx, cy + 102, 10, 10);                                      // bottom dimple
+    o.globalCompositeOperation = 'source-over';
+    o.strokeStyle = '#fff'; o.lineWidth = 12; o.lineCap = 'round';  // stem
+    o.beginPath(); o.moveTo(cx + 1, cy - 66); o.lineTo(cx + 9, cy - 112); o.stroke();
+    o.save(); o.translate(cx + 8, cy - 88); o.rotate(-25 * Math.PI / 180); o.translate(-(cx + 8), -(cy - 88));
+    ell(cx + 35, cy - 88, 27, 16); o.restore();                    // leaf
+    return { data: o.getImageData(0, 0, MW, MH).data, MW, MH };
+  }
+
+  function buildApple(n: number) {
+    const APAL = ['#15846e', '#15846e', '#ffb829', '#ffb829', '#ffffff', '#ffffff', '#bdbdbd', '#8052ff'];
+    const { data, MW, MH } = appleMask();
+    const cand: number[][] = [];
+    for (let y = 0; y < MH; y += 2) for (let x = 0; x < MW; x += 2) if (data[(y * MW + x) * 4 + 3] > 128) cand.push([x, y]);
+    for (let i = cand.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[cand[i], cand[j]] = [cand[j], cand[i]]; }
+    const take = Math.min(n, cand.length);
+    const pts: any[] = [];
+    for (let i = 0; i < take; i++) {
+      const [x, y] = cand[i];
+      pts.push({
+        nx: (x - 160) / 160, ny: (y - 160) / 160,
+        ox: (x - 160) / 160 + rand(-1.8, 1.8), oy: (y - 160) / 160 - rand(1.2, 3.5),
+        depth: Math.random(), size: rand(2.0, 4.6), color: APAL[(Math.random() * APAL.length) | 0],
+        ang: Math.random() * 6.28, spin: rand(-0.0006, 0.0006), fill: Math.random() < 0.2,
+        tw: rand(0.6, 1), ph: Math.random() * 6.28, drift: rand(0.3, 1.2),
+      });
+    }
+    return pts;
+  }
+
   function gauss() {
     let u = 0, v = 0;
     while (u === 0) u = Math.random();
@@ -195,7 +236,11 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
       cxs = (mode === 'glyph' || narrow) ? w * 0.5 : w * 0.63;
       cys = h * 0.5;
       const area = w * h;
-      if (mode === 'glyph') {
+      if (mode === 'apple') {
+        S = Math.min(h * 0.34, w * 0.34);
+        cys = h * 0.42;
+        pts = buildApple(Math.round(clamp(area / 360 * density, 500, 1500)));
+      } else if (mode === 'glyph') {
         S = Math.min(h * 0.4, w * 0.36);
         pts = buildGlyph(letter, Math.round(clamp(area / 360 * density, 280, 1300)));
       } else if (mode === 'earth') {
@@ -280,10 +325,32 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
       }
     }
 
+    function renderApple(t: number, animate: boolean) {
+      const rect = canvas.getBoundingClientRect();
+      const vh = window.innerHeight || 800;
+      const a = clamp((vh * 0.92 - rect.top) / (vh * 0.5), 0, 1);
+      const e = a * a * (3 - 2 * a);
+      for (const p of pts) {
+        const hx = cxs + p.nx * S, hy = cys + p.ny * S;
+        const ox = cxs + p.ox * S, oy = cys + p.oy * S;
+        const bx = ox + (hx - ox) * e, by = oy + (hy - oy) * e;
+        const dx = animate ? Math.sin(t * 0.0004 + p.ph) * p.drift * e : 0;
+        const dy = animate ? Math.cos(t * 0.00045 + p.ph * 1.2) * p.drift * e : 0;
+        const par = p.depth * 14 * e;
+        const sx = bx + dx - m.x * par, sy = by + dy - m.y * par;
+        const s = p.size * (0.5 + p.depth * 0.8);
+        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.001 + p.ph) : 1;
+        ctx!.globalAlpha = clamp((0.2 + p.depth * 0.8) * p.tw * tw * e, 0, 1);
+        ctx!.strokeStyle = p.color; ctx!.fillStyle = p.color;
+        if (animate) p.ang += p.spin * 16;
+        tri(ctx!, sx, sy, s, p.ang, p.fill);
+      }
+    }
+
     function frame(t: number, animate: boolean) {
       ctx!.clearRect(0, 0, w, h);
       m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
-      mode === 'glyph' ? render2D(t, animate) : mode === 'galaxy' ? renderGalaxy(t, animate) : render3D(t, animate);
+      mode === 'apple' ? renderApple(t, animate) : mode === 'glyph' ? render2D(t, animate) : mode === 'galaxy' ? renderGalaxy(t, animate) : render3D(t, animate);
       ctx!.globalAlpha = 1;
       if (running) raf = requestAnimationFrame((tt) => frame(tt, true));
     }

@@ -34,7 +34,8 @@ const titleLines = (t('hero.title') as string).split('\n');
 <!-- FEATURED PROJECT -->
 <section class="section">
   <div class="container">
-    <a class="feature feature--center" href={L('/project')} aria-label={t('featured.title')}>
+    <a class="feature feature--apple" href={L('/project')} aria-label={t('featured.title')}>
+      <div class="feature-apple-canvas"><Particles variant="apple" density={1.1} /></div>
       <h2 class="feature-title">{t('featured.title')}</h2>
     </a>
   </div>
