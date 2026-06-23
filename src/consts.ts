@@ -11,7 +11,7 @@ export const SITE = {
 
 // Footer social links — replace the URLs.
 export const SOCIALS = {
-  github: 'https://github.com/your-handle',          // REPLACE
+  github: 'https://github.com/moremaekjupls',
   x: 'https://x.com/damcux?s=11',
   linkedin: 'https://www.linkedin.com/in/xondamir-begmatov-950b553a0',
   email: 'mailto:moremaekjupls@gmail.com',

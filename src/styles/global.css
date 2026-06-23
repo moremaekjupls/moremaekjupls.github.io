@@ -329,3 +329,24 @@ a.card:hover { transform: translateY(-2px); }
   line-height: 1;
   color: var(--color-bone);
 }
+
+/* ---------- Mobile fixes (galaxy lives in .hero-bg now) ---------- */
+@media (max-width: 900px) {
+  .hero-visual { display: none; }                 /* empty spacer — remove */
+  .hero-bg .particles { position: absolute; inset: 0; }  /* keep full-bleed */
+  .hero { min-height: clamp(440px, 64vh, 560px); }
+  .hero-copy { max-width: 100%; margin-inline: auto; text-align: center; }
+  .hero-cta { justify-content: center; }
+  .eyebrow { display: inline-block; }
+}
+@media (max-width: 600px) {
+  .container { padding-inline: 18px; }
+  .hero-title { font-size: clamp(30px, 9vw, 44px); }
+  .hero-sub { font-size: 15px; margin-inline: auto; }
+  .feature-title { font-size: clamp(40px, 15vw, 68px); }
+  .feature--center { min-height: 180px; }
+  .section { padding-block: 40px; }
+  .case-grid { gap: var(--s-12); }
+  .stat-row { gap: var(--s-18); }
+  .article h1 { font-size: clamp(28px, 8vw, 40px); }
+}
