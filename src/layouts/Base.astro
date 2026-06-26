@@ -3,7 +3,6 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
-import Starfield from '../components/Starfield.astro';
 import { altLangUrl, type Lang } from '../i18n/ui';
 import { SITE } from '../consts';
 
@@ -46,7 +45,6 @@ const enHref = SITE.domain + altLangUrl(path, 'en');
   </head>
   <body>
     <a href="#main" class="skip-link">{lang === 'ru' ? '\u041a \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u043c\u0443' : 'Skip to content'}</a>
-    <Starfield />
     <Header lang={lang} path={path} />
     <main id="main">
       <slot />
