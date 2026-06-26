@@ -424,3 +424,9 @@ a.card:hover { transform: translateY(-2px); }
   margin: 0;
 }
 @media (max-width: 600px) { .manifesto-text { font-size: clamp(22px, 6.5vw, 30px); } }
+
+/* ---------- Hero video background ---------- */
+.hero-video { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: #000; }
+.hero-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero-video::after { content: ''; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.34); }
+.hero .hero-bg { z-index: 1; }   /* galaxy sits above the video */
