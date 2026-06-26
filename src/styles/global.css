@@ -136,7 +136,6 @@ a.card:hover { transform: translateY(-2px); }
 .post-card .post-more { margin-top: var(--s-18); }
 
 .feature { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--s-30); align-items: center; border: 1px solid var(--hairline); border-radius: var(--radius); padding: var(--s-36); }
-.feature .feature-visual { position: relative; border-radius: var(--radius); border: 1px solid var(--hairline); min-height: 260px; overflow: hidden; }
 
 .post-list { border-top: 1px solid var(--hairline); }
 .post-row { display: grid; grid-template-columns: 120px 1fr; gap: var(--s-30); padding-block: var(--s-30); border-bottom: 1px solid var(--hairline); align-items: start; transition: opacity .18s ease; }
@@ -164,8 +163,6 @@ a.card:hover { transform: translateY(-2px); }
 .case-section:first-of-type { border-top: none; }
 .case-grid { display: grid; grid-template-columns: 220px 1fr; gap: var(--s-36); align-items: start; }
 .case-grid .case-label { font-weight: var(--fw-semibold); font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--color-plum-voltage); }
-.screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-18); }
-.screen-ph { border: 1px solid var(--hairline); border-radius: var(--radius); aspect-ratio: 9 / 16; display: grid; place-items: center; color: var(--color-smoke); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; position: relative; overflow: hidden; }
 .stat-row { display: flex; flex-wrap: wrap; gap: var(--s-36); }
 .stat .stat-num { font-size: clamp(36px, 5vw, 48px); font-weight: var(--fw-extralight); letter-spacing: -0.03em; }
 .stat .stat-label { color: var(--color-smoke); font-size: 13px; margin-top: 4px; }
@@ -197,7 +194,6 @@ a.card:hover { transform: translateY(-2px); }
   .menu-btn { display: inline-block; }
   .post-row { grid-template-columns: 1fr; gap: var(--s-6); }
   .post-row .post-row-date { padding-top: 0; }
-  .screens { grid-template-columns: 1fr 1fr; }
   .hero-cta .btn { flex: 1; justify-content: center; }
 }
 
@@ -212,7 +208,7 @@ a.card:hover { transform: translateY(-2px); }
   transition: border-color .16s ease;
 }
 .contact-form textarea { border-radius: 18px; resize: vertical; }
-.contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--color-plum-voltage); }
+.contact-form input:focus-visible, .contact-form textarea:focus-visible { border-color: var(--color-plum-voltage); outline: 2px solid var(--color-plum-voltage); outline-offset: 1px; }
 .contact-form button { margin-top: var(--s-6); }
 
 /* ============================================================
@@ -312,24 +308,6 @@ a.card:hover { transform: translateY(-2px); }
 .site-footer { position: relative; z-index: 1; }
 .site-header { z-index: 50; }
 
-/* ---------- Featured project (minimal, centered) ---------- */
-.feature--center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 240px;
-  grid-template-columns: none;
-}
-.feature--center:hover { border-color: var(--hairline-strong); }
-.feature-title {
-  font-weight: var(--fw-extralight);
-  font-size: clamp(56px, 11vw, 120px);
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--color-bone);
-}
-
 /* ---------- Mobile fixes (galaxy lives in .hero-bg now) ---------- */
 @media (max-width: 900px) {
   .hero-visual { display: none; }                 /* empty spacer — remove */
@@ -343,50 +321,14 @@ a.card:hover { transform: translateY(-2px); }
   .container { padding-inline: 18px; }
   .hero-title { font-size: clamp(30px, 9vw, 44px); }
   .hero-sub { font-size: 15px; margin-inline: auto; }
-  .feature-title { font-size: clamp(40px, 15vw, 68px); }
-  .feature--center { min-height: 180px; }
   .section { padding-block: 40px; }
   .case-grid { gap: var(--s-12); }
   .stat-row { gap: var(--s-18); }
   .article h1 { font-size: clamp(28px, 8vw, 40px); }
 }
 
-/* ---------- Featured: apple assembles on scroll ---------- */
-.feature--apple {
-  position: relative;
-  display: block;
-  grid-template-columns: none;
-  min-height: 480px;
-  padding: 0;
-  overflow: hidden;
-}
-.feature-apple-canvas { position: absolute; inset: 0; }
-.feature--apple .feature-title {
-  position: absolute;
-  left: 0; right: 0; bottom: 34px;
-  margin: 0;
-  text-align: center;
-  font-size: clamp(38px, 7vw, 68px);
-  z-index: 2;
-}
-@media (max-width: 600px) {
-  .feature--apple { min-height: 380px; }
-  .feature--apple .feature-title { bottom: 22px; font-size: clamp(34px, 12vw, 52px); }
-}
-
-/* ---------- Full-screen morph particle field (home) ---------- */
-.morphfield {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
-/* Keep page content above the morph field (which sits behind everything) */
+/* ---------- Layering: content above the fixed starfield ---------- */
 .hero, .section, .page-intro, .site-footer { position: relative; z-index: 1; }
-/* Featured card stays transparent so the apple shows through behind it */
-.feature--apple { background: transparent; }
 
 /* ---------- Featured project teaser ---------- */
 .feature--teaser {
@@ -424,3 +366,17 @@ a.card:hover { transform: translateY(-2px); }
 .fstat { display: flex; flex-direction: column; align-items: center; }
 .fstat-num { font-size: clamp(24px, 3vw, 30px); font-weight: var(--fw-extralight); letter-spacing: -0.02em; color: var(--color-bone); }
 .fstat-label { font-size: 12px; color: var(--color-smoke); margin-top: 5px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* ---------- Keyboard focus + a11y ---------- */
+:focus-visible { outline: 2px solid var(--color-plum-voltage); outline-offset: 3px; border-radius: 6px; }
+.btn:focus-visible, .lang-toggle a:focus-visible, .nav-links a:focus-visible,
+.footer-socials a:focus-visible, .link-arrow:focus-visible, .logo:focus-visible { outline: 2px solid var(--color-plum-voltage); outline-offset: 3px; }
+.skip-link { position: absolute; left: -9999px; top: 8px; z-index: 100; background: var(--color-plum-voltage); color: var(--color-bone); padding: 10px 16px; border-radius: var(--radius); font-size: 13px; }
+.skip-link:focus { left: 12px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* Larger touch targets on mobile */
+@media (max-width: 720px) {
+  .lang-toggle a { padding: 11px 15px; }
+  .menu-btn { padding: 11px 14px; }
+}
