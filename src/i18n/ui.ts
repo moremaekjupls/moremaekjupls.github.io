@@ -60,6 +60,8 @@ export const ui = {
     'featured.desc':
       'Веб-приложение, которое оценивает калории и БЖУ по фотографии блюда или текстовому описанию. Один снимок — и дневник питания заполнен.',
 
+    'manifesto.eyebrow': 'Во что я верю',
+    'manifesto.text': 'Чтобы построить продукт, больше не нужно уметь писать код — нужны идея и воображение, чтобы за ней пойти. ИИ убрал стену между «придумал» и «сделал».',
     'latest.title': 'Последнее в блоге',
     'latest.subtitle': 'ИИ-новости и разбор глазами продукт-билдера.',
 
@@ -165,6 +167,8 @@ export const ui = {
     'featured.desc':
       'A web app that estimates calories and macros from a photo of a meal or a short text description. One snapshot and your food log is filled in.',
 
+    'manifesto.eyebrow': 'What I believe',
+    'manifesto.text': 'You no longer need to write code to build a product — you need an idea, and the imagination to chase it. AI removed the wall between “thought of it” and “built it”.',
     'latest.title': 'Latest from the blog',
     'latest.subtitle': 'AI news and analysis through a small-product builder lens.',
 

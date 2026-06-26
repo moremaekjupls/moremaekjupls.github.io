@@ -23,10 +23,23 @@ const stats = t('project.stats') as { num: string; label: string }[];
     <div class="hero-copy">
       <h1 class="hero-title">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
       <p class="hero-sub">{t('hero.sub')}</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href={L('/blog')}>{t('cta.readBlog')}</a>
+      </div>
     </div>
     <div class="hero-visual" aria-hidden="true"></div>
   </div>
   <div class="scroll-cue"><span class="dot"></span><span>Scroll</span></div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="section">
+  <div class="container">
+    <div class="manifesto">
+      <span class="eyebrow">{t('manifesto.eyebrow')}</span>
+      <p class="manifesto-text">{t('manifesto.text')}</p>
+    </div>
+  </div>
 </section>
 
 <!-- FEATURED PROJECT -->
