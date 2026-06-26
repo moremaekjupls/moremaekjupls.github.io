@@ -436,3 +436,8 @@ a.card:hover { transform: translateY(-2px); }
 @media (max-width: 760px) {
   .hero-bg { display: none; }
 }
+
+/* ---------- Hero focal video (black hole), scrolls with hero ---------- */
+.hero-video { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.hero-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero-video::after { content: ''; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.40); }
