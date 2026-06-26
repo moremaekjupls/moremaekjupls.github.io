@@ -380,12 +380,3 @@ a.card:hover { transform: translateY(-2px); }
   .lang-toggle a { padding: 11px 15px; }
   .menu-btn { padding: 11px 14px; }
 }
-
-/* ---------- About portrait ---------- */
-.about-grid { display: grid; grid-template-columns: 300px 1fr; gap: clamp(28px, 5vw, 56px); align-items: start; }
-.about-portrait { margin: 0; border: 1px solid var(--hairline); border-radius: var(--radius); overflow: hidden; background: #000; }
-.about-portrait img { display: block; width: 100%; height: auto; }
-@media (max-width: 760px) {
-  .about-grid { grid-template-columns: 1fr; gap: var(--s-24); }
-  .about-portrait { max-width: 240px; margin-inline: auto; }
-}
