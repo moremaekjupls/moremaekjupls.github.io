@@ -45,6 +45,11 @@ const enHref = SITE.domain + altLangUrl(path, 'en');
   </head>
   <body>
     <a href="#main" class="skip-link">{lang === 'ru' ? '\u041a \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u043c\u0443' : 'Skip to content'}</a>
+    <div class="site-video" aria-hidden="true">
+      <video autoplay muted loop playsinline preload="auto" poster="/hero-poster.jpg">
+        <source src="/hero-bg.mp4" type="video/mp4" />
+      </video>
+    </div>
     <Header lang={lang} path={path} />
     <main id="main">
       <slot />
