@@ -9,6 +9,6 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 ---
-<Base lang="ru" title={entry.data.title} description={entry.data.excerpt}>
+<Base lang="ru" fixedBg title={entry.data.title} description={entry.data.excerpt}>
   <PostArticleView lang="ru" entry={entry} />
 </Base>
