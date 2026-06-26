@@ -1,6 +1,5 @@
 ---
 import { getCollection } from 'astro:content';
-import Particles from '../Particles.astro';
 import PostCard from '../PostCard.astro';
 import { readingMinutes } from '../../i18n/ui';
 import { useTranslations, localizeUrl, type Lang } from '../../i18n/ui';
@@ -23,7 +22,6 @@ const stats = t('project.stats') as { num: string; label: string }[];
       <source src="/hero-bh.mp4" type="video/mp4" />
     </video>
   </div>
-  <div class="hero-bg"><Particles variant="galaxy" density={1.4} /></div>
   <div class="container hero-grid">
     <div class="hero-copy">
       <h1 class="hero-title">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
