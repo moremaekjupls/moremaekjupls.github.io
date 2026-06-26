@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Particles from '../Particles.astro';
 import PostCard from '../PostCard.astro';
+import { readingMinutes } from '../../i18n/ui';
 import { useTranslations, localizeUrl, type Lang } from '../../i18n/ui';
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
@@ -57,7 +58,7 @@ const stats = t('project.stats') as { num: string; label: string }[];
     </div>
     <div class="posts-grid">
       {posts.map((p) => (
-        <PostCard lang={lang} title={p.data.title} excerpt={p.data.excerpt} date={p.data.pubDate} slug={p.data.transId} />
+        <PostCard lang={lang} title={p.data.title} excerpt={p.data.excerpt} date={p.data.pubDate} slug={p.data.transId} minutes={readingMinutes(p.body)} />
       ))}
     </div>
   </div>
