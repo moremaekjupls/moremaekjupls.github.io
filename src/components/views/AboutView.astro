@@ -22,21 +22,15 @@ const body = t('about.body') as string[];
 
 <section class="section">
   <div class="container">
-    <div class="about-grid">
-      <figure class="about-portrait">
-        <img src="/portrait.jpg" width="720" height="882" loading="lazy"
-          alt={lang === 'ru' ? 'Хондамир Бегматов' : 'Khondamir Begmatov'} />
-      </figure>
-      <div>
-        <div class="prose">
-          {body.map((p) => (<p>{p}</p>))}
-        </div>
-        <div class="hero-cta" style="margin-top:36px;">
-          <a class="btn btn-primary" href={L('/project')}>{t('cta.viewProject')}</a>
-          <a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a>
-        </div>
+    <div class="article" style="margin-left:0;">
+      <div class="prose">
+        {body.map((p) => (<p>{p}</p>))}
       </div>
+      <div class="hero-cta" style="margin-top:36px;">
+        <a class="btn btn-primary" href={L('/project')}>{t('cta.viewProject')}</a>
+        <a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a>
+      </div>
+      <ContactForm lang={lang} />
     </div>
-    <ContactForm lang={lang} />
   </div>
 </section>
