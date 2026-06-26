@@ -253,3 +253,11 @@ export function useTranslations(lang: Lang) {
     return dict[key] ?? (ui[defaultLang] as any)[key] ?? key;
   };
 }
+
+export function readingMinutes(body: string): number {
+  const words = (body || '').trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 180));
+}
+export function readingLabel(lang: Lang, min: number): string {
+  return lang === 'ru' ? `${min} мин` : `${min} min read`;
+}

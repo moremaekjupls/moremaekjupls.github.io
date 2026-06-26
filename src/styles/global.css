@@ -380,3 +380,35 @@ a.card:hover { transform: translateY(-2px); }
   .lang-toggle a { padding: 11px 15px; }
   .menu-btn { padding: 11px 14px; }
 }
+
+/* ---------- Blog-as-publication + scroll life ---------- */
+/* Reading progress bar (post pages) */
+.read-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--color-plum-voltage); z-index: 60; transition: width .08s linear; }
+
+/* Reading-time chip */
+.post-row-read { display: block; margin-top: 6px; font-size: 12px; letter-spacing: 0.04em; color: var(--color-smoke); }
+
+/* Post rows: publication-style hover with violet accent */
+.post-row { position: relative; transition: opacity .18s ease, transform .25s cubic-bezier(.2,.7,.2,1); }
+.post-row::before {
+  content: ''; position: absolute; left: -18px; top: 50%; transform: translateY(-50%);
+  width: 2px; height: 0; background: var(--color-plum-voltage); transition: height .25s ease;
+}
+.post-row:hover { opacity: 1; transform: translateX(4px); }
+.post-row:hover::before { height: 64%; }
+.post-row:hover .post-row-title { color: var(--color-bone); }
+
+/* Post cards: a touch more presence + arrow nudge on hover */
+.post-card { transition: border-color .2s ease, transform .25s cubic-bezier(.2,.7,.2,1); }
+.post-card:hover .post-more { gap: 12px; }
+
+/* Staggered reveal for grids and lists */
+@media (prefers-reduced-motion: no-preference) {
+  .posts-grid > *.reveal-init:nth-child(2) { transition-delay: .08s; }
+  .posts-grid > *.reveal-init:nth-child(3) { transition-delay: .16s; }
+  .post-row.reveal-init:nth-child(2) { transition-delay: .06s; }
+  .post-row.reveal-init:nth-child(3) { transition-delay: .12s; }
+  .post-row.reveal-init:nth-child(4) { transition-delay: .18s; }
+  .post-row.reveal-init:nth-child(n+5) { transition-delay: .24s; }
+}
+@media (max-width: 720px) { .post-row:hover { transform: none; } .post-row::before { display: none; } }

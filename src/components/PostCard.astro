@@ -1,7 +1,7 @@
 ---
-import { useTranslations, localizeUrl, type Lang } from '../i18n/ui';
-interface Props { lang: Lang; title: string; excerpt: string; date: Date; slug: string; }
-const { lang, title, excerpt, date, slug } = Astro.props;
+import { useTranslations, localizeUrl, readingLabel, type Lang } from '../i18n/ui';
+interface Props { lang: Lang; title: string; excerpt: string; date: Date; slug: string; minutes: number; }
+const { lang, title, excerpt, date, slug, minutes } = Astro.props;
 const t = useTranslations(lang);
 const href = localizeUrl(`/blog/${slug}`, lang);
 const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', {
@@ -9,7 +9,7 @@ const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', {
 }).format(date);
 ---
 <a class="card post-card" href={href}>
-  <span class="post-date">{fmt}</span>
+  <span class="post-date">{fmt} · {readingLabel(lang, minutes)}</span>
   <h3 class="post-title">{title}</h3>
   <p class="post-excerpt">{excerpt}</p>
   <span class="post-more link-arrow">{t('cta.readMore')} →</span>

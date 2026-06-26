@@ -1,5 +1,5 @@
 ---
-import { useTranslations, localizeUrl, type Lang } from '../../i18n/ui';
+import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
 import type { CollectionEntry } from 'astro:content';
 interface Props { lang: Lang; entry: CollectionEntry<'blog'>; }
 const { lang, entry } = Astro.props;
@@ -7,11 +7,12 @@ const t = useTranslations(lang);
 const { Content } = await entry.render();
 const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(entry.data.pubDate);
 ---
+<div class="read-progress" id="readProgress"></div>
 <article class="section">
   <div class="container">
     <div class="article">
       <a class="link-arrow" href={localizeUrl('/blog', lang)} style="margin-bottom:24px;">{t('cta.backToBlog')}</a>
-      <p class="article-meta" style="margin-top:24px;">{fmt}</p>
+      <p class="article-meta" style="margin-top:24px;">{fmt} · {readingLabel(lang, readingMinutes(entry.body))}</p>
       <h1 style="margin-bottom:30px;">{entry.data.title}</h1>
       <div class="prose">
         <Content />
@@ -22,3 +23,22 @@ const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: '
     </div>
   </div>
 </article>
+
+<script>
+  function initProgress() {
+    const bar = document.getElementById('readProgress');
+    const art = document.querySelector('.article');
+    if (!bar || !art) return;
+    function update() {
+      const total = (art as HTMLElement).offsetHeight - window.innerHeight;
+      const scrolled = Math.min(Math.max(-art.getBoundingClientRect().top, 0), Math.max(total, 1));
+      bar.style.width = (scrolled / Math.max(total, 1) * 100) + '%';
+    }
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+  }
+  if (document.readyState !== 'loading') initProgress();
+  else document.addEventListener('DOMContentLoaded', initProgress);
+  document.addEventListener('astro:page-load', initProgress);
+</script>

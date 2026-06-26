@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import { useTranslations, localizeUrl, type Lang } from '../../i18n/ui';
+import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
@@ -25,7 +25,7 @@ const titleLines = (t('blog.title') as string).split('\n');
       <div class="post-list">
         {posts.map((p) => (
           <a class="post-row" href={localizeUrl(`/blog/${p.data.transId}`, lang)}>
-            <div class="post-row-date">{fmt(p.data.pubDate)}</div>
+            <div class="post-row-date">{fmt(p.data.pubDate)}<span class="post-row-read">{readingLabel(lang, readingMinutes(p.body))}</span></div>
             <div>
               <h2 class="post-row-title">{p.data.title}</h2>
               <p class="post-row-excerpt">{p.data.excerpt}</p>
