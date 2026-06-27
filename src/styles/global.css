@@ -445,3 +445,11 @@ a.card:hover { transform: translateY(-2px); }
 }
 .hero-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero-video::after { content: ''; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.40); }
+
+/* ---------- Mobile: stronger/earlier hero-video fade for a clean blend ---------- */
+@media (max-width: 760px) {
+  .hero-video {
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  }
+}
