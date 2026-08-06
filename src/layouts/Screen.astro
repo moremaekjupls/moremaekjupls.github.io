@@ -1,0 +1,45 @@
+---
+// Screen.astro — layout for the single-screen home. No header, no footer,
+// no scrolling: the page is exactly one viewport and the scene fills it.
+import '../styles/global.css';
+import Analytics from '../components/Analytics.astro';
+import { altLangUrl, type Lang } from '../i18n/ui';
+import { SITE } from '../consts';
+
+interface Props { lang: Lang; description?: string; }
+const { lang, description = '' } = Astro.props;
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const ruHref = SITE.domain + altLangUrl(path, 'ru');
+const enHref = SITE.domain + altLangUrl(path, 'en');
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{SITE.name}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:title" content={SITE.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={SITE.domain + path} />
+    <meta property="og:image" content={SITE.domain + "/og.png"} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={SITE.domain + "/og.png"} />
+    <link rel="alternate" type="application/rss+xml" title="Khondamir Begmatov — Blog" href={lang === 'en' ? '/en/rss.xml' : '/rss.xml'} />
+    <link rel="alternate" hreflang="ru" href={ruHref} />
+    <link rel="alternate" hreflang="en" href={enHref} />
+    <link rel="alternate" hreflang="x-default" href={ruHref} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href={import.meta.env.BASE_URL.replace(/\/$/, '') + '/favicon.svg'} type="image/svg+xml" />
+    <Analytics />
+  </head>
+  <body class="is-screen">
+    <slot />
+  </body>
+</html>

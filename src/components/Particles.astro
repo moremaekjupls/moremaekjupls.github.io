@@ -21,9 +21,9 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
 ></canvas>
 
 <script>
-  const PALETTE = ['#8052ff', '#8052ff', '#8052ff', '#ffffff', '#ffffff', '#bdbdbd', '#ffb829', '#15846e'];
+  const PALETTE = ['#f0b855', '#f0b855', '#f0b855', '#ffffff', '#ffffff', '#bdbdbd', '#ffb829', '#15846e'];
   const LAND = ['#ffffff', '#ffffff', '#bdbdbd', '#15846e', '#ffb829'];
-  const OCEAN = ['#8052ff', '#8052ff', '#5a5a8c'];
+  const OCEAN = ['#f0b855', '#f0b855', '#8a6a33'];
   const GA = Math.PI * (3 - Math.sqrt(5));
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
   const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
@@ -154,7 +154,7 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
   }
 
   function buildApple(n: number) {
-    const APAL = ['#15846e', '#15846e', '#ffb829', '#ffb829', '#ffffff', '#ffffff', '#bdbdbd', '#8052ff'];
+    const APAL = ['#15846e', '#15846e', '#ffb829', '#ffb829', '#ffffff', '#ffffff', '#bdbdbd', '#f0b855'];
     const { data, MW, MH } = appleMask();
     const cand: number[][] = [];
     for (let y = 0; y < MH; y += 2) for (let x = 0; x < MW; x += 2) if (data[(y * MW + x) * 4 + 3] > 128) cand.push([x, y]);
@@ -183,7 +183,7 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
 
   function buildGalaxy(n: number) {
     const CORE = ['#ffffff', '#ffe4aa', '#ffb829'];
-    const ARM = ['#8052ff', '#8052ff', '#ffffff', '#bdbdbd', '#15846e'];
+    const ARM = ['#f0b855', '#f0b855', '#ffffff', '#bdbdbd', '#15846e'];
     const arms = 3, wind = 2.5;
     const pts: any[] = [];
     for (let i = 0; i < n; i++) {
