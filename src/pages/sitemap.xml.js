@@ -4,8 +4,8 @@ export async function GET() {
   const ru = await getCollection('blog', (e) => e.data.lang === 'ru' && !e.data.draft);
   const en = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
   const urls = [
-    '/', '/project', '/about', '/blog',
-    '/en', '/en/project', '/en/about', '/en/blog',
+    '/', '/about', '/blog',
+    '/en', '/en/about', '/en/blog',
     ...ru.map((p) => `/blog/${p.data.transId}`),
     ...en.map((p) => `/en/blog/${p.data.transId}`),
   ];
