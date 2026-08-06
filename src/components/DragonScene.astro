@@ -830,7 +830,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   var dragAz = 0, dragEl = 0, velAz = 0, velEl = 0;
   var DRAG_X = 0.0052, DRAG_Y = 0.0042;
   var EL_MIN = -1.1, EL_MAX = 4.2;
-  var DRAG_MAX = Math.PI / 6;   // ±30°: enough to look around, not enough to lose the pose
+  var DRAG_MAX = Math.PI / 9;   // ±20° on top of the sweep, both directions always available
 
   function clampAz(a) { return a < -DRAG_MAX ? -DRAG_MAX : (a > DRAG_MAX ? DRAG_MAX : a); }
 
@@ -896,11 +896,12 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   var clock = new THREE.Clock();
   var t = 0, camAngle = 0;
 
-  // The back of the figure is never on camera: instead of a full orbit the
-  // camera sweeps a 180° arc centred on the front and eases to a stop at each
-  // end, then returns. Sine gives that deceleration for free.
-  var ARC = Math.PI;          // total sweep, ±90° from dead front
-  var SWEEP_PERIOD = 130;     // seconds for one pass; a there-and-back is double
+  // The camera rocks: 30° right, eases to a stop, 30° left, back again.
+  // A wide arc with a long period reads as a one-way drift because nobody
+  // stays long enough to see it turn around — so the arc is short and the
+  // reversal happens inside half a minute.
+  var ARC = Math.PI / 3;      // total sweep, ±30° from dead front
+  var SWEEP_PERIOD = 26;      // seconds per pass; a full there-and-back is double
 
   function resize() {
     measure();
