@@ -48,7 +48,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   .dragon-scene.dh-hide-cursor,
   .dragon-scene.dh-hide-cursor * { cursor: none; }
 
-  .dh-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .dh-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
 
   .dh-vignette {
     position: absolute; inset: 0; pointer-events: none; z-index: 2;
@@ -85,6 +85,10 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   .dh-cursor.hot {
     width: 64px; height: 64px; margin: -32px 0 0 -32px;
     background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.8);
+  }
+  .dh-cursor.grab {
+    width: 30px; height: 30px; margin: -15px 0 0 -15px;
+    background: rgba(240,184,85,.16); border-color: rgba(240,184,85,.9);
   }
   .dh-dot {
     position: fixed; top: 0; left: 0; z-index: 21; pointer-events: none;
@@ -819,6 +823,30 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   var cx = 0, cy = 0, tx = 0, ty = 0;
   var FINE = window.matchMedia("(pointer:fine)").matches;
 
+  // Drag-to-orbit. The automatic sweep never stops; this is an offset layered
+  // on top of it, with momentum on release and a very slow drift back to the
+  // front so the composition always recomposes itself if left alone.
+  var dragging = false, lastX = 0, lastY = 0;
+  var dragAz = 0, dragEl = 0, velAz = 0, velEl = 0;
+  var DRAG_X = 0.0052, DRAG_Y = 0.0042;
+  var EL_MIN = -1.1, EL_MAX = 4.2;
+
+  root.addEventListener("pointerdown", function (e) {
+    if (e.target.closest && e.target.closest("a, button")) return;  // links stay clickable
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    velAz = 0; velEl = 0;
+    if (cur) cur.classList.add("grab");
+    if (root.setPointerCapture) { try { root.setPointerCapture(e.pointerId); } catch (err) {} }
+  });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (cur) cur.classList.remove("grab");
+  }
+  root.addEventListener("pointerup", endDrag);
+  root.addEventListener("pointercancel", endDrag);
+
   // The custom cursor exists only over this section — the rest of the site
   // keeps its normal pointer.
   root.addEventListener("pointerenter", function () {
@@ -838,6 +866,15 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     tx = e.clientX; ty = e.clientY;
     if (!cx && !cy) { cx = tx; cy = ty; }
     dot.style.transform = "translate(" + tx + "px," + ty + "px)";
+
+    if (dragging) {
+      var dx = e.clientX - lastX, dy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      velAz = -dx * DRAG_X;
+      velEl = dy * DRAG_Y;
+      dragAz += velAz;
+      dragEl = Math.max(EL_MIN, Math.min(EL_MAX, dragEl + velEl));
+    }
   }, { passive: true });
 
   var hotSel = root.querySelectorAll("a, button");
@@ -889,11 +926,19 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18;
     if (cur) cur.style.transform = "translate(" + cx + "px," + cy + "px)";
 
-    camAngle = (ARC * 0.5) * Math.sin((t / (SWEEP_PERIOD * 2)) * Math.PI * 2 + 0.42);
+    if (!dragging) {
+      // momentum, then an almost imperceptible pull back to the default view
+      dragAz += velAz; velAz *= 0.93;
+      dragEl = Math.max(EL_MIN, Math.min(EL_MAX, dragEl + velEl)); velEl *= 0.93;
+      dragAz -= dragAz * 0.22 * dt;
+      dragEl -= dragEl * 0.22 * dt;
+    }
+
+    camAngle = (ARC * 0.5) * Math.sin((t / (SWEEP_PERIOD * 2)) * Math.PI * 2 + 0.42) + dragAz;
     var camR = 12.6 + Math.sin(t * 0.09) * 0.4;
     camera.position.set(
       Math.sin(camAngle) * camR + mouseSmooth.x * 0.45,
-      1.05 + Math.sin(t * 0.14) * 0.30 + mouseSmooth.y * 0.35,
+      1.05 + dragEl + Math.sin(t * 0.14) * 0.30 + mouseSmooth.y * 0.35,
       Math.cos(camAngle) * camR
     );
     camera.lookAt(0, 0.25, 0);
