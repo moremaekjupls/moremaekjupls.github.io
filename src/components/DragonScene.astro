@@ -830,6 +830,9 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   var dragAz = 0, dragEl = 0, velAz = 0, velEl = 0;
   var DRAG_X = 0.0052, DRAG_Y = 0.0042;
   var EL_MIN = -1.1, EL_MAX = 4.2;
+  var DRAG_MAX = Math.PI / 6;   // ±30°: enough to look around, not enough to lose the pose
+
+  function clampAz(a) { return a < -DRAG_MAX ? -DRAG_MAX : (a > DRAG_MAX ? DRAG_MAX : a); }
 
   root.addEventListener("pointerdown", function (e) {
     if (e.target.closest && e.target.closest("a, button")) return;  // links stay clickable
@@ -872,7 +875,9 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
       lastX = e.clientX; lastY = e.clientY;
       velAz = -dx * DRAG_X;
       velEl = dy * DRAG_Y;
-      dragAz += velAz;
+      var wantAz = dragAz + velAz;
+      dragAz = clampAz(wantAz);
+      if (dragAz !== wantAz) velAz = 0;        // hit the wall — stop pushing
       dragEl = Math.max(EL_MIN, Math.min(EL_MAX, dragEl + velEl));
     }
   }, { passive: true });
@@ -928,7 +933,9 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
 
     if (!dragging) {
       // momentum, then an almost imperceptible pull back to the default view
-      dragAz += velAz; velAz *= 0.93;
+      var glideAz = clampAz(dragAz + velAz);
+      if (glideAz === dragAz + velAz) { dragAz = glideAz; velAz *= 0.93; }
+      else { dragAz = glideAz; velAz = 0; }
       dragEl = Math.max(EL_MIN, Math.min(EL_MAX, dragEl + velEl)); velEl *= 0.93;
       dragAz -= dragAz * 0.22 * dt;
       dragEl -= dragEl * 0.22 * dt;
