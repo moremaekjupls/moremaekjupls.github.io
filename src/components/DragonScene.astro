@@ -112,7 +112,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   }
 </style>
 
-<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script is:inline src="/three.min.js"></script>
 <script is:inline define:vars={{ uid, modelUrl }}>
 
 (function () {
@@ -986,8 +986,11 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     requestAnimationFrame(frame);
     if (!onScreen || document.hidden) return;
     var dt = Math.min(clock.getDelta(), 0.05);
-    if (REDUCED) dt *= 0.3;
-    t += dt;
+    // Ambient motion stops dead when the visitor asks for reduced motion —
+    // slowing it down is not enough for vestibular sensitivity. Anything the
+    // visitor starts themselves (drag, fire) still runs on real time.
+    var adt = REDUCED ? 0 : dt;
+    t += adt;
 
     mouseSmooth.lerp(mouse, 0.05);
     cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18;
@@ -1016,7 +1019,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     plinth.rotation.y = Math.sin(t * 0.07) * 0.05;
 
     for (var i = 0; i < haloes.length; i++) {
-      haloes[i].group.rotation.z += haloes[i].spin * dt;
+      haloes[i].group.rotation.z += haloes[i].spin * adt;
       haloes[i].mats[0].uniforms.uTime.value = t;
       haloes[i].mats[1].uniforms.uTime.value = t;
     }
@@ -1029,7 +1032,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
 
     for (var j = 0; j < COUNT; j++) {
       var p = D[j];
-      p.a += p.speed * dt;
+      p.a += p.speed * adt;
       var bx = Math.cos(p.a) * p.r;
       var bz = Math.sin(p.a) * p.r;
       var by = p.y + Math.sin(t * 0.42 + p.bobPhase) * p.bobAmp;
@@ -1055,7 +1058,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
       p.off.lerp(p.target, ease);
 
       dummy.position.set(bx + p.off.x, by + p.off.y, bz + p.off.z);
-      p.rot.x += p.spin.x * dt; p.rot.y += p.spin.y * dt; p.rot.z += p.spin.z * dt;
+      p.rot.x += p.spin.x * adt; p.rot.y += p.spin.y * adt; p.rot.z += p.spin.z * adt;
       dummy.rotation.copy(p.rot);
       dummy.scale.setScalar(p.scale);
       dummy.updateMatrix();
@@ -1092,7 +1095,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     }
     fireLight.intensity = Math.max(0, fireCd - 0.25) * 6.0;
 
-    stars.rotation.y += dt * 0.004;
+    stars.rotation.y += adt * 0.004;
     shaftMat.uniforms.uTime.value = t;
 
     renderer.render(scene, camera);
