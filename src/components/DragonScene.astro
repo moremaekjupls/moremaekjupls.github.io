@@ -267,7 +267,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   // the figure on the plinth
   // ------------------------------------------------------------------
   var figure = new THREE.Group();
-  figure.scale.setScalar(1.0);
+  figure.scale.setScalar(1.15);   // fills more of the frame
   figure.position.y = 0.012;   // sits on the slab
   plinth.add(figure);
 
@@ -545,8 +545,8 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
 
   // --- head ----------------------------------------------------------------
   var headGroup = new THREE.Group();
-  headGroup.position.set(0, 1.41, 0.47);
-  headGroup.rotation.set(-0.14, 0, 0);
+  headGroup.position.set(0, 1.35, 0.52);
+  headGroup.rotation.set(0.10, 0, 0);   // chin down: predatory, not contemplative
   headGroup.scale.setScalar(1.34);
   figure.add(headGroup);
 
@@ -566,11 +566,11 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   hblob(0.075, 1.15, 0.60, 0.95, -0.088, 0.078, 0.085);
   // The skull surface sits at z~0.145 here, so a 0.020 bead reads as a pinpoint
   // set into the socket rather than a ball stuck on the face.
-  hblob(0.020, 1.15, 0.85, 1.0,  0.104, 0.040, 0.140, eyeMat);  // eyes
-  hblob(0.020, 1.15, 0.85, 1.0, -0.104, 0.040, 0.140, eyeMat);
+  hblob(0.025, 1.25, 0.80, 1.0,  0.104, 0.040, 0.140, eyeMat);  // eyes
+  hblob(0.025, 1.25, 0.80, 1.0, -0.104, 0.040, 0.140, eyeMat);
 
   // less emitting area, so the spill light does more of the work
-  var eyeGlow = new THREE.PointLight(0xff1c08, 0.75, 0.85, 2);
+  var eyeGlow = new THREE.PointLight(0xff1c08, 1.15, 1.05, 2);
   eyeGlow.position.set(0, 0.035, 0.145);
   headGroup.add(eyeGlow);
 
@@ -579,8 +579,14 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   hblob(0.088, 1.00, 0.82, 0.85, 0, -0.050, 0.352);      // nose pad
   hblob(0.020, 1.0, 1.0, 1.0,  0.040, -0.032, 0.395);    // nostrils
   hblob(0.020, 1.0, 1.0, 1.0, -0.040, -0.032, 0.395);
-  hlimb([[0, -0.085, 0.07], [0, -0.098, 0.22], [0, -0.086, 0.32]],
-        [0.092, 0.076, 0.052]);                          // lower jaw
+  var jaw = hlimb([[0, -0.085, 0.07], [0, -0.098, 0.22], [0, -0.086, 0.32]],
+        [0.092, 0.076, 0.052]);                          // lower jaw, hinged below
+
+  // fangs — four of them, the cheapest way to read as dangerous
+  [[0.052, 0.30], [-0.052, 0.30], [0.078, 0.235], [-0.078, 0.235]].forEach(function (f) {
+    hlimb([[f[0], -0.052, f[1]], [f[0], -0.088, f[1] + 0.006], [f[0], -0.115, f[1] + 0.010]],
+          [0.017, 0.011, 0.003], hornMat);
+  });
 
   // backswept horns
   hlimb([[ 0.090, 0.105, -0.03], [ 0.155, 0.215, -0.19], [ 0.205, 0.320, -0.38], [ 0.235, 0.410, -0.50]],
@@ -599,6 +605,55 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   hblob(0.085, 0.30, 0.95, 0.70, -0.150, 0.020, -0.055, hornMat);
   hlimb([[0, -0.105, 0.22], [0, -0.165, 0.16], [0, -0.205, 0.06]],
         [0.045, 0.030, 0.008], hornMat);
+  // ------------------------------------------------------------------
+  // fire breath — a pooled particle burst fired from the mouth on click
+  // ------------------------------------------------------------------
+  var FIRE_N = 260;
+  var firePos = new Float32Array(FIRE_N * 3);
+  var fireCol = new Float32Array(FIRE_N * 3);
+  for (var fi = 0; fi < FIRE_N; fi++) firePos[fi * 3 + 1] = -999;
+  var fireGeo = new THREE.BufferGeometry();
+  fireGeo.setAttribute("position", new THREE.BufferAttribute(firePos, 3));
+  fireGeo.setAttribute("color", new THREE.BufferAttribute(fireCol, 3));
+  var fire = new THREE.Points(fireGeo, new THREE.PointsMaterial({
+    size: 0.17, vertexColors: true, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+    toneMapped: false
+  }));
+  fire.frustumCulled = false;
+  scene.add(fire);
+
+  var FP = [];
+  for (var fq = 0; fq < FIRE_N; fq++) FP.push({ life: 0, max: 1, pos: new THREE.Vector3(), vel: new THREE.Vector3() });
+
+  var fireLight = new THREE.PointLight(0xff7a1a, 0, 7, 2);
+  scene.add(fireLight);
+
+  var mouthLocal = new THREE.Vector3(0, -0.07, 0.44);
+  var mouthW = new THREE.Vector3(), dirW = new THREE.Vector3(), headQ = new THREE.Quaternion();
+  var fireCd = 0, jawOpen = 0;
+
+  function breathe() {
+    if (fireCd > 0) return;
+    fireCd = 1.25;
+    mouthW.copy(mouthLocal);
+    headGroup.localToWorld(mouthW);
+    headGroup.getWorldQuaternion(headQ);
+    dirW.set(0, -0.10, 1).applyQuaternion(headQ).normalize();
+    var spawned = 0;
+    for (var i = 0; i < FIRE_N && spawned < 170; i++) {
+      var p = FP[i];
+      if (p.life > 0) continue;
+      p.max = p.life = 0.5 + rnd() * 0.8;
+      p.pos.copy(mouthW);
+      p.vel.copy(dirW).multiplyScalar(3.4 + rnd() * 3.6);
+      p.vel.x += (rnd() - 0.5) * 1.6;
+      p.vel.y += (rnd() - 0.5) * 1.2;
+      p.vel.z += (rnd() - 0.5) * 1.6;
+      spawned++;
+    }
+  }
+
   // ------------------------------------------------------------------
   // OPTIONAL: swap the procedural figure for a real sculpted / scanned model.
   // Put a .glb beside this file, write its name below, and the loader takes
@@ -834,18 +889,24 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
 
   function clampAz(a) { return a < -DRAG_MAX ? -DRAG_MAX : (a > DRAG_MAX ? DRAG_MAX : a); }
 
+  var downX = 0, downY = 0, armed = false;
+
   root.addEventListener("pointerdown", function (e) {
     if (e.target.closest && e.target.closest("a, button")) return;  // links stay clickable
     dragging = true; lastX = e.clientX; lastY = e.clientY;
+    downX = e.clientX; downY = e.clientY; armed = true;
     velAz = 0; velEl = 0;
     if (cur) cur.classList.add("grab");
     if (root.setPointerCapture) { try { root.setPointerCapture(e.pointerId); } catch (err) {} }
   });
 
-  function endDrag() {
+  function endDrag(e) {
     if (!dragging) return;
     dragging = false;
     if (cur) cur.classList.remove("grab");
+    // a click that did not travel is a click, not a drag
+    if (armed && e && Math.abs(e.clientX - downX) < 6 && Math.abs(e.clientY - downY) < 6) breathe();
+    armed = false;
   }
   root.addEventListener("pointerup", endDrag);
   root.addEventListener("pointercancel", endDrag);
@@ -943,13 +1004,13 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     }
 
     camAngle = (ARC * 0.5) * Math.sin((t / (SWEEP_PERIOD * 2)) * Math.PI * 2 + 0.42) + dragAz;
-    var camR = 12.6 + Math.sin(t * 0.09) * 0.4;
+    var camR = 11.1 + Math.sin(t * 0.09) * 0.4;
     camera.position.set(
       Math.sin(camAngle) * camR + mouseSmooth.x * 0.45,
       1.05 + dragEl + Math.sin(t * 0.14) * 0.30 + mouseSmooth.y * 0.35,
       Math.cos(camAngle) * camR
     );
-    camera.lookAt(0, 0.25, 0);
+    camera.lookAt(0, 0.45, 0);
 
     plinth.position.y = Math.sin(t * 0.24) * 0.10;
     plinth.rotation.y = Math.sin(t * 0.07) * 0.05;
@@ -1001,6 +1062,35 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
       debris.setMatrixAt(j, dummy.matrix);
     }
     debris.instanceMatrix.needsUpdate = true;
+
+    // --- fire ---
+    if (fireCd > 0) fireCd -= dt;
+    var jawTarget = fireCd > 0.6 ? 1 : 0;
+    jawOpen += (jawTarget - jawOpen) * Math.min(1, dt * 14);
+    if (jaw) jaw.rotation.x = jawOpen * 0.40;
+
+    for (var fk = 0; fk < FIRE_N; fk++) {
+      var fp = FP[fk];
+      if (fp.life <= 0) continue;
+      fp.life -= dt;
+      if (fp.life <= 0) { firePos[fk * 3 + 1] = -999; fireCol[fk * 3] = fireCol[fk * 3 + 1] = fireCol[fk * 3 + 2] = 0; continue; }
+      fp.vel.multiplyScalar(1 - Math.min(0.9, 2.0 * dt));
+      fp.vel.y += 1.6 * dt;                       // flame rises as it slows
+      fp.pos.addScaledVector(fp.vel, dt);
+      firePos[fk * 3] = fp.pos.x; firePos[fk * 3 + 1] = fp.pos.y; firePos[fk * 3 + 2] = fp.pos.z;
+      var kk = fp.life / fp.max;                  // 1 → 0
+      fireCol[fk * 3]     = Math.min(1, kk * 1.7);          // white-hot core
+      fireCol[fk * 3 + 1] = Math.min(1, Math.pow(kk, 2.1) * 1.3);
+      fireCol[fk * 3 + 2] = Math.pow(kk, 5.0) * 0.9;        // blue only at the very start
+    }
+    fireGeo.attributes.position.needsUpdate = true;
+    fireGeo.attributes.color.needsUpdate = true;
+
+    if (fireCd > 0) {
+      mouthW.copy(mouthLocal); headGroup.localToWorld(mouthW);
+      fireLight.position.copy(mouthW);
+    }
+    fireLight.intensity = Math.max(0, fireCd - 0.25) * 6.0;
 
     stars.rotation.y += dt * 0.004;
     shaftMat.uniforms.uTime.value = t;
