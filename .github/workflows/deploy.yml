@@ -30,3 +30,10 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # Default is 10 minutes. GitHub Pages regularly takes longer to
+          # acknowledge an artifact, and that timeout — not the build — is
+          # what fails here: build finishes in ~20s, deploy gives up at 10m.
+          timeout: 1800000          # 30 minutes
+          error_count: 20
+          reporting_interval: 10000
