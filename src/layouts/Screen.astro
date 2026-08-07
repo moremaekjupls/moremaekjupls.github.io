@@ -6,8 +6,8 @@ import Analytics from '../components/Analytics.astro';
 import { altLangUrl, type Lang } from '../i18n/ui';
 import { SITE } from '../consts';
 
-interface Props { lang: Lang; description?: string; }
-const { lang, description = '' } = Astro.props;
+interface Props { lang: Lang; title?: string; description?: string; }
+const { lang, title = '', description = '' } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const ruHref = SITE.domain + altLangUrl(path, 'ru');
 const enHref = SITE.domain + altLangUrl(path, 'en');
@@ -17,7 +17,7 @@ const enHref = SITE.domain + altLangUrl(path, 'en');
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>{SITE.name}</title>
+    <title>{title ? `${SITE.name} — ${title}` : SITE.name}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#000000" />
     <meta property="og:title" content={SITE.name} />

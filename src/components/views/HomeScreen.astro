@@ -36,6 +36,11 @@ const enUrl = altLangUrl(path, 'en');
     <a href={enUrl} aria-current={lang === 'en' ? 'true' : 'false'} hreflang="en">EN</a>
   </div>
 
+  <h1 class="screen-sig">
+    <span class="screen-sig-name">Khondamir Begmatov</span>
+    <span class="screen-sig-role">{t('footer.tagline')}</span>
+  </h1>
+
   <ul class="screen-socials">
     {socials.map((s) => (
       <li>

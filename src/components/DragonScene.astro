@@ -32,7 +32,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   <div class="dh-cursor"></div>
   <div class="dh-dot"></div>
   <div class="dh-boot"></div>
-  <div class="dh-fallback">WebGL недоступен / WebGL unavailable</div>
+  <div class="dh-fallback"></div>
 </section>
 
 <style>
@@ -136,7 +136,8 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   try {
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !MOBILE, alpha: true, powerPreference: "high-performance" });
   } catch (e) {
-    var fb = root.querySelector(".dh-fallback"); if (fb) fb.style.display = "grid";
+    var fb = root.querySelector(".dh-fallback");
+    if (fb) { fb.textContent = "WebGL недоступен / WebGL unavailable"; fb.style.display = "grid"; }
     boot.classList.add("gone");
     return;
   }

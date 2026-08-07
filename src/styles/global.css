@@ -533,3 +533,18 @@ body.is-screen { height: 100svh; overflow: hidden; }
   content: ""; position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.6'/></svg>");
 }
+
+/* Signature on the home screen: semantically the page's h1 so the site is not
+   invisible to search, visually a caption so the dragon stays the subject. */
+.screen-sig {
+  position: absolute; left: clamp(16px, 3vw, 34px); bottom: 26px;
+  margin: 0; display: flex; flex-direction: column; gap: 4px;
+  font-weight: var(--fw-regular); letter-spacing: 0;
+}
+.screen-sig-name { font-size: 15px; color: var(--color-bone); letter-spacing: .01em; }
+.screen-sig-role { font-size: 12px; color: var(--color-smoke); letter-spacing: .02em; }
+@media (max-width: 600px) {
+  .screen-sig { bottom: 58px; }
+  .screen-sig-name { font-size: 13px; }
+  .screen-sig-role { font-size: 11px; }
+}
