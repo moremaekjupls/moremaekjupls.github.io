@@ -17,11 +17,6 @@ export const SOCIALS = {
   email: 'mailto:moremaekjupls@gmail.com',
 };
 
-// The NURA project.
-export const PROJECT = {
-  liveUrl: 'https://calotrack-production.up.railway.app',
-};
-
 // Contact form — uses Formspree (free, no backend).
 // 1. Sign up at https://formspree.io, create a form, copy its endpoint.
 // 2. Paste it below. Until you do, the form is hidden automatically.
