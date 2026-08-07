@@ -27,7 +27,6 @@ const body = t('about.body') as string[];
         {body.map((p) => (<p>{p}</p>))}
       </div>
       <div class="hero-cta" style="margin-top:36px;">
-        <a class="btn btn-primary" href={L('/project')}>{t('cta.viewProject')}</a>
         <a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a>
       </div>
       <ContactForm lang={lang} />
