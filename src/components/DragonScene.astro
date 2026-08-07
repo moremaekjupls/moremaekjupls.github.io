@@ -17,8 +17,9 @@
 export interface Props {
   height?: string;
   modelUrl?: string;
+  hint?: string;
 }
-const { height = "100svh", modelUrl = "" } = Astro.props;
+const { height = "100svh", modelUrl = "", hint = "" } = Astro.props;
 const uid = "dh-" + Math.random().toString(36).slice(2, 10);
 ---
 
@@ -28,6 +29,8 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
   <div class="dh-grain"></div>
 
   <div class="dh-content"><slot /></div>
+
+  {hint && <p class="dh-hint">{hint}</p>}
 
   <div class="dh-cursor"></div>
   <div class="dh-dot"></div>
@@ -96,6 +99,19 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     background: #fff; display: none;
   }
   .dh-dot.on { display: block; }
+
+  /* The best thing on this page is invisible until you touch it. */
+  .dh-hint {
+    position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%);
+    z-index: 6; margin: 0; white-space: nowrap;
+    font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(240,184,85,.55);
+    opacity: 0; animation: dh-hint-in 1.2s ease 2.4s forwards;
+    transition: opacity .5s ease;
+  }
+  .dh-hint.gone { opacity: 0 !important; animation: none; }
+  @keyframes dh-hint-in { to { opacity: 1; } }
+  @media (max-width: 600px) { .dh-hint { bottom: 108px; font-size: 9.5px; } }
 
   .dh-boot {
     position: absolute; inset: 0; z-index: 9; background: #000;
@@ -908,6 +924,7 @@ const uid = "dh-" + Math.random().toString(36).slice(2, 10);
     if (e.target.closest && e.target.closest("a, button")) return;  // links stay clickable
     dragging = true; lastX = e.clientX; lastY = e.clientY;
     downX = e.clientX; downY = e.clientY; armed = true;
+    var hintEl = root.querySelector(".dh-hint"); if (hintEl) hintEl.classList.add("gone");
     velAz = 0; velEl = 0;
     if (cur) cur.classList.add("grab");
     if (root.setPointerCapture) { try { root.setPointerCapture(e.pointerId); } catch (err) {} }

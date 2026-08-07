@@ -1,9 +1,16 @@
-/* Self-hosted: no third-party CDN on the critical path. */
-@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300;font-display:swap;src:url("/fonts/space-grotesk-latin-300-normal.woff2") format("woff2");}
-@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/space-grotesk-latin-400-normal.woff2") format("woff2");}
-@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/space-grotesk-latin-500-normal.woff2") format("woff2");}
-@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/space-grotesk-latin-600-normal.woff2") format("woff2");}
-@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/space-grotesk-latin-700-normal.woff2") format("woff2");}
+/* Self-hosted, no third-party CDN. Manrope carries Cyrillic — Space Grotesk
+   did not, so every Russian word fell back to a system sans. */
+@font-face{font-family:"Manrope";font-style:normal;font-weight:300;font-display:swap;src:url("/fonts/manrope-cyrillic-300-normal.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:300;font-display:swap;src:url("/fonts/manrope-latin-300-normal.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/manrope-cyrillic-400-normal.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/manrope-latin-400-normal.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/manrope-cyrillic-500-normal.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/manrope-latin-500-normal.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/manrope-cyrillic-600-normal.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/manrope-latin-600-normal.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/manrope-cyrillic-700-normal.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/manrope-latin-700-normal.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+
 
 /* ============================================================
    Khondamir Begmatov — personal site
@@ -24,7 +31,7 @@
   --hairline: rgba(255, 255, 255, 0.12);
   --hairline-strong: rgba(255, 255, 255, 0.22);
 
-  --font-acronym: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system,
+  --font-acronym: 'Manrope', ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --fw-extralight: 300;
@@ -548,3 +555,30 @@ body.is-screen { height: 100svh; overflow: hidden; }
   .screen-sig-name { font-size: 13px; }
   .screen-sig-role { font-size: 11px; }
 }
+
+/* ---- critique fixes: touch targets, one pill geometry, type scale ---- */
+.screen-nav { border-radius: 999px; border-top: 1px solid var(--hairline); top: 14px; }
+.screen-nav a { height: 46px; font-size: 15px; padding: 0 clamp(18px, 2.4vw, 28px); }
+.screen-lang { top: 16px; }
+.screen-lang a { padding: 12px 15px; }
+.screen-socials a {
+  width: 44px; height: 44px; align-items: center; justify-content: center;
+}
+.screen-socials { gap: 6px; bottom: 14px; }
+.screen-sig-name { font-size: 17px; }
+
+@media (max-width: 600px) {
+  .screen-nav { top: 10px; margin-top: env(safe-area-inset-top, 0px); }
+  .screen-nav a { height: 44px; font-size: 14px; padding: 0 16px; }
+  .screen-sig { bottom: 66px; }
+}
+
+/* inner pages speak the same language as the home screen */
+.site-header { background: transparent; border-bottom: 0; backdrop-filter: none; }
+.site-header .nav { height: 76px; }
+.site-header .nav-links {
+  background: rgba(14, 13, 12, .68); border: 1px solid var(--hairline);
+  border-radius: 999px; backdrop-filter: blur(14px); padding: 0 6px; gap: 0;
+}
+.site-header .nav-links a { padding: 0 18px; height: 46px; display: flex; align-items: center; font-size: 15px; }
+.lang-toggle a { padding: 12px 15px; }
