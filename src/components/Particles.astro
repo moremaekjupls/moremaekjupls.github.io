@@ -112,7 +112,7 @@ const { variant = 'sphere', letter = 'N', density = 1, class: className = '' } =
     const o = c.getContext('2d')!;
     o.fillStyle = '#fff';
     o.textAlign = 'center'; o.textBaseline = 'middle';
-    o.font = `700 230px "Space Grotesk", system-ui, sans-serif`;
+    o.font = `700 230px "Manrope", system-ui, sans-serif`;
     o.fillText(letter || 'N', MW / 2, MH / 2 + 6);
     const data = o.getImageData(0, 0, MW, MH).data;
     const cand: number[][] = [];

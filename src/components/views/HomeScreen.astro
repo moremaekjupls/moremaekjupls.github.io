@@ -24,7 +24,7 @@ const socials = [
 const ruUrl = altLangUrl(path, 'ru');
 const enUrl = altLangUrl(path, 'en');
 ---
-<DragonScene>
+<DragonScene hint={lang === 'ru' ? 'потяни · нажми' : 'drag · click'}>
   <a href="#screen-nav" class="skip-link">{lang === 'ru' ? 'К навигации' : 'Skip to navigation'}</a>
 
   <nav class="screen-nav" id="screen-nav" aria-label={lang === 'ru' ? 'Основная навигация' : 'Main navigation'}>
