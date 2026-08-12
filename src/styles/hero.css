@@ -301,3 +301,10 @@
     radial-gradient(ellipse 34% 30% at 62% 22%, rgba(38,104,116,.14) 0%, transparent 76%),
     radial-gradient(ellipse 80% 70% at 50% 50%, var(--bg-mid) 0%, var(--bg-edge) 84%);
 }
+
+/* The nebula turns around its own centre instead of drifting sideways: a
+   rotating field stays put, a translating one reads as a stray blob. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__glow { animation: hero-drift 150s linear infinite; transform-origin: 50% 50%; }
+  @keyframes hero-drift { to { transform: rotate(360deg); } }
+}
