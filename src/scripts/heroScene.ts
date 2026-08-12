@@ -424,6 +424,19 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
         const center = new THREE.Vector3();
         box.getCenter(center);
         subject.position.sub(center);
+
+        /* В этой модели всё — один меш, отдельных мешей глаз нет, поэтому
+         * поиск по именам ничего не находит и глаза не появляются. Ставим
+         * их вручную: координаты посчитаны по геометрии — голова со стороны
+         * Z-max, глаза на 62% высоты головы. Значения в единицах модели,
+         * поэтому вкладываем внутрь subject: масштаб применится сам. */
+        const eyeGeo = new THREE.SphereGeometry(0.030, 12, 10);
+        disposables.push(eyeGeo);
+        for (const sx of [1, -1]) {
+          const eye = new THREE.Mesh(eyeGeo, eyeMaterial);
+          eye.position.set(sx * 0.204, 1.06, 0.837);
+          subject.add(eye);
+        }
         stage.add(subject);
         options.onReady?.();
       },
