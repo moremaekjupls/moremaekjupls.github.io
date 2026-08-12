@@ -32,14 +32,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 export const TOKENS = {
   gold: 0xffcf7e,
   goldRoughness: 0.22,
-  goldEnvIntensity: 0.85,
+  goldEnvIntensity: 0.55,
 
   ringEmissive: 0xffe9c2,
   /** Множитель > 1 выводит кольца за порог bloom — они начинают реально светить. */
-  ringPunch: 1.15,
+  ringPunch: 0.8,
 
   eyeEmissive: 0xff5a3c,
-  eyePunch: 1.8,
+  eyePunch: 1.3,
 
   stone: 0x1a1410,
   stoneRoughness: 0.62,
@@ -273,6 +273,27 @@ interface Disposable {
   dispose: () => void;
 }
 
+/* Подбирать свет вслепую через пуш и деплой — дорого. Значения читаются из
+ * адресной строки, так что их можно крутить прямо в браузере:
+ *   ?bloom=0.15&threshold=1.0&exposure=0.7&key=1.2&rim=0.4
+ * Подобрали — сообщите числа, я пропишу их значениями по умолчанию. */
+function tuned(name: string, fallback: number): number {
+  if (typeof location === 'undefined') return fallback;
+  const raw = new URLSearchParams(location.search).get(name);
+  const n = raw === null ? NaN : Number(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+const TUNE = {
+  bloom: tuned('bloom', 0.16),
+  bloomRadius: tuned('radius', 0.45),
+  threshold: tuned('threshold', 1.0),
+  exposure: tuned('exposure', 0.7),
+  key: tuned('key', 1.3),
+  rimWarm: tuned('rim', 0.55),
+  rimPale: tuned('rim2', 0.32),
+};
+
 export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const { canvas, modelUrl, eyeMeshNames = ['eye', 'eyes', 'Eye', 'Eyes'] } = options;
   const disposables: Disposable[] = [];
@@ -290,7 +311,7 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.82;
+  renderer.toneMappingExposure = TUNE.exposure;
   // three < 0.152: renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -305,17 +326,17 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   /* Свет. Ключевой — мягкий и тёплый; вся выразительность в двух краевых.
    * На тёмном фоне силуэт без rim light растворяется: контур рогов, шипов
    * и хвоста существует только благодаря им. */
-  scene.add(new THREE.AmbientLight(0xffffff, 0.30));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.34));
 
-  const key = new THREE.DirectionalLight(TOKENS.keyLight, 1.7);
+  const key = new THREE.DirectionalLight(TOKENS.keyLight, TUNE.key);
   key.position.set(2.6, 3.6, 4.2);
   scene.add(key);
 
-  const rimWarm = new THREE.DirectionalLight(TOKENS.rimWarm, 1.0);
+  const rimWarm = new THREE.DirectionalLight(TOKENS.rimWarm, TUNE.rimWarm);
   rimWarm.position.set(-4.4, 1.8, -3.6);
   scene.add(rimWarm);
 
-  const rimPale = new THREE.DirectionalLight(TOKENS.rimPale, 0.6);
+  const rimPale = new THREE.DirectionalLight(TOKENS.rimPale, TUNE.rimPale);
   rimPale.position.set(4.6, 2.4, -4.0);
   scene.add(rimPale);
 
@@ -324,6 +345,36 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
   const rings = buildRings(disposables);
   stage.add(rings);
+
+  /* Фон. Два CSS-градиента под канвасом дают тепло, но не дают глубины:
+   * позади фигуры буквально ничего нет. Две сферы точек — дальние холодные
+   * и ближние тёплые — стоят почти ноль и превращают плоскую подложку в
+   * пространство. */
+  function buildStarField(count: number, radius: number, size: number,
+                          color: number, opacity: number): THREE.Points {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const r = radius * (0.75 + Math.random() * 0.25);
+      const th = Math.random() * Math.PI * 2;
+      const ph = Math.acos(2 * Math.random() - 1);
+      pos[i * 3] = Math.sin(ph) * Math.cos(th) * r;
+      pos[i * 3 + 1] = Math.cos(ph) * r * 0.62;
+      pos[i * 3 + 2] = Math.sin(ph) * Math.sin(th) * r;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      color, size, transparent: true, opacity,
+      depthWrite: false, sizeAttenuation: true,
+      blending: THREE.AdditiveBlending, toneMapped: false,
+    });
+    disposables.push(geo, mat);
+    return new THREE.Points(geo, mat);
+  }
+
+  const starsFar = buildStarField(1400, 46, 0.075, 0xbfb4a4, 0.5);
+  const starsNear = buildStarField(320, 22, 0.14, 0xffd9a6, 0.42);
+  scene.add(starsFar, starsNear);
 
   const debris = buildDebris(env, disposables);
   for (const layer of debris) scene.add(layer.object);
@@ -403,7 +454,12 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   // золотую поверхность, а не только кольца и глаза — отсюда белое пятно
   // вместо фигуры. Свет выше тоже пришлось убрать: он был рассчитан на
   // модель освещения three < 0.155, где те же числа светили втрое слабее.
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.34, 0.5, 0.95);
+  const bloom = new UnrealBloomPass(
+    new THREE.Vector2(1, 1),
+    TUNE.bloom,
+    TUNE.bloomRadius,
+    TUNE.threshold,
+  );
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -426,6 +482,37 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
   resize();
+
+  /* Вращение. Фигура качается в пределах ±45°, то есть всего 90°, и
+   * никогда не показывает спину. Перетаскивание добавляет свой угол
+   * поверх, с инерцией и медленным возвратом; сумма тоже ограничена. */
+  const SWEEP = Math.PI / 4;
+  let dragRot = 0, dragVel = 0, lastX = 0;
+  let dragging = false;
+  const clampRot = (v: number) => Math.max(-SWEEP, Math.min(SWEEP, v));
+
+  canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+    dragging = true;
+    lastX = e.clientX;
+    dragVel = 0;
+    canvas.classList.add('is-dragging');
+    canvas.setPointerCapture?.(e.pointerId);
+  });
+  function endDrag(): void {
+    dragging = false;
+    canvas.classList.remove('is-dragging');
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    lastX = e.clientX;
+    dragVel = dx * 0.006;
+    const want = dragRot + dragVel;
+    dragRot = clampRot(want);
+    if (dragRot !== want) dragVel = 0;
+  });
 
   /* Указатель. Целевые значения, к которым идём с затуханием: резкая
    * привязка к курсору выглядит нервно, инерция — дорого. */
@@ -457,8 +544,20 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     pointer.x += (pointer.tx - pointer.x) * 0.05;
     pointer.y += (pointer.ty - pointer.y) * 0.05;
 
+    if (!dragging) {
+      dragRot = clampRot(dragRot + dragVel);
+      dragVel *= 0.93;
+      dragRot -= dragRot * 0.25 * dt;      // очень медленно возвращается к центру
+    }
+
+    if (subject) {
+      const auto = reduceMotion ? 0 : Math.sin(t * 0.11) * SWEEP * 0.8;
+      subject.rotation.y = clampRot(auto + dragRot);
+    }
+
     if (!reduceMotion) {
-      if (subject) subject.rotation.y += dt * 0.16;
+      starsFar.rotation.y += dt * 0.004;
+      starsNear.rotation.y -= dt * 0.007;
       rings.children[0].rotation.z += dt * 0.05;
       rings.children[1].rotation.z -= dt * 0.038;
       stage.position.y = Math.sin(t * 0.5) * 0.06;
