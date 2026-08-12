@@ -1,6 +1,6 @@
 ---
 // The whole home page: one screen, the dragon behind, navigation on top.
-import DragonScene from '../DragonScene.astro';
+import Hero from '../Hero.astro';
 import { useTranslations, localizeUrl, altLangUrl, type Lang } from '../../i18n/ui';
 import { SOCIALS } from '../../consts';
 
@@ -24,7 +24,9 @@ const socials = [
 const ruUrl = altLangUrl(path, 'ru');
 const enUrl = altLangUrl(path, 'en');
 ---
-<DragonScene hint={lang === 'ru' ? 'потяни · нажми' : 'drag · click'}>
+<div class="screen-root">
+  <Hero lang={lang} />
+
   <a href="#screen-nav" class="skip-link">{lang === 'ru' ? 'К навигации' : 'Skip to navigation'}</a>
 
   <nav class="screen-nav" id="screen-nav" aria-label={lang === 'ru' ? 'Основная навигация' : 'Main navigation'}>
@@ -36,11 +38,6 @@ const enUrl = altLangUrl(path, 'en');
     <a href={enUrl} aria-current={lang === 'en' ? 'true' : 'false'} hreflang="en">EN</a>
   </div>
 
-  <h1 class="screen-sig">
-    <span class="screen-sig-name">Khondamir Begmatov</span>
-    <span class="screen-sig-role">{t('footer.tagline')}</span>
-  </h1>
-
   <ul class="screen-socials">
     {socials.map((s) => (
       <li>
@@ -50,4 +47,4 @@ const enUrl = altLangUrl(path, 'en');
       </li>
     ))}
   </ul>
-</DragonScene>
+</div>
