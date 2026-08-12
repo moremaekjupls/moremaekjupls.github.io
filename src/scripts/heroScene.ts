@@ -408,10 +408,19 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
       modelUrl,
       (gltf) => {
         subject = gltf.scene;
+        /* Материалы модели сохраняются как есть: у этой фигуры своя
+         * раскраска — светлый камень, тёмная книга, синие руны и глаза.
+         * Раньше здесь всё перекрашивалось в золото, и текстура пропадала.
+         * Правим только силу отражений, чтобы вписать в окружение сцены. */
         subject.traverse((child) => {
           if (!(child instanceof THREE.Mesh)) return;
-          const isEye = eyeMeshNames.some((n) => child.name.includes(n));
-          child.material = isEye ? eyeMaterial : goldMaterial;
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          for (const m of mats) {
+            if (m instanceof THREE.MeshStandardMaterial) {
+              m.envMapIntensity = TOKENS.goldEnvIntensity;
+              m.needsUpdate = true;
+            }
+          }
         });
         // Модель нормализуется по высоте: композиция не должна зависеть
         // от того, в каком масштабе её экспортировали из блендера.
