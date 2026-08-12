@@ -274,13 +274,17 @@
 
 /* A static gradient reads as a backdrop, not as space. Two very slow,
    offset pulses keep it alive without ever drawing attention. */
-@media (prefers-reduced-motion: no-preference) {
-  .hero__glow { animation: hero-breathe 19s ease-in-out infinite; }
-  @keyframes hero-breathe {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.06); opacity: .88; }
-  }
-}
+/* The pulse made the warm core drift across the page like a stray blob.
+   A backdrop must sit still — the motion belongs to the scene, not the wall. */
 
 /* Socials now sit at the bottom centre — lift the hint clear of them. */
 .hero__hint { bottom: clamp(5.5rem, 9vw, 7rem); }
+
+/* Tighter, dimmer, centred behind the figure instead of a wide roaming haze. */
+.hero__glow {
+  animation: none;
+  background:
+    radial-gradient(ellipse 34% 34% at 50% 48%, var(--bg-core) 0%, transparent 66%),
+    radial-gradient(ellipse 74% 66% at 50% 50%, var(--bg-mid) 0%, var(--bg-edge) 82%);
+  opacity: .62;
+}

@@ -588,3 +588,9 @@ body.is-screen { height: 100svh; overflow: hidden; }
 /* The hero's caption is gone, so the socials take the bottom-centre slot. */
 .screen-socials { left: 50%; right: auto; transform: translateX(-50%); bottom: 22px; gap: 10px; }
 @media (max-width: 600px) { .screen-socials { bottom: 16px; } }
+
+/* The hero's own layers carry z-index 0-5; the floating chrome had none and
+   was therefore painted underneath the canvas. It has to sit above the scene. */
+.screen-nav, .screen-lang, .screen-socials { z-index: 20; }
+.screen-socials a { color: var(--color-ash); }
+.screen-socials a:hover { color: var(--color-gold); }
