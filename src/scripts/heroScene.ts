@@ -430,13 +430,11 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
          * их вручную: координаты посчитаны по геометрии — голова со стороны
          * Z-max, глаза на 62% высоты головы. Значения в единицах модели,
          * поэтому вкладываем внутрь subject: масштаб применится сам. */
-        const eyeGeo = new THREE.SphereGeometry(0.030, 12, 10);
-        disposables.push(eyeGeo);
-        for (const sx of [1, -1]) {
-          const eye = new THREE.Mesh(eyeGeo, eyeMaterial);
-          eye.position.set(sx * 0.204, 1.06, 0.837);
-          subject.add(eye);
-        }
+        /* Исток заклинания — раскрытая книга в руках. Координаты посчитаны
+         * по геометрии: передняя кромка массы в средней трети роста. */
+        spellOrigin.set(0, 1.093, 0.592);
+        subject.add(spellAnchor);
+        spellAnchor.position.copy(spellOrigin);
         stage.add(subject);
         options.onReady?.();
       },
@@ -504,16 +502,20 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   let dragging = false;
   const clampRot = (v: number) => Math.max(-SWEEP, Math.min(SWEEP, v));
 
+  let downX = 0, downY = 0;
   canvas.addEventListener('pointerdown', (e: PointerEvent) => {
     dragging = true;
+    downX = e.clientX; downY = e.clientY;
     lastX = e.clientX;
     dragVel = 0;
     canvas.classList.add('is-dragging');
     canvas.setPointerCapture?.(e.pointerId);
   });
-  function endDrag(): void {
+  function endDrag(e?: PointerEvent): void {
     dragging = false;
     canvas.classList.remove('is-dragging');
+    // Клик, который никуда не уехал, — это клик, а не поворот.
+    if (e && Math.abs(e.clientX - downX) < 6 && Math.abs(e.clientY - downY) < 6) cast();
   }
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
@@ -543,6 +545,58 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     visible = !document.hidden;
   }
   document.addEventListener('visibilitychange', onVisibility);
+
+  /* ─────────────────────────── заклинание ───────────────────────────
+   * Пул частиц, поднимающихся из книги по спирали. toneMapped: false и
+   * яркость выше единицы — единственный способ попасть в bloom при пороге
+   * 1.0, иначе искры остаются просто светлыми точками. */
+  const SPELL_N = 320;
+  const spellPos = new Float32Array(SPELL_N * 3);
+  const spellCol = new Float32Array(SPELL_N * 3);
+  for (let i = 0; i < SPELL_N; i++) spellPos[i * 3 + 1] = -999;
+  const spellGeo = new THREE.BufferGeometry();
+  spellGeo.setAttribute('position', new THREE.BufferAttribute(spellPos, 3));
+  spellGeo.setAttribute('color', new THREE.BufferAttribute(spellCol, 3));
+  const spellMat = new THREE.PointsMaterial({
+    size: 0.055, vertexColors: true, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+    sizeAttenuation: true, toneMapped: false,
+  });
+  disposables.push(spellGeo, spellMat);
+  const spell = new THREE.Points(spellGeo, spellMat);
+  spell.frustumCulled = false;
+  stage.add(spell);
+
+  const spellAnchor = new THREE.Object3D();
+  const spellOrigin = new THREE.Vector3(0, 1.1, 0.6);
+  const spellLight = new THREE.PointLight(0xffd9a0, 0, 6, 2);
+  stage.add(spellLight);
+
+  interface Spark { life: number; max: number; pos: THREE.Vector3; vel: THREE.Vector3; spin: number; rad: number; }
+  const SP: Spark[] = [];
+  for (let i = 0; i < SPELL_N; i++)
+    SP.push({ life: 0, max: 1, pos: new THREE.Vector3(), vel: new THREE.Vector3(), spin: 0, rad: 0 });
+
+  let spellCd = 0;
+  const worldOrigin = new THREE.Vector3();
+
+  function cast(): void {
+    if (spellCd > 0) return;
+    spellCd = 1.6;
+    spellAnchor.getWorldPosition(worldOrigin);
+    stage.worldToLocal(worldOrigin);
+    let n = 0;
+    for (let i = 0; i < SPELL_N && n < 210; i++) {
+      const s = SP[i];
+      if (s.life > 0) continue;
+      s.max = s.life = 0.9 + Math.random() * 1.1;
+      s.pos.copy(worldOrigin);
+      s.rad = 0.05 + Math.random() * 0.22;
+      s.spin = (Math.random() < 0.5 ? -1 : 1) * (1.6 + Math.random() * 2.4);
+      s.vel.set((Math.random() - 0.5) * 0.5, 0.55 + Math.random() * 1.15, (Math.random() - 0.5) * 0.5);
+      n++;
+    }
+  }
 
   const clock = new THREE.Clock();
   let raf = 0;
@@ -580,6 +634,38 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
         layer.object.position.y = Math.sin(t * layer.drift) * 0.35;
       }
     }
+
+    // --- заклинание ---
+    if (spellCd > 0) spellCd -= dt;
+    for (let i = 0; i < SPELL_N; i++) {
+      const s = SP[i];
+      if (s.life <= 0) continue;
+      s.life -= dt;
+      if (s.life <= 0) {
+        spellPos[i * 3 + 1] = -999;
+        spellCol[i * 3] = spellCol[i * 3 + 1] = spellCol[i * 3 + 2] = 0;
+        continue;
+      }
+      const k = s.life / s.max;                       // 1 -> 0
+      const age = 1 - k;
+      s.vel.y -= 0.28 * dt;                           // искры выдыхаются
+      s.pos.addScaledVector(s.vel, dt);
+      const a = s.spin * age * 2.2;
+      spellPos[i * 3] = s.pos.x + Math.cos(a) * s.rad * age;
+      spellPos[i * 3 + 1] = s.pos.y;
+      spellPos[i * 3 + 2] = s.pos.z + Math.sin(a) * s.rad * age;
+      spellCol[i * 3] = Math.min(1.6, k * 1.9);
+      spellCol[i * 3 + 1] = Math.min(1.4, Math.pow(k, 1.5) * 1.5);
+      spellCol[i * 3 + 2] = Math.pow(k, 3.2) * 1.1;
+    }
+    spellGeo.attributes.position.needsUpdate = true;
+    spellGeo.attributes.color.needsUpdate = true;
+    if (spellCd > 0) {
+      spellAnchor.getWorldPosition(worldOrigin);
+      stage.worldToLocal(worldOrigin);
+      spellLight.position.copy(worldOrigin);
+    }
+    spellLight.intensity = Math.max(0, spellCd - 0.4) * 7;
 
     // Параллакс идёт всегда: это отклик на действие пользователя,
     // а не самопроизвольная анимация, поэтому reduced-motion его не трогает.
