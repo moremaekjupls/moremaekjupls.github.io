@@ -18,9 +18,9 @@
   --line: #4a4036;
   --accent: #e2b871;
 
-  --bg-core: #231b14;
-  --bg-mid: #120d0a;
-  --bg-edge: #070505;
+  --bg-core: #1b2740;
+  --bg-mid: #0b1020;
+  --bg-edge: #04060d;
 
   --step-display: clamp(2.75rem, 7.2vw, 6.5rem);
   --step-body: clamp(0.875rem, 1.05vw, 1rem);
@@ -287,4 +287,17 @@
     radial-gradient(ellipse 34% 34% at 50% 48%, var(--bg-core) 0%, transparent 66%),
     radial-gradient(ellipse 74% 66% at 50% 50%, var(--bg-mid) 0%, var(--bg-edge) 82%);
   opacity: .62;
+}
+
+/* Nebula, not a cave. Three offset cool pools plus one warm accent behind the
+   figure — enough to read as deep space without turning into noise. */
+.hero__glow {
+  animation: none;
+  opacity: .9;
+  background:
+    radial-gradient(ellipse 26% 26% at 50% 46%, rgba(120,150,205,.20) 0%, transparent 70%),
+    radial-gradient(ellipse 46% 38% at 24% 30%, rgba(58,86,140,.22) 0%, transparent 72%),
+    radial-gradient(ellipse 42% 36% at 79% 66%, rgba(74,58,124,.18) 0%, transparent 74%),
+    radial-gradient(ellipse 34% 30% at 62% 22%, rgba(38,104,116,.14) 0%, transparent 76%),
+    radial-gradient(ellipse 80% 70% at 50% 50%, var(--bg-mid) 0%, var(--bg-edge) 84%);
 }

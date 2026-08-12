@@ -181,17 +181,17 @@ function buildDebris(env: THREE.Texture, disposables: Disposable[]): DebrisLayer
   }
   layers.push({ object: near, parallax: 1.15, drift: 0.09 });
 
-  // mid — реальные камни одним draw call
-  const rockGeo = new THREE.IcosahedronGeometry(0.15, 0);
+  // mid — парящие книги вместо камней, всё так же одним draw call
+  const rockGeo = new THREE.BoxGeometry(0.30, 0.40, 0.075);
   const rockMat = new THREE.MeshStandardMaterial({
-    color: TOKENS.debrisMid,
-    roughness: 0.85,
-    metalness: 0.05,
+    color: 0x191a24,
+    roughness: 0.62,
+    metalness: 0.15,
     envMap: env,
-    envMapIntensity: 0.4,
+    envMapIntensity: 0.55,
   });
   disposables.push(rockGeo, rockMat);
-  const COUNT = 46;
+  const COUNT = 26;
   const mid = new THREE.InstancedMesh(rockGeo, rockMat, COUNT);
   const m = new THREE.Matrix4();
   const q = new THREE.Quaternion();
@@ -206,8 +206,8 @@ function buildDebris(env: THREE.Texture, disposables: Disposable[]): DebrisLayer
     );
     e.set(hash01('ra' + i) * 6.28, hash01('rb' + i) * 6.28, hash01('rc' + i) * 6.28);
     q.setFromEuler(e);
-    const s = 0.5 + hash01('ms' + i) * 1.3;
-    scl.set(s, s * (0.7 + hash01('my2' + i) * 0.6), s);
+    const s = 0.7 + hash01('ms' + i) * 0.9;
+    scl.set(s, s * (0.85 + hash01('my2' + i) * 0.35), s);
     m.compose(pos, q, scl);
     mid.setMatrixAt(i, m);
   }
@@ -346,6 +346,27 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const rings = buildRings(disposables);
   stage.add(rings);
 
+  /* Ещё несколько тонких золотых дуг под разными наклонами: в референсе
+   * именно они превращают две окружности в закрученное пространство.
+   * Держим их бледными — иначе кадр превращается в моток проволоки. */
+  const arcs = new THREE.Group();
+  for (const [r, tx, tz, op] of [
+    [4.6, 0.95, 0.30, 0.16],
+    [5.4, -0.70, 0.55, 0.12],
+    [6.3, 1.25, -0.35, 0.09],
+  ] as const) {
+    const geo = new THREE.TorusGeometry(r, 0.006, 3, 220);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xd8b478, transparent: true, opacity: op,
+      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
+    });
+    disposables.push(geo, mat);
+    const arc = new THREE.Mesh(geo, mat);
+    arc.rotation.set(tx, 0, tz);
+    arcs.add(arc);
+  }
+  stage.add(arcs);
+
   /* Фон. Два CSS-градиента под канвасом дают тепло, но не дают глубины:
    * позади фигуры буквально ничего нет. Две сферы точек — дальние холодные
    * и ближние тёплые — стоят почти ноль и превращают плоскую подложку в
@@ -372,8 +393,8 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     return new THREE.Points(geo, mat);
   }
 
-  const starsFar = buildStarField(1400, 46, 0.075, 0xbfb4a4, 0.5);
-  const starsNear = buildStarField(320, 22, 0.14, 0xffd9a6, 0.42);
+  const starsFar = buildStarField(1500, 46, 0.075, 0xc8d4e6, 0.5);
+  const starsNear = buildStarField(280, 22, 0.13, 0xffe0b0, 0.38);
   scene.add(starsFar, starsNear);
 
   const debris = buildDebris(env, disposables);
@@ -632,6 +653,8 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     }
 
     if (!reduceMotion) {
+      arcs.rotation.y += dt * 0.012;
+      arcs.children[1].rotation.z -= dt * 0.02;
       starsFar.rotation.y += dt * 0.004;
       starsNear.rotation.y -= dt * 0.007;
       rings.children[0].rotation.z += dt * 0.05;
