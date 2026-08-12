@@ -281,3 +281,6 @@
     50% { transform: scale(1.06); opacity: .88; }
   }
 }
+
+/* Socials now sit at the bottom centre — lift the hint clear of them. */
+.hero__hint { bottom: clamp(5.5rem, 9vw, 7rem); }
