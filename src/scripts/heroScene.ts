@@ -376,29 +376,13 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const stage = new THREE.Group();
   scene.add(stage);
 
+  // Кольца и дуги убраны: на фоне библиотеки они перечёркивали фигуру.
   const rings = buildRings(disposables);
-  stage.add(rings);
 
   /* Ещё несколько тонких золотых дуг под разными наклонами: в референсе
    * именно они превращают две окружности в закрученное пространство.
    * Держим их бледными — иначе кадр превращается в моток проволоки. */
-  const arcs = new THREE.Group();
-  for (const [r, tx, tz, op] of [
-    [4.6, 0.95, 0.30, 0.16],
-    [5.4, -0.70, 0.55, 0.12],
-    [6.3, 1.25, -0.35, 0.09],
-  ] as const) {
-    const geo = new THREE.TorusGeometry(r, 0.006, 3, 220);
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0xd8b478, transparent: true, opacity: op,
-      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
-    });
-    disposables.push(geo, mat);
-    const arc = new THREE.Mesh(geo, mat);
-    arc.rotation.set(tx, 0, tz);
-    arcs.add(arc);
-  }
-  stage.add(arcs);
+
 
   /* Фон. Два CSS-градиента под канвасом дают тепло, но не дают глубины:
    * позади фигуры буквально ничего нет. Две сферы точек — дальние холодные
@@ -690,18 +674,12 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     }
 
     if (!reduceMotion) {
-      arcs.rotation.y += dt * 0.055;
-      arcs.children[0].rotation.z += dt * 0.045;
-      arcs.children[1].rotation.z -= dt * 0.07;
-      arcs.children[2].rotation.x = 1.25 + Math.sin(t * 0.09) * 0.16;
       starsFar.rotation.y += dt * 0.011;
       starsNear.rotation.y -= dt * 0.021;
       starsNear.rotation.x = Math.sin(t * 0.05) * 0.05;
       // мерцание: два слоя дышат в противофазе
       (starsFar.material as THREE.PointsMaterial).opacity = 0.44 + Math.sin(t * 0.7) * 0.08;
       (starsNear.material as THREE.PointsMaterial).opacity = 0.34 + Math.sin(t * 0.9 + 2) * 0.08;
-      rings.children[0].rotation.z += dt * 0.14;
-      rings.children[1].rotation.z -= dt * 0.105;
       stage.position.y = Math.sin(t * 0.5) * 0.11;
 
       for (const layer of debris) {
