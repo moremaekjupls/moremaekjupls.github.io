@@ -259,3 +259,11 @@
 .hero.is-failed .hero__hint { display: none; }
 .hero.is-failed .hero__poster { opacity: .9; }
 .hero__poster { transition: opacity 1s ease; }
+
+/* An <img> is draggable by default: the browser was starting a native image
+   drag instead of letting the scene rotate. */
+.hero__poster { pointer-events: none; user-select: none; -webkit-user-drag: none; }
+.hero__canvas { touch-action: none; }
+.hero { -webkit-tap-highlight-color: transparent; }
+.hero__content { user-select: none; }
+.hero__content :is(a, button) { user-select: auto; }
