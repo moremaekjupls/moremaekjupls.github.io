@@ -585,7 +585,6 @@ body.is-screen { height: 100svh; overflow: hidden; }
 
 /* ---- home screen: hero + floating chrome ---- */
 .screen-root { position: relative; }
-/* The hero owns the bottom-centre slot with its caption, so the socials
-   move to the corner instead of stacking on top of it. */
-.screen-socials { left: auto; right: clamp(14px, 3vw, 30px); bottom: 20px; transform: none; }
-@media (max-width: 600px) { .screen-socials { bottom: 14px; } }
+/* The hero's caption is gone, so the socials take the bottom-centre slot. */
+.screen-socials { left: 50%; right: auto; transform: translateX(-50%); bottom: 22px; gap: 10px; }
+@media (max-width: 600px) { .screen-socials { bottom: 16px; } }
