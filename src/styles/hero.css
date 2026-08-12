@@ -1,0 +1,261 @@
+/* hero.css — стили первого экрана.
+ *
+ * Шрифты: Instrument Serif (дисплей) + Inter (текст и служебное).
+ * Подключить в <head> или через next/font:
+ *   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+ *
+ * Instrument Serif выбран за высокий контраст штриха: он даёт ту же
+ * «дидоновскую» ноту, что и в референсе, но остаётся бесплатным и
+ * не похож на Playfair, которым набрана половина портфолио в интернете.
+ */
+
+.hero {
+  /* Палитра. Холодных тонов нет ни одного — это главное правило сцены.
+     Как только сюда попадёт серо-голубой, тёплое свечение развалится. */
+  --ink: #f6f1e8;
+  --ink-soft: #b3a99a;
+  --ink-mute: #8c8175;
+  --line: #4a4036;
+  --accent: #e2b871;
+
+  --bg-core: #231b14;
+  --bg-mid: #120d0a;
+  --bg-edge: #070505;
+
+  --step-display: clamp(2.75rem, 7.2vw, 6.5rem);
+  --step-body: clamp(0.875rem, 1.05vw, 1rem);
+  --step-caption: clamp(0.625rem, 0.78vw, 0.75rem);
+
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--bg-edge);
+  color: var(--ink);
+  isolation: isolate;
+}
+
+/* Фон рисует CSS, а не WebGL: тёплое свечение за фигурой правится здесь,
+   бесплатно и без пересборки шейдера. Именно этого не хватало на чёрном фоне —
+   объект на плоском #000 всегда выглядит наклеенным. */
+.hero__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 55% 50% at 47% 52%, var(--bg-core) 0%, transparent 62%),
+    radial-gradient(ellipse 80% 70% at 50% 50%, var(--bg-mid) 0%, var(--bg-edge) 78%);
+}
+
+.hero__canvas,
+.hero__poster {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hero__poster {
+  object-fit: cover;
+  opacity: 0.9;
+}
+
+.hero__canvas {
+  opacity: 0;
+  transition: opacity 900ms ease-out;
+}
+
+.hero__canvas.is-ready {
+  opacity: 1;
+}
+
+.hero__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 30%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+/* Зерно снимает «цифровую чистоту» градиента и заодно маскирует бэндинг
+   на тёмных переходах — на 8-битном градиенте он виден почти всегда. */
+.hero__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.hero__content {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-content: center;
+  min-height: 100svh;
+  padding: clamp(1.5rem, 4vw, 4rem);
+  gap: 2rem;
+  pointer-events: none;
+}
+
+.hero__content > * {
+  pointer-events: auto;
+}
+
+/* Имя занимает левую треть кадра и делит его с объектом на равных.
+   В прежней версии оно было самым мелким текстом на странице — при том
+   что отвечает на единственный вопрос посетителя за первые две секунды. */
+.hero__name {
+  grid-column: 1;
+  margin: 0;
+  align-self: center;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: var(--step-display);
+  line-height: 0.94;
+  letter-spacing: -0.015em;
+  max-width: 12ch;
+  text-wrap: balance;
+}
+
+.hero__aside {
+  grid-column: 2;
+  justify-self: end;
+  align-self: center;
+  max-width: 26ch;
+}
+
+.hero__lede {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: var(--step-body);
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.hero__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: var(--step-body);
+  color: var(--ink-mute);
+  text-decoration: none;
+  /* 44px — минимальный тач-таргет; ссылка-подчёркивание легко проваливает его. */
+  min-height: 44px;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+.hero__cta svg {
+  transition: transform 240ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.hero__cta:hover,
+.hero__cta:focus-visible {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.hero__cta:hover svg {
+  transform: translateX(4px);
+}
+
+.hero__caption {
+  grid-column: 1 / -1;
+  justify-self: center;
+  align-self: end;
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: var(--step-caption);
+  letter-spacing: 0.16em;
+  color: var(--ink-mute);
+  text-align: center;
+}
+
+.hero__hint {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: clamp(3.5rem, 7vw, 5.5rem);
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: var(--step-caption);
+  letter-spacing: 0.1em;
+  /* Прежний вариант — серое по чёрному поверх отражения — не проходил 4.5:1.
+     Здесь контраст поднят, а подсказка убрана с самого тёмного участка. */
+  color: var(--ink-soft);
+  opacity: 0.75;
+  animation: hint-in 700ms 1.2s ease-out both;
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 0.75;
+    transform: translate(-50%, 0);
+  }
+}
+
+:where(.hero a):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+@media (max-width: 860px) {
+  .hero__content {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: space-between;
+    padding-block: clamp(4.5rem, 14vw, 7rem);
+  }
+
+  .hero__name {
+    grid-column: 1;
+    align-self: start;
+  }
+
+  /* На мобильном объект оказывается между двумя текстовыми блоками,
+     поэтому нижний блок прижимается к низу, а не висит по центру. */
+  .hero__aside {
+    grid-column: 1;
+    justify-self: start;
+    align-self: end;
+    max-width: 34ch;
+  }
+
+  .hero__hint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__canvas {
+    transition: none;
+  }
+
+  .hero__hint,
+  .hero__cta svg {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* States driven by the script: the stylesheet shipped without them. */
+.hero__hint { transition: opacity .5s ease; }
+.hero__hint.is-gone { opacity: 0; pointer-events: none; }
+.hero.is-failed .hero__hint { display: none; }
+.hero.is-failed .hero__poster { opacity: .9; }
+.hero__poster { transition: opacity 1s ease; }
