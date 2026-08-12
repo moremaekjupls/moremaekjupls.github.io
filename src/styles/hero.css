@@ -267,3 +267,17 @@
 .hero { -webkit-tap-highlight-color: transparent; }
 .hero__content { user-select: none; }
 .hero__content :is(a, button) { user-select: auto; }
+
+/* The subject can be turned by hand, so say so with the cursor. */
+.hero__canvas { cursor: grab; }
+.hero__canvas.is-dragging { cursor: grabbing; }
+
+/* A static gradient reads as a backdrop, not as space. Two very slow,
+   offset pulses keep it alive without ever drawing attention. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__glow { animation: hero-breathe 19s ease-in-out infinite; }
+  @keyframes hero-breathe {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: .88; }
+  }
+}
