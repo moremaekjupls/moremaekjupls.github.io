@@ -125,10 +125,20 @@ function buildEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
  * У слоёв разная амплитуда параллакса — именно она читается как пространство.
  */
 
+interface BookInstance {
+  pos: THREE.Vector3;
+  rot: THREE.Euler;
+  spin: THREE.Vector3;
+  scale: THREE.Vector3;
+  phase: number;
+  bob: number;
+}
+
 interface DebrisLayer {
   object: THREE.Object3D;
   parallax: number;
   drift: number;
+  books?: { mesh: THREE.InstancedMesh; items: BookInstance[] };
 }
 
 function hash01(seed: string): number {
@@ -212,7 +222,30 @@ function buildDebris(env: THREE.Texture, disposables: Disposable[]): DebrisLayer
     mid.setMatrixAt(i, m);
   }
   mid.instanceMatrix.needsUpdate = true;
-  layers.push({ object: mid, parallax: 0.5, drift: 0.045 });
+
+  /* Вся пачка вращалась одной группой — книги висели друг относительно
+   * друга неподвижно, и слой читался как нарисованный. Даём каждой свою
+   * ось, скорость и фазу покачивания. */
+  const items: BookInstance[] = [];
+  for (let i = 0; i < COUNT; i++) {
+    const mm = new THREE.Matrix4();
+    mid.getMatrixAt(i, mm);
+    const ip = new THREE.Vector3(), iq = new THREE.Quaternion(), is = new THREE.Vector3();
+    mm.decompose(ip, iq, is);
+    items.push({
+      pos: ip.clone(),
+      rot: new THREE.Euler().setFromQuaternion(iq),
+      spin: new THREE.Vector3(
+        (hash01('sa' + i) - 0.5) * 0.42,
+        (hash01('sb' + i) - 0.5) * 0.55,
+        (hash01('sc' + i) - 0.5) * 0.30,
+      ),
+      scale: is.clone(),
+      phase: hash01('ph' + i) * 6.283,
+      bob: 0.10 + hash01('bb' + i) * 0.26,
+    });
+  }
+  layers.push({ object: mid, parallax: 0.5, drift: 0.045, books: { mesh: mid, items } });
 
   // far — мелкая резкая пыль
   const farPos = new Float32Array(260 * 3);
@@ -628,6 +661,10 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     }
   }
 
+  const bookM = new THREE.Matrix4();
+  const bookQ = new THREE.Quaternion();
+  const bookP = new THREE.Vector3();
+
   const clock = new THREE.Clock();
   let raf = 0;
 
@@ -648,22 +685,44 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     }
 
     if (subject) {
-      const auto = reduceMotion ? 0 : Math.sin(t * 0.11) * SWEEP * 0.8;
+      const auto = reduceMotion ? 0 : Math.sin(t * 0.17) * SWEEP * 0.85;
       subject.rotation.y = clampRot(auto + dragRot);
     }
 
     if (!reduceMotion) {
-      arcs.rotation.y += dt * 0.012;
-      arcs.children[1].rotation.z -= dt * 0.02;
-      starsFar.rotation.y += dt * 0.004;
-      starsNear.rotation.y -= dt * 0.007;
-      rings.children[0].rotation.z += dt * 0.05;
-      rings.children[1].rotation.z -= dt * 0.038;
-      stage.position.y = Math.sin(t * 0.5) * 0.06;
+      arcs.rotation.y += dt * 0.055;
+      arcs.children[0].rotation.z += dt * 0.045;
+      arcs.children[1].rotation.z -= dt * 0.07;
+      arcs.children[2].rotation.x = 1.25 + Math.sin(t * 0.09) * 0.16;
+      starsFar.rotation.y += dt * 0.011;
+      starsNear.rotation.y -= dt * 0.021;
+      starsNear.rotation.x = Math.sin(t * 0.05) * 0.05;
+      // мерцание: два слоя дышат в противофазе
+      (starsFar.material as THREE.PointsMaterial).opacity = 0.44 + Math.sin(t * 0.7) * 0.08;
+      (starsNear.material as THREE.PointsMaterial).opacity = 0.34 + Math.sin(t * 0.9 + 2) * 0.08;
+      rings.children[0].rotation.z += dt * 0.14;
+      rings.children[1].rotation.z -= dt * 0.105;
+      stage.position.y = Math.sin(t * 0.5) * 0.11;
 
       for (const layer of debris) {
         layer.object.rotation.y += dt * layer.drift * 0.3;
         layer.object.position.y = Math.sin(t * layer.drift) * 0.35;
+
+        if (!layer.books) continue;
+        const { mesh, items } = layer.books;
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          it.rot.x += it.spin.x * dt;
+          it.rot.y += it.spin.y * dt;
+          it.rot.z += it.spin.z * dt;
+          bookQ.setFromEuler(it.rot);
+          bookP.copy(it.pos);
+          bookP.y += Math.sin(t * 0.42 + it.phase) * it.bob;
+          bookP.x += Math.cos(t * 0.27 + it.phase) * it.bob * 0.45;
+          bookM.compose(bookP, bookQ, it.scale);
+          mesh.setMatrixAt(i, bookM);
+        }
+        mesh.instanceMatrix.needsUpdate = true;
       }
     }
 
