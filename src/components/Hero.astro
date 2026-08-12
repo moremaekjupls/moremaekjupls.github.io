@@ -42,7 +42,7 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
 
   <canvas class="hero__canvas" aria-hidden="true"></canvas>
 
-  {posterUrl && <img class="hero__poster" src={posterUrl} alt="" aria-hidden="true" draggable="false" />}
+  {posterUrl && <img class="hero__poster" data-poster={posterUrl} alt="" aria-hidden="true" draggable="false" />}
 
   <div class="hero__grain" aria-hidden="true"></div>
   <div class="hero__vignette" aria-hidden="true"></div>
@@ -88,15 +88,22 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
     if (!canvas) return;
 
     // Без поддержки WebGL остаётся постер: пустого экрана быть не должно.
+    // Постер — аварийный вариант, а не заставка. Показывать всем картинку,
+    // которая на живую сцену не похожа, хуже, чем короткое тёмное поле.
+    const showPoster = (): void => {
+      if (poster?.dataset.poster) poster.src = poster.dataset.poster;
+    };
+
     if (!webglAvailable()) {
       section.classList.add('is-failed');
+      showPoster();
       return;
     }
 
     const ready = () => {
       section.classList.add('is-ready');
       canvas.classList.add('is-ready');
-      if (poster) { poster.style.opacity = '0'; window.setTimeout(() => poster.remove(), 1200); }
+      poster?.remove();
       if (hint) hint.classList.add('is-visible');
     };
 
@@ -106,10 +113,11 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
         canvas,
         modelUrl: section.dataset.model || undefined,
         onReady: ready,
-        onError: () => section.classList.add('is-failed'),
+        onError: () => { section.classList.add('is-failed'); showPoster(); },
       });
     } catch {
       section.classList.add('is-failed');
+      showPoster();
       return;
     }
 
