@@ -42,7 +42,7 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
 
   <canvas class="hero__canvas" aria-hidden="true"></canvas>
 
-  {posterUrl && <img class="hero__poster" src={posterUrl} alt="" aria-hidden="true" />}
+  {posterUrl && <img class="hero__poster" src={posterUrl} alt="" aria-hidden="true" draggable="false" />}
 
   <div class="hero__grain" aria-hidden="true"></div>
   <div class="hero__vignette" aria-hidden="true"></div>
@@ -96,7 +96,7 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
     const ready = () => {
       section.classList.add('is-ready');
       canvas.classList.add('is-ready');
-      if (poster) poster.style.opacity = '0';
+      if (poster) { poster.style.opacity = '0'; window.setTimeout(() => poster.remove(), 1200); }
       if (hint) hint.classList.add('is-visible');
     };
 

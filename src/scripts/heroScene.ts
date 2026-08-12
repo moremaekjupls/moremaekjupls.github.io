@@ -416,8 +416,11 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     composer.setSize(w, h);
     bloom.resolution.set(w, h);
     camera.aspect = w / h;
-    // На узких экранах отводим камеру, иначе дракон упирается в края.
-    camera.position.z = w / h < 1 ? 12.5 : 9;
+    // Отводим камеру непрерывно по пропорциям кадра: пара фиксированных
+    // значений оставляла фигуру обрезанной на всём промежутке между ними.
+    const aspect = w / h;
+    const fit = Math.min(1.95, Math.max(1, 1.62 / aspect));
+    camera.position.z = 9 * fit;
     camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(resize);
