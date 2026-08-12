@@ -32,14 +32,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 export const TOKENS = {
   gold: 0xffcf7e,
   goldRoughness: 0.22,
-  goldEnvIntensity: 1.45,
+  goldEnvIntensity: 0.85,
 
   ringEmissive: 0xffe9c2,
   /** Множитель > 1 выводит кольца за порог bloom — они начинают реально светить. */
-  ringPunch: 2.4,
+  ringPunch: 1.15,
 
   eyeEmissive: 0xff5a3c,
-  eyePunch: 3.2,
+  eyePunch: 1.8,
 
   stone: 0x1a1410,
   stoneRoughness: 0.62,
@@ -290,7 +290,7 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 0.82;
   // three < 0.152: renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -305,17 +305,17 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   /* Свет. Ключевой — мягкий и тёплый; вся выразительность в двух краевых.
    * На тёмном фоне силуэт без rim light растворяется: контур рогов, шипов
    * и хвоста существует только благодаря им. */
-  scene.add(new THREE.AmbientLight(0xffffff, 0.12));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.30));
 
-  const key = new THREE.DirectionalLight(TOKENS.keyLight, 1.0);
+  const key = new THREE.DirectionalLight(TOKENS.keyLight, 1.7);
   key.position.set(2.6, 3.6, 4.2);
   scene.add(key);
 
-  const rimWarm = new THREE.DirectionalLight(TOKENS.rimWarm, 3.6);
+  const rimWarm = new THREE.DirectionalLight(TOKENS.rimWarm, 1.0);
   rimWarm.position.set(-4.4, 1.8, -3.6);
   scene.add(rimWarm);
 
-  const rimPale = new THREE.DirectionalLight(TOKENS.rimPale, 2.1);
+  const rimPale = new THREE.DirectionalLight(TOKENS.rimPale, 0.6);
   rimPale.position.set(4.6, 2.4, -4.0);
   scene.add(rimPale);
 
@@ -399,7 +399,11 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.72, 0.6, 0.82);
+  // strength / radius / threshold. Порог 0.82 пропускал в свечение всю
+  // золотую поверхность, а не только кольца и глаза — отсюда белое пятно
+  // вместо фигуры. Свет выше тоже пришлось убрать: он был рассчитан на
+  // модель освещения three < 0.155, где те же числа светили втрое слабее.
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.34, 0.5, 0.95);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
