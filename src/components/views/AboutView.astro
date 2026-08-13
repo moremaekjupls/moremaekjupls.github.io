@@ -6,9 +6,9 @@ interface Props { lang: Lang; }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const L = (p: string) => localizeUrl(p, lang);
-const titleLines = (t('about.title') as string).split('\n');
-const body = t('about.body') as string[];
 const ru = lang === 'ru';
+const titleLines = ru ? ['Идеи,', 'которые работают.'] : ['Ideas', 'that work.'];
+const body = t('about.body') as string[];
 ---
 <div class="about-page">
   <section class="about-hero" aria-labelledby="about-title">
@@ -17,18 +17,17 @@ const ru = lang === 'ru';
     <div class="about-hero__glow about-hero__glow--two" aria-hidden="true"></div>
     <div class="container about-hero__grid">
       <div class="about-hero__copy" data-about-reveal="hero-copy">
-        <span class="eyebrow">{t('about.eyebrow')}</span>
-        <p class="about-hero__kicker">{ru ? 'Профиль · продукт · искусственный интеллект' : 'Profile · product · artificial intelligence'}</p>
+        <span class="eyebrow">{ru ? 'Обо мне' : 'About me'}</span>
+        <p class="about-hero__kicker">{ru ? 'Продукт · стратегия · ИИ' : 'Product · strategy · AI'}</p>
         <h1 id="about-title" class="about-hero__title">{titleLines.map((line, i) => (<span>{line}{i < titleLines.length - 1 && <br />}</span>))}</h1>
-        <p class="about-hero__lead">{ru ? 'Собираю идеи в работающие продукты, соединяя человеческий контекст, ясное мышление и возможности ИИ.' : 'I turn ideas into working products by connecting human context, clear thinking, and AI.'}</p>
-        <a class="btn btn-amber about-hero__link" href="#journey">{ru ? 'Посмотреть путь' : 'Explore the journey'} <span aria-hidden="true">↓</span></a>
+        <p class="about-hero__lead">{ru ? 'Соединяю человеческий контекст, ясное мышление и возможности ИИ — от первого вопроса до работающего продукта.' : 'I connect human context, clear thinking, and AI — from the first question to a working product.'}</p>
+        <a class="btn btn-amber about-hero__link" href="#journey">{ru ? 'Узнать мой путь' : 'Explore my path'} <span aria-hidden="true">↘</span></a>
       </div>
       <div class="about-hero__artifact" aria-hidden="true" data-about-reveal="hero-artifact">
         <div class="about-hero__sigil"><span>✦</span><i></i><b></b></div>
-        <div class="about-hero__artifact-note"><span>01</span><strong>{ru ? 'Собираю смыслы' : 'I connect meaning'}</strong><small>{ru ? 'в действие' : 'with action'}</small></div>
+        <div class="about-hero__artifact-label"><span>FIELD / 01</span><strong>{ru ? 'Смысл → форма' : 'Meaning → form'}</strong></div>
       </div>
     </div>
-    <div class="about-hero__scroll" aria-hidden="true" data-about-reveal="hero-scroll"><span></span>{ru ? 'листай вниз' : 'scroll to explore'}</div>
   </section>
 
   <section class="section about-intro">
