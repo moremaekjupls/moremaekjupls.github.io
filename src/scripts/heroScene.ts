@@ -613,18 +613,76 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const boltGeo = new THREE.BufferGeometry();
   boltGeo.setAttribute('position', new THREE.BufferAttribute(boltPos, 3));
   const boltMat = new THREE.LineBasicMaterial({
-    color: 0xbde8ff, transparent: true, opacity: 0,
+    color: 0xf3fcff, transparent: true, opacity: 0,
     blending: THREE.AdditiveBlending, toneMapped: false,
   });
   const bolt = new THREE.LineSegments(boltGeo, boltMat);
   bolt.frustumCulled = false;
   stage.add(bolt);
-  disposables.push(boltGeo, boltMat);
+  const boltGlowMat = new THREE.LineBasicMaterial({
+    color: 0x55bfff, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  const boltGlow = new THREE.LineSegments(boltGeo, boltGlowMat);
+  boltGlow.frustumCulled = false;
+  boltGlow.scale.setScalar(1.035);
+  stage.add(boltGlow);
+  disposables.push(boltGeo, boltMat, boltGlowMat);
 
   const spellAnchor = new THREE.Object3D();
   const spellOrigin = new THREE.Vector3(0, 1.1, 0.6);
-  const spellLight = new THREE.PointLight(0xffd9a0, 0, 6, 2);
+  const spellLight = new THREE.PointLight(0xd8f4ff, 0, 8, 1.4);
   stage.add(spellLight);
+
+  let audioContext: AudioContext | null = null;
+  function playSpellSound(): void {
+    if (reduceMotion || typeof window === 'undefined') return;
+    try {
+      audioContext ??= new AudioContext();
+      if (audioContext.state === 'suspended') void audioContext.resume();
+      const ctx = audioContext;
+      const now = ctx.currentTime;
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.22, now + 0.012);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
+      master.connect(ctx.destination);
+
+      const thunder = ctx.createOscillator();
+      thunder.type = 'triangle';
+      thunder.frequency.setValueAtTime(145, now);
+      thunder.frequency.exponentialRampToValueAtTime(48, now + 0.42);
+      thunder.connect(master);
+      thunder.start(now);
+      thunder.stop(now + 0.48);
+
+      const crack = ctx.createOscillator();
+      crack.type = 'sawtooth';
+      crack.frequency.setValueAtTime(860, now);
+      crack.frequency.exponentialRampToValueAtTime(120, now + 0.16);
+      const crackGain = ctx.createGain();
+      crackGain.gain.setValueAtTime(0.10, now);
+      crackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      crack.connect(crackGain).connect(ctx.destination);
+      crack.start(now);
+      crack.stop(now + 0.2);
+
+      const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.32), ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1800, now);
+      filter.frequency.exponentialRampToValueAtTime(260, now + 0.3);
+      noise.connect(filter).connect(master);
+      noise.start(now);
+      noise.stop(now + 0.32);
+    } catch {
+      // Audio is optional; visual spell effects must still work if audio is unavailable.
+    }
+  }
 
   interface Spark { life: number; max: number; pos: THREE.Vector3; vel: THREE.Vector3; spin: number; rad: number; }
   const SP: Spark[] = [];
@@ -641,7 +699,9 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   function cast(): void {
     if (spellCd > 0) return;
     spellCd = 1.6;
-    boltLife = 0.5;
+    boltLife = 0.56;
+    playSpellSound();
+    canvas.dispatchEvent(new CustomEvent('spellcast'));
     spellAnchor.getWorldPosition(worldOrigin);
     stage.worldToLocal(worldOrigin);
     let n = 0;
@@ -739,8 +799,11 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     // --- заклинание ---
     if (spellCd > 0) spellCd -= dt;
     if (boltLife > 0) boltLife -= dt;
-    boltMat.opacity = Math.max(0, Math.min(1, boltLife * 5.5)) * 0.95;
-    bolt.scale.set(1 + Math.sin(t * 42) * 0.035, 1, 1 + Math.cos(t * 37) * 0.035);
+    const boltFlash = Math.max(0, Math.min(1, boltLife * 7.5));
+    boltMat.opacity = boltFlash;
+    boltGlowMat.opacity = boltFlash * 0.34;
+    bolt.scale.set(1 + Math.sin(t * 42) * 0.045, 1, 1 + Math.cos(t * 37) * 0.045);
+    boltGlow.scale.setScalar(1.035 + Math.sin(t * 36) * 0.025);
     for (let i = 0; i < SPELL_N; i++) {
       const s = SP[i];
       if (s.life <= 0) continue;
@@ -769,7 +832,7 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
       stage.worldToLocal(worldOrigin);
       spellLight.position.copy(worldOrigin);
     }
-    spellLight.intensity = Math.max(0, spellCd - 0.4) * 7;
+    spellLight.intensity = Math.max(0, spellCd - 0.4) * 12;
 
     // Параллакс идёт всегда: это отклик на действие пользователя,
     // а не самопроизвольная анимация, поэтому reduced-motion его не трогает.

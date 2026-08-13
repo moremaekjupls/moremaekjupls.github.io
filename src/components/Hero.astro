@@ -15,6 +15,8 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
 
 <section class="hero" data-hero data-live-library aria-label={t.name.join(' ')}>
   <div class="hero__library" aria-hidden="true"></div>
+  <div class="hero__library-hover" aria-hidden="true"></div>
+  <div class="hero__flash" aria-hidden="true"></div>
   <div class="hero__rings" aria-hidden="true">
     <span class="hero__ring hero__ring--one"></span>
     <span class="hero__ring hero__ring--two"></span>
@@ -46,6 +48,29 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
 
     try {
       const scene = createHeroScene({ canvas, modelUrl: '/models/mage.glb' });
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const flash = section.querySelector<HTMLElement>('.hero__flash');
+      let flashTimer = 0;
+      canvas.addEventListener('spellcast', () => {
+        if (!flash || reduceMotion) return;
+        flash.classList.remove('is-flashing');
+        window.clearTimeout(flashTimer);
+        requestAnimationFrame(() => flash.classList.add('is-flashing'));
+        flashTimer = window.setTimeout(() => flash.classList.remove('is-flashing'), 520);
+      });
+      if (!reduceMotion) {
+        section.addEventListener('pointermove', (event) => {
+          const rect = section.getBoundingClientRect();
+          const x = ((event.clientX - rect.left) / rect.width) * 100;
+          const y = ((event.clientY - rect.top) / rect.height) * 100;
+          section.style.setProperty('--pointer-x', `${x}%`);
+          section.style.setProperty('--pointer-y', `${y}%`);
+        }, { passive: true });
+        section.addEventListener('pointerleave', () => {
+          section.style.setProperty('--pointer-x', '50%');
+          section.style.setProperty('--pointer-y', '50%');
+        }, { passive: true });
+      }
       if ('IntersectionObserver' in window) {
         new IntersectionObserver(([entry]) => scene.setPaused(!entry.isIntersecting), { threshold: 0.05 }).observe(section);
       }
