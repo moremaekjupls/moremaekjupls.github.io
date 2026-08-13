@@ -866,3 +866,29 @@ body.is-screen { height: 100svh; overflow: hidden; }
   .about-hero { min-height: 700px; }
   .about-hero__title { font-size: clamp(56px, 16.5vw, 74px); }
 }
+
+
+/* ---------- About hero v4: signal line instead of sigil ---------- */
+.about-hero__signal { position: relative; min-height: 360px; display: flex; flex-direction: column; justify-content: center; padding: 36px 0 24px; }
+.about-hero__signal-line { position: absolute; top: 50%; left: 2%; right: 2%; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,201,121,.65) 18%, rgba(126,219,239,.72) 50%, rgba(240,201,121,.55) 82%, transparent); box-shadow: 0 0 18px rgba(126,219,239,.28); }
+.about-hero__signal-line::before, .about-hero__signal-line::after { content: ''; position: absolute; top: -4px; width: 9px; height: 9px; border: 1px solid rgba(240,201,121,.8); border-radius: 50%; background: #050505; box-shadow: 0 0 12px rgba(240,201,121,.45); }
+.about-hero__signal-line::before { left: 17%; } .about-hero__signal-line::after { right: 17%; }
+.about-hero__signal-pulse { position: absolute; top: -5px; left: 50%; width: 11px; height: 11px; border-radius: 50%; background: #dffbff; box-shadow: 0 0 10px #dffbff, 0 0 30px #63d8ed, 0 0 65px rgba(99,216,237,.65); animation: about-signal-pulse 2.8s ease-in-out infinite; }
+.about-hero__signal-core { position: relative; z-index: 1; align-self: center; display: grid; place-items: center; width: 94px; height: 94px; border: 1px solid rgba(240,201,121,.48); border-radius: 50%; color: #fff2c8; background: rgba(8,16,19,.82); font-size: 38px; text-shadow: 0 0 22px #b7f6ff; box-shadow: 0 0 0 10px rgba(99,216,237,.025), 0 0 55px rgba(91,210,237,.2), inset 0 0 26px rgba(240,201,121,.08); animation: about-signal-float 5s ease-in-out infinite; }
+.about-hero__signal-nodes { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-start; margin-top: 82px; color: var(--color-smoke); font-size: 12px; letter-spacing: .04em; }
+.about-hero__signal-nodes span { display: grid; gap: 7px; min-width: 72px; }
+.about-hero__signal-nodes span:nth-child(2) { text-align: center; }
+.about-hero__signal-nodes span:last-child { text-align: right; }
+.about-hero__signal-nodes i { color: var(--color-gold); font-size: 10px; font-style: normal; letter-spacing: .14em; }
+.about-hero__signal-caption { position: relative; z-index: 2; align-self: center; margin-top: 48px; color: rgba(255,255,255,.56); font-size: 12px; letter-spacing: .06em; }
+@keyframes about-signal-pulse { 0%, 100% { transform: scale(.8); opacity: .7; } 50% { transform: scale(1.25); opacity: 1; } }
+@keyframes about-signal-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (max-width: 900px) {
+  .about-hero__signal { min-height: 300px; }
+}
+@media (max-width: 720px) {
+  .about-hero__signal { min-height: 235px; margin-top: -4px; padding-top: 14px; }
+  .about-hero__signal-core { width: 76px; height: 76px; font-size: 30px; }
+  .about-hero__signal-nodes { margin-top: 62px; font-size: 11px; }
+  .about-hero__signal-caption { margin-top: 28px; font-size: 11px; }
+}

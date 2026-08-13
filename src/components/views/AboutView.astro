@@ -12,7 +12,6 @@ const body = t('about.body') as string[];
 ---
 <div class="about-page">
   <section class="about-hero" aria-labelledby="about-title">
-    <div class="about-hero__particles" aria-hidden="true"><Particles variant="sphere" density={1.15} /></div>
     <div class="about-hero__glow about-hero__glow--one" aria-hidden="true"></div>
     <div class="about-hero__glow about-hero__glow--two" aria-hidden="true"></div>
     <div class="container about-hero__grid">
@@ -23,9 +22,15 @@ const body = t('about.body') as string[];
         <p class="about-hero__lead">{ru ? 'Соединяю человеческий контекст, ясное мышление и возможности ИИ — от первого вопроса до работающего продукта.' : 'I connect human context, clear thinking, and AI — from the first question to a working product.'}</p>
         <a class="btn btn-amber about-hero__link" href="#journey">{ru ? 'Узнать мой путь' : 'Explore my path'} <span aria-hidden="true">↘</span></a>
       </div>
-      <div class="about-hero__artifact" aria-hidden="true" data-about-reveal="hero-artifact">
-        <div class="about-hero__sigil"><span>✦</span><i></i><b></b></div>
-        <div class="about-hero__artifact-label"><span>FIELD / 01</span><strong>{ru ? 'Смысл → форма' : 'Meaning → form'}</strong></div>
+      <div class="about-hero__signal" aria-hidden="true" data-about-reveal="hero-artifact">
+        <div class="about-hero__signal-line"><span class="about-hero__signal-pulse"></span></div>
+        <div class="about-hero__signal-core">✦</div>
+        <div class="about-hero__signal-nodes">
+          <span><i>01</i>{ru ? 'Контекст' : 'Context'}</span>
+          <span><i>02</i>{ru ? 'Сборка' : 'Build'}</span>
+          <span><i>03</i>AI</span>
+        </div>
+        <p class="about-hero__signal-caption">{ru ? 'Из вопроса — в работающий продукт.' : 'From a question to a working product.'}</p>
       </div>
     </div>
   </section>
