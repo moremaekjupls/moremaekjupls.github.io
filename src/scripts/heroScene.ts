@@ -578,14 +578,6 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
   /* Указатель. Целевые значения, к которым идём с затуханием: резкая
    * привязка к курсору выглядит нервно, инерция — дорого. */
-  const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
-  function onPointerMove(e: PointerEvent): void {
-    const r = canvas.getBoundingClientRect();
-    pointer.tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-    pointer.ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
-  }
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
-
   let paused = false;
   let visible = !document.hidden;
   function onVisibility(): void {
@@ -658,9 +650,6 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
-
-    pointer.x += (pointer.tx - pointer.x) * 0.05;
-    pointer.y += (pointer.ty - pointer.y) * 0.05;
 
     if (!dragging) {
       dragRot = clampRot(dragRot + dragVel);
@@ -738,12 +727,6 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
     // Параллакс идёт всегда: это отклик на действие пользователя,
     // а не самопроизвольная анимация, поэтому reduced-motion его не трогает.
-    for (const layer of debris) {
-      layer.object.position.x = -pointer.x * layer.parallax;
-    }
-    stage.rotation.y = pointer.x * 0.12;
-    stage.rotation.x = pointer.y * 0.05;
-
     composer.render();
   }
   frame();
@@ -755,7 +738,6 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     dispose() {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('visibilitychange', onVisibility);
       for (const d of disposables) d.dispose();
       env.dispose();
