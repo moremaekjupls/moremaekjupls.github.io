@@ -54,15 +54,5 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
     } catch {
       canvas.remove();
     }
-
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      section.addEventListener('pointermove', (event) => {
-        const rect = section.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width - .5) * 2;
-        const y = ((event.clientY - rect.top) / rect.height - .5) * 2;
-        section.style.setProperty('--parallax-x', `${x * 12}px`);
-        section.style.setProperty('--parallax-y', `${y * 8}px`);
-      }, { passive: true });
-    }
   });
 </script>
