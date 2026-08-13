@@ -16,19 +16,19 @@ const ru = lang === 'ru';
     <div class="about-hero__glow about-hero__glow--one" aria-hidden="true"></div>
     <div class="about-hero__glow about-hero__glow--two" aria-hidden="true"></div>
     <div class="container about-hero__grid">
-      <div class="about-hero__copy">
+      <div class="about-hero__copy" data-about-reveal="hero-copy">
         <span class="eyebrow">{t('about.eyebrow')}</span>
         <p class="about-hero__kicker">{ru ? 'Профиль · продукт · искусственный интеллект' : 'Profile · product · artificial intelligence'}</p>
         <h1 id="about-title" class="about-hero__title">{titleLines.map((line, i) => (<span>{line}{i < titleLines.length - 1 && <br />}</span>))}</h1>
         <p class="about-hero__lead">{ru ? 'Собираю идеи в работающие продукты, соединяя человеческий контекст, ясное мышление и возможности ИИ.' : 'I turn ideas into working products by connecting human context, clear thinking, and AI.'}</p>
         <a class="btn btn-amber about-hero__link" href="#journey">{ru ? 'Посмотреть путь' : 'Explore the journey'} <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="about-hero__artifact" aria-hidden="true">
+      <div class="about-hero__artifact" aria-hidden="true" data-about-reveal="hero-artifact">
         <div class="about-hero__sigil"><span>✦</span><i></i><b></b></div>
         <div class="about-hero__artifact-note"><span>01</span><strong>{ru ? 'Собираю смыслы' : 'I connect meaning'}</strong><small>{ru ? 'в действие' : 'with action'}</small></div>
       </div>
     </div>
-    <div class="about-hero__scroll" aria-hidden="true"><span></span>{ru ? 'листай вниз' : 'scroll to explore'}</div>
+    <div class="about-hero__scroll" aria-hidden="true" data-about-reveal="hero-scroll"><span></span>{ru ? 'листай вниз' : 'scroll to explore'}</div>
   </section>
 
   <section class="section about-intro">
@@ -44,10 +44,10 @@ const ru = lang === 'ru';
       <div class="timeline" data-timeline>
         <div class="timeline__rail" aria-hidden="true"></div>
         <div class="timeline__items">
-          <button class="timeline-card is-active" type="button" data-timeline-item="0" aria-expanded="true"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">01</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Контекст и переговоры' : 'Context and negotiation'}</strong><small class="timeline-card__tag">{ru ? 'Международные отношения' : 'International relations'}</small><span class="timeline-card__detail">{ru ? 'Учился видеть систему целиком, слышать разные стороны и превращать сложные интересы в понятные решения.' : 'Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.'}</span></span></button>
-          <button class="timeline-card" type="button" data-timeline-item="1" aria-expanded="false"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">02</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Продуктовое мышление' : 'Product thinking'}</strong><small class="timeline-card__tag">{ru ? 'Исследование · стратегия' : 'Research · strategy'}</small><span class="timeline-card__detail">{ru ? 'Перенос фокуса с красивой идеи на задачу пользователя, быстрый прототип и измеримый результат.' : 'Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.'}</span></span></button>
-          <button class="timeline-card" type="button" data-timeline-item="2" aria-expanded="false"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">03</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'ИИ-продукты' : 'AI products'}</strong><small class="timeline-card__tag">{ru ? 'Прототипирование · запуск' : 'Prototyping · shipping'}</small><span class="timeline-card__detail">{ru ? 'Собираю небольшие продукты от идеи до опубликованного интерфейса, проверяя, где ИИ действительно усиливает человека.' : 'Building small products from idea to published interface, testing where AI truly amplifies people.'}</span></span></button>
-          <button class="timeline-card" type="button" data-timeline-item="3" aria-expanded="false"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">04</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Новая глубина' : 'A deeper layer'}</strong><small class="timeline-card__tag">AI Essentials · Elements of AI</small><span class="timeline-card__detail">{ru ? 'Продолжаю систематизировать знания: от ответственного применения инструментов до понимания основ искусственного интеллекта.' : 'Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.'}</span></span></button>
+          <button class="timeline-card is-active" data-about-reveal="timeline-item" type="button" data-timeline-item="0" aria-expanded="true"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">01</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Контекст и переговоры' : 'Context and negotiation'}</strong><small class="timeline-card__tag">{ru ? 'Международные отношения' : 'International relations'}</small><span class="timeline-card__detail">{ru ? 'Учился видеть систему целиком, слышать разные стороны и превращать сложные интересы в понятные решения.' : 'Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.'}</span></span></button>
+          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="1" aria-expanded="false"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">02</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Продуктовое мышление' : 'Product thinking'}</strong><small class="timeline-card__tag">{ru ? 'Исследование · стратегия' : 'Research · strategy'}</small><span class="timeline-card__detail">{ru ? 'Перенос фокуса с красивой идеи на задачу пользователя, быстрый прототип и измеримый результат.' : 'Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.'}</span></span></button>
+          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="2" aria-expanded="false"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">03</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'ИИ-продукты' : 'AI products'}</strong><small class="timeline-card__tag">{ru ? 'Прототипирование · запуск' : 'Prototyping · shipping'}</small><span class="timeline-card__detail">{ru ? 'Собираю небольшие продукты от идеи до опубликованного интерфейса, проверяя, где ИИ действительно усиливает человека.' : 'Building small products from idea to published interface, testing where AI truly amplifies people.'}</span></span></button>
+          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="3" aria-expanded="false"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">04</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Новая глубина' : 'A deeper layer'}</strong><small class="timeline-card__tag">AI Essentials · Elements of AI</small><span class="timeline-card__detail">{ru ? 'Продолжаю систематизировать знания: от ответственного применения инструментов до понимания основ искусственного интеллекта.' : 'Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.'}</span></span></button>
         </div>
       </div>
     </div>
@@ -67,6 +67,27 @@ const ru = lang === 'ru';
 </div>
 
 <script>
+  const aboutPage = document.querySelector<HTMLElement>('.about-page');
+  const revealItems = [...document.querySelectorAll<HTMLElement>('[data-about-reveal]')];
+  if (aboutPage && revealItems.length) {
+    aboutPage.classList.add('about-reveal-ready');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      revealItems.forEach((item) => item.classList.add('is-revealed'));
+    } else {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          (entry.target as HTMLElement).classList.add('is-revealed');
+          obs.unobserve(entry.target);
+        });
+      }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+      revealItems.forEach((item, index) => {
+        item.style.setProperty('--about-reveal-delay', `${Math.min(index * 70, 280)}ms`);
+        observer.observe(item);
+      });
+    }
+  }
+
   document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((timeline) => {
     const cards = [...timeline.querySelectorAll<HTMLButtonElement>('[data-timeline-item]')];
     cards.forEach((card) => card.addEventListener('click', () => {
