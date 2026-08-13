@@ -606,6 +606,21 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   spell.frustumCulled = false;
   stage.add(spell);
 
+  // Светящийся разряд: геометрия обновляется при каждом заклинании, поэтому
+  // молния выглядит как живая вспышка, а не как постоянная декоративная линия.
+  const BOLT_SEGMENTS = 18;
+  const boltPos = new Float32Array(BOLT_SEGMENTS * 2 * 3);
+  const boltGeo = new THREE.BufferGeometry();
+  boltGeo.setAttribute('position', new THREE.BufferAttribute(boltPos, 3));
+  const boltMat = new THREE.LineBasicMaterial({
+    color: 0xbde8ff, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  const bolt = new THREE.LineSegments(boltGeo, boltMat);
+  bolt.frustumCulled = false;
+  stage.add(bolt);
+  disposables.push(boltGeo, boltMat);
+
   const spellAnchor = new THREE.Object3D();
   const spellOrigin = new THREE.Vector3(0, 1.1, 0.6);
   const spellLight = new THREE.PointLight(0xffd9a0, 0, 6, 2);
@@ -617,14 +632,42 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     SP.push({ life: 0, max: 1, pos: new THREE.Vector3(), vel: new THREE.Vector3(), spin: 0, rad: 0 });
 
   let spellCd = 0;
+  let boltLife = 0;
   const worldOrigin = new THREE.Vector3();
+  const boltStart = new THREE.Vector3();
+  const boltEnd = new THREE.Vector3();
+  const boltPoint = new THREE.Vector3();
 
   function cast(): void {
     if (spellCd > 0) return;
     spellCd = 1.6;
+    boltLife = 0.5;
     spellAnchor.getWorldPosition(worldOrigin);
     stage.worldToLocal(worldOrigin);
     let n = 0;
+    boltStart.copy(worldOrigin);
+    boltEnd.copy(worldOrigin).add(new THREE.Vector3(
+      (Math.random() - 0.5) * 0.8,
+      2.0 + Math.random() * 0.65,
+      (Math.random() - 0.5) * 0.35,
+    ));
+    for (let i = 0; i < BOLT_SEGMENTS; i++) {
+      const a = i / BOLT_SEGMENTS;
+      const b = (i + 1) / BOLT_SEGMENTS;
+      boltPoint.lerpVectors(boltStart, boltEnd, a);
+      if (i > 0) boltPoint.x += (Math.random() - 0.5) * 0.26;
+      if (i > 0) boltPoint.z += (Math.random() - 0.5) * 0.18;
+      boltPos[i * 6] = boltPoint.x;
+      boltPos[i * 6 + 1] = boltPoint.y;
+      boltPos[i * 6 + 2] = boltPoint.z;
+      boltPoint.lerpVectors(boltStart, boltEnd, b);
+      if (i < BOLT_SEGMENTS - 1) boltPoint.x += (Math.random() - 0.5) * 0.26;
+      if (i < BOLT_SEGMENTS - 1) boltPoint.z += (Math.random() - 0.5) * 0.18;
+      boltPos[i * 6 + 3] = boltPoint.x;
+      boltPos[i * 6 + 4] = boltPoint.y;
+      boltPos[i * 6 + 5] = boltPoint.z;
+    }
+    boltGeo.attributes.position.needsUpdate = true;
     for (let i = 0; i < SPELL_N && n < 210; i++) {
       const s = SP[i];
       if (s.life > 0) continue;
@@ -695,6 +738,9 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
     // --- заклинание ---
     if (spellCd > 0) spellCd -= dt;
+    if (boltLife > 0) boltLife -= dt;
+    boltMat.opacity = Math.max(0, Math.min(1, boltLife * 5.5)) * 0.95;
+    bolt.scale.set(1 + Math.sin(t * 42) * 0.035, 1, 1 + Math.cos(t * 37) * 0.035);
     for (let i = 0; i < SPELL_N; i++) {
       const s = SP[i];
       if (s.life <= 0) continue;
