@@ -14,7 +14,11 @@ const blogHref = lang === 'en' ? '/en/blog' : '/blog';
 ---
 
 <section class="hero" data-hero data-live-library aria-label={t.name.join(' ')}>
-  <div class="hero__library" aria-hidden="true"></div>
+  <picture class="hero__library" aria-hidden="true">
+    <source type="image/avif" srcset="/arcane-library.avif" />
+    <source type="image/webp" srcset="/arcane-library.webp" />
+    <img src="/arcane-library.png" alt="" decoding="async" fetchpriority="high" />
+  </picture>
   <div class="hero__flash" aria-hidden="true"></div>
   <div class="hero__rings" aria-hidden="true">
     <span class="hero__ring hero__ring--one"></span>

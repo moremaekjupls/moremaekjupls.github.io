@@ -3,7 +3,8 @@
   position: relative; isolation: isolate; overflow: hidden; min-height: 100svh; width: 100%; background: #100d0a; color: var(--ink);
 }
 .hero__library,.hero__rings,.hero__canvas,.hero__glow,.hero__grain,.hero__vignette { position:absolute; inset:0; pointer-events:none; }
-.hero__library { z-index:0; background:url('/arcane-library.png') center / cover no-repeat; }
+.hero__library { z-index:0; overflow:hidden; }
+.hero__library img { width:100%; height:100%; object-fit:cover; object-position:center; }
 .hero__flash { z-index:5; opacity:0; background:radial-gradient(ellipse 30% 38% at 50% 48%, rgba(226,248,255,.48), rgba(105,188,255,.12) 36%, transparent 72%); mix-blend-mode:screen; pointer-events:none; }
 .hero__flash.is-flashing { animation:spell-flash .52s cubic-bezier(.15,.7,.2,1) both; }
 .hero__rings { z-index:2; overflow:hidden; mix-blend-mode:screen; }

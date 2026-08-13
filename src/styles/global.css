@@ -612,3 +612,32 @@ body.is-screen { height: 100svh; overflow: hidden; }
 .screen-music.is-playing .screen-music__icon--pause { display: block; }
 .screen-music.is-playing [data-music-text] { font-size: 0; }
 .screen-music.is-playing [data-music-text]::after { content: '♪'; font-size: 16px; }
+
+/* ---- home interface interactions ---- */
+.screen-nav a,
+.screen-lang a,
+.screen-socials a,
+.screen-music,
+.hero__cta { will-change: transform; }
+.screen-nav a:hover,
+.screen-nav a:focus-visible { transform: translateY(-1px); }
+.screen-nav a:focus-visible,
+.screen-lang a:focus-visible,
+.screen-socials a:focus-visible,
+.screen-music:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; }
+.screen-lang a:hover:not([aria-current="true"]) { background: rgba(255,255,255,.07); color: var(--color-bone); transform: translateY(-1px); }
+.screen-socials a:hover,
+.screen-socials a:focus-visible { transform: translateY(-3px) scale(1.08); color: var(--color-gold); }
+.screen-socials a:hover svg,
+.screen-socials a:focus-visible svg { filter: drop-shadow(0 0 8px rgba(240,184,85,.55)); }
+.screen-music:hover,
+.screen-music:focus-visible { transform: translateY(-2px); }
+.hero__cta:hover,
+.hero__cta:focus-visible { background: linear-gradient(90deg, rgba(240,201,121,.06), transparent); transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .screen-nav a,
+  .screen-lang a,
+  .screen-socials a,
+  .screen-music,
+  .hero__cta { transition: none !important; transform: none !important; }
+}
