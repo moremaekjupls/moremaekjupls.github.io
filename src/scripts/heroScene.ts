@@ -332,17 +332,19 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const disposables: Disposable[] = [];
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const compactViewport = window.matchMedia('(max-width: 860px)').matches;
+  const mobileParticleScale = compactViewport ? 0.52 : 1;
 
   /* renderer.
    * alpha: true — фон рисует CSS-градиент под канвасом. Так тёплое свечение
    * за фигурой правится в стилях без пересборки шейдера, и оно бесплатное. */
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: !compactViewport,
     alpha: true,
-    powerPreference: 'high-performance',
+    powerPreference: compactViewport ? 'low-power' : 'high-performance',
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, compactViewport ? 1.25 : 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = TUNE.exposure;
   // three < 0.152: renderer.outputEncoding = THREE.sRGBEncoding;
@@ -410,8 +412,8 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     return new THREE.Points(geo, mat);
   }
 
-  const starsFar = buildStarField(1500, 46, 0.075, 0xc8d4e6, 0.5);
-  const starsNear = buildStarField(280, 22, 0.13, 0xffe0b0, 0.38);
+  const starsFar = buildStarField(compactViewport ? 720 : 1500, 46, 0.075, 0xc8d4e6, 0.5);
+  const starsNear = buildStarField(compactViewport ? 130 : 280, 22, 0.13, 0xffe0b0, 0.38);
   scene.add(starsFar, starsNear);
 
   const debris = buildDebris(env, disposables);
@@ -433,7 +435,7 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   });
   disposables.push(dustTex, dustMat, magicTex, magicMat);
 
-  for (let i = 0; i < 52; i++) {
+  for (let i = 0; i < Math.round(52 * mobileParticleScale); i++) {
     const magical = i % 5 === 0;
     const sprite = new THREE.Sprite(magical ? magicMat : dustMat);
     const base = magical ? 0.035 + hash01(`ms${i}`) * 0.045 : 0.018 + hash01(`ds${i}`) * 0.035;
@@ -568,7 +570,8 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     const h = canvas.clientHeight || 1;
     renderer.setSize(w, h, false);
     composer.setSize(w, h);
-    bloom.resolution.set(w, h);
+    const bloomScale = compactViewport ? 0.72 : 1;
+    bloom.resolution.set(w * bloomScale, h * bloomScale);
     camera.aspect = w / h;
     // Отводим камеру непрерывно по пропорциям кадра: пара фиксированных
     // значений оставляла фигуру обрезанной на всём промежутке между ними.
@@ -629,7 +632,7 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
    * Пул частиц, поднимающихся из книги по спирали. toneMapped: false и
    * яркость выше единицы — единственный способ попасть в bloom при пороге
    * 1.0, иначе искры остаются просто светлыми точками. */
-  const SPELL_N = 320;
+  const SPELL_N = compactViewport ? 180 : 320;
   const spellPos = new Float32Array(SPELL_N * 3);
   const spellCol = new Float32Array(SPELL_N * 3);
   for (let i = 0; i < SPELL_N; i++) spellPos[i * 3 + 1] = -999;
@@ -840,10 +843,14 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
   const clock = new THREE.Clock();
   let raf = 0;
+  let lastCompactFrame = 0;
 
   function frame(): void {
     raf = requestAnimationFrame(frame);
     if (paused || !visible) return;
+    const wallTime = performance.now() / 1000;
+    if (compactViewport && wallTime - lastCompactFrame < 1 / 30) return;
+    lastCompactFrame = wallTime;
 
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
