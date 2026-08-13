@@ -892,3 +892,18 @@ body.is-screen { height: 100svh; overflow: hidden; }
   .about-hero__signal-nodes { margin-top: 62px; font-size: 11px; }
   .about-hero__signal-caption { margin-top: 28px; font-size: 11px; }
 }
+
+
+/* ---------- Inner-page header overlap fix ---------- */
+.site-header {
+  position: relative;
+  top: auto;
+  z-index: 50;
+  background: #070707;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: none;
+}
+.site-header .nav { position: relative; z-index: 1; }
+@media (max-width: 720px) {
+  .nav-links.open { top: 68px; }
+}
