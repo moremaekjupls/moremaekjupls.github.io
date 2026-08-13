@@ -608,26 +608,47 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
 
   // Светящийся разряд: геометрия обновляется при каждом заклинании, поэтому
   // молния выглядит как живая вспышка, а не как постоянная декоративная линия.
-  const BOLT_SEGMENTS = 18;
+  const BOLT_SEGMENTS = 22;
+  const BOLT_NODES = BOLT_SEGMENTS + 1;
+  const BRANCH_COUNT = 3;
+  const BRANCH_SEGMENTS = 4;
   const boltPos = new Float32Array(BOLT_SEGMENTS * 2 * 3);
+  const branchPos = new Float32Array(BRANCH_COUNT * BRANCH_SEGMENTS * 2 * 3);
   const boltGeo = new THREE.BufferGeometry();
   boltGeo.setAttribute('position', new THREE.BufferAttribute(boltPos, 3));
+  const branchGeo = new THREE.BufferGeometry();
+  branchGeo.setAttribute('position', new THREE.BufferAttribute(branchPos, 3));
   const boltMat = new THREE.LineBasicMaterial({
-    color: 0xf3fcff, transparent: true, opacity: 0,
+    color: 0xffffff, transparent: true, opacity: 0,
     blending: THREE.AdditiveBlending, toneMapped: false,
   });
   const bolt = new THREE.LineSegments(boltGeo, boltMat);
   bolt.frustumCulled = false;
   stage.add(bolt);
   const boltGlowMat = new THREE.LineBasicMaterial({
-    color: 0x55bfff, transparent: true, opacity: 0,
+    color: 0x5cc9ff, transparent: true, opacity: 0,
     blending: THREE.AdditiveBlending, toneMapped: false,
   });
   const boltGlow = new THREE.LineSegments(boltGeo, boltGlowMat);
   boltGlow.frustumCulled = false;
-  boltGlow.scale.setScalar(1.035);
+  boltGlow.scale.setScalar(1.04);
   stage.add(boltGlow);
-  disposables.push(boltGeo, boltMat, boltGlowMat);
+  const branchMat = new THREE.LineBasicMaterial({
+    color: 0xd9f6ff, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  const branches = new THREE.LineSegments(branchGeo, branchMat);
+  branches.frustumCulled = false;
+  stage.add(branches);
+  const branchGlowMat = new THREE.LineBasicMaterial({
+    color: 0x3caeff, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  const branchGlow = new THREE.LineSegments(branchGeo, branchGlowMat);
+  branchGlow.frustumCulled = false;
+  branchGlow.scale.setScalar(1.055);
+  stage.add(branchGlow);
+  disposables.push(boltGeo, branchGeo, boltMat, boltGlowMat, branchMat, branchGlowMat);
 
   const spellAnchor = new THREE.Object3D();
   const spellOrigin = new THREE.Vector3(0, 1.1, 0.6);
@@ -695,6 +716,9 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const boltStart = new THREE.Vector3();
   const boltEnd = new THREE.Vector3();
   const boltPoint = new THREE.Vector3();
+  const branchPoint = new THREE.Vector3();
+  const branchEnd = new THREE.Vector3();
+  const boltNodes = Array.from({ length: BOLT_NODES }, () => new THREE.Vector3());
 
   function cast(): void {
     if (spellCd > 0) return;
@@ -707,27 +731,57 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     let n = 0;
     boltStart.copy(worldOrigin);
     boltEnd.copy(worldOrigin).add(new THREE.Vector3(
-      (Math.random() - 0.5) * 0.8,
-      2.0 + Math.random() * 0.65,
-      (Math.random() - 0.5) * 0.35,
+      (Math.random() - 0.5) * 0.72,
+      2.15 + Math.random() * 0.75,
+      (Math.random() - 0.5) * 0.32,
     ));
-    for (let i = 0; i < BOLT_SEGMENTS; i++) {
+    for (let i = 0; i < BOLT_NODES; i++) {
       const a = i / BOLT_SEGMENTS;
-      const b = (i + 1) / BOLT_SEGMENTS;
-      boltPoint.lerpVectors(boltStart, boltEnd, a);
-      if (i > 0) boltPoint.x += (Math.random() - 0.5) * 0.26;
-      if (i > 0) boltPoint.z += (Math.random() - 0.5) * 0.18;
-      boltPos[i * 6] = boltPoint.x;
-      boltPos[i * 6 + 1] = boltPoint.y;
-      boltPos[i * 6 + 2] = boltPoint.z;
-      boltPoint.lerpVectors(boltStart, boltEnd, b);
-      if (i < BOLT_SEGMENTS - 1) boltPoint.x += (Math.random() - 0.5) * 0.26;
-      if (i < BOLT_SEGMENTS - 1) boltPoint.z += (Math.random() - 0.5) * 0.18;
-      boltPos[i * 6 + 3] = boltPoint.x;
-      boltPos[i * 6 + 4] = boltPoint.y;
-      boltPos[i * 6 + 5] = boltPoint.z;
+      boltNodes[i].lerpVectors(boltStart, boltEnd, a);
+      if (i > 0 && i < BOLT_SEGMENTS) {
+        const envelope = Math.sin(a * Math.PI);
+        boltNodes[i].x += (Math.random() - 0.5) * 0.38 * envelope;
+        boltNodes[i].z += (Math.random() - 0.5) * 0.22 * envelope;
+      }
+    }
+    for (let i = 0; i < BOLT_SEGMENTS; i++) {
+      const from = boltNodes[i];
+      const to = boltNodes[i + 1];
+      boltPos[i * 6] = from.x;
+      boltPos[i * 6 + 1] = from.y;
+      boltPos[i * 6 + 2] = from.z;
+      boltPos[i * 6 + 3] = to.x;
+      boltPos[i * 6 + 4] = to.y;
+      boltPos[i * 6 + 5] = to.z;
+    }
+    for (let b = 0; b < BRANCH_COUNT; b++) {
+      const sourceIndex = 5 + Math.floor(Math.random() * (BOLT_SEGMENTS - 9));
+      const source = boltNodes[sourceIndex];
+      const direction = b % 2 === 0 ? 1 : -1;
+      branchPoint.copy(source);
+      branchEnd.copy(source).add(new THREE.Vector3(
+        direction * (0.42 + Math.random() * 0.42),
+        0.36 + Math.random() * 0.62,
+        (Math.random() - 0.5) * 0.42,
+      ));
+      const base = b * BRANCH_SEGMENTS * 6;
+      for (let i = 0; i < BRANCH_SEGMENTS; i++) {
+        const a = i / BRANCH_SEGMENTS;
+        const c = (i + 1) / BRANCH_SEGMENTS;
+        branchPoint.lerpVectors(source, branchEnd, a);
+        if (i > 0) branchPoint.x += (Math.random() - 0.5) * 0.16;
+        branchPos[base + i * 6] = branchPoint.x;
+        branchPos[base + i * 6 + 1] = branchPoint.y;
+        branchPos[base + i * 6 + 2] = branchPoint.z;
+        branchPoint.lerpVectors(source, branchEnd, c);
+        if (i < BRANCH_SEGMENTS - 1) branchPoint.x += (Math.random() - 0.5) * 0.16;
+        branchPos[base + i * 6 + 3] = branchPoint.x;
+        branchPos[base + i * 6 + 4] = branchPoint.y;
+        branchPos[base + i * 6 + 5] = branchPoint.z;
+      }
     }
     boltGeo.attributes.position.needsUpdate = true;
+    branchGeo.attributes.position.needsUpdate = true;
     for (let i = 0; i < SPELL_N && n < 210; i++) {
       const s = SP[i];
       if (s.life > 0) continue;
@@ -801,9 +855,13 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
     if (boltLife > 0) boltLife -= dt;
     const boltFlash = Math.max(0, Math.min(1, boltLife * 7.5));
     boltMat.opacity = boltFlash;
-    boltGlowMat.opacity = boltFlash * 0.34;
+    boltGlowMat.opacity = boltFlash * 0.36;
+    branchMat.opacity = boltFlash * 0.78;
+    branchGlowMat.opacity = boltFlash * 0.28;
     bolt.scale.set(1 + Math.sin(t * 42) * 0.045, 1, 1 + Math.cos(t * 37) * 0.045);
-    boltGlow.scale.setScalar(1.035 + Math.sin(t * 36) * 0.025);
+    boltGlow.scale.setScalar(1.04 + Math.sin(t * 36) * 0.025);
+    branches.scale.set(1 + Math.sin(t * 47) * 0.04, 1, 1 + Math.cos(t * 39) * 0.04);
+    branchGlow.scale.setScalar(1.055 + Math.sin(t * 41) * 0.03);
     for (let i = 0; i < SPELL_N; i++) {
       const s = SP[i];
       if (s.life <= 0) continue;
