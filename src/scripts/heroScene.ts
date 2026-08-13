@@ -417,6 +417,46 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
   const debris = buildDebris(env, disposables);
   for (const layer of debris) scene.add(layer.object);
 
+  // Атмосферная пыль и редкие магические искры проходят через весь кадр,
+  // но живут отдельным легким слоем и не перехватывают события canvas.
+  interface AtmosParticle { sprite: THREE.Sprite; drift: THREE.Vector3; base: number; phase: number; depth: number; }
+  const atmosphere: AtmosParticle[] = [];
+  const dustTex = softSprite();
+  const dustMat = new THREE.SpriteMaterial({
+    map: dustTex, color: 0xffd59a, transparent: true, opacity: 0.42,
+    depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  const magicTex = softSprite();
+  const magicMat = new THREE.SpriteMaterial({
+    map: magicTex, color: 0x9edcff, transparent: true, opacity: 0.7,
+    depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  disposables.push(dustTex, dustMat, magicTex, magicMat);
+
+  for (let i = 0; i < 52; i++) {
+    const magical = i % 5 === 0;
+    const sprite = new THREE.Sprite(magical ? magicMat : dustMat);
+    const base = magical ? 0.035 + hash01(`ms${i}`) * 0.045 : 0.018 + hash01(`ds${i}`) * 0.035;
+    sprite.scale.setScalar(base);
+    sprite.position.set(
+      (hash01(`ax${i}`) - 0.5) * 15,
+      (hash01(`ay${i}`) - 0.5) * 10,
+      -1.5 - hash01(`az${i}`) * 10,
+    );
+    scene.add(sprite);
+    atmosphere.push({
+      sprite,
+      base,
+      phase: hash01(`ap${i}`) * Math.PI * 2,
+      depth: 0.45 + hash01(`ad${i}`) * 1.2,
+      drift: new THREE.Vector3(
+        (hash01(`avx${i}`) - 0.5) * 0.045,
+        0.025 + hash01(`avy${i}`) * 0.065,
+        0,
+      ),
+    });
+  }
+
   /* Материалы. Золото: metalness строго 1 — у металла нет диффузной
    * компоненты. Глаза светятся и выходят за порог bloom: это дешёвая
    * фирменная деталь, которая читается даже в фавиконе. */
@@ -827,6 +867,19 @@ export function createHeroScene(options: HeroSceneOptions): HeroSceneHandle {
       (starsFar.material as THREE.PointsMaterial).opacity = 0.44 + Math.sin(t * 0.7) * 0.08;
       (starsNear.material as THREE.PointsMaterial).opacity = 0.34 + Math.sin(t * 0.9 + 2) * 0.08;
       stage.position.y = Math.sin(t * 0.5) * 0.11;
+
+      for (const particle of atmosphere) {
+        particle.sprite.position.x += particle.drift.x * dt * particle.depth;
+        particle.sprite.position.y += particle.drift.y * dt * particle.depth;
+        if (particle.sprite.position.y > 5.5) {
+          particle.sprite.position.y = -5.5;
+          particle.sprite.position.x = (Math.sin(t + particle.phase) * 0.5) * 14;
+        }
+        if (particle.sprite.position.x > 8) particle.sprite.position.x = -8;
+        if (particle.sprite.position.x < -8) particle.sprite.position.x = 8;
+        const pulse = 0.78 + Math.sin(t * (0.45 + particle.depth * 0.22) + particle.phase) * 0.22;
+        particle.sprite.scale.setScalar(particle.base * pulse);
+      }
 
       for (const layer of debris) {
         layer.object.rotation.y += dt * layer.drift * 0.3;
