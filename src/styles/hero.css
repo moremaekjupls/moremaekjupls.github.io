@@ -2,10 +2,8 @@
   --ink: #f6f1e8; --ink-soft: #d0c4b0; --ink-mute: #b8a88f; --line: rgba(224, 184, 113, .52); --accent: #f0c979;
   position: relative; isolation: isolate; overflow: hidden; min-height: 100svh; width: 100%; background: #100d0a; color: var(--ink);
 }
-.hero__library,.hero__library-hover,.hero__rings,.hero__canvas,.hero__glow,.hero__grain,.hero__vignette { position:absolute; inset:0; pointer-events:none; }
+.hero__library,.hero__rings,.hero__canvas,.hero__glow,.hero__grain,.hero__vignette { position:absolute; inset:0; pointer-events:none; }
 .hero__library { z-index:0; background:url('/arcane-library.png') center / cover no-repeat; }
-.hero__library-hover { z-index:1; opacity:0; transition:opacity .35s ease; background:radial-gradient(circle 150px at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255,235,180,.22), rgba(255,205,110,.07) 38%, transparent 72%); mix-blend-mode:screen; }
-.hero:hover .hero__library-hover { opacity:.72; }
 .hero__flash { z-index:5; opacity:0; background:radial-gradient(ellipse 30% 38% at 50% 48%, rgba(226,248,255,.48), rgba(105,188,255,.12) 36%, transparent 72%); mix-blend-mode:screen; pointer-events:none; }
 .hero__flash.is-flashing { animation:spell-flash .52s cubic-bezier(.15,.7,.2,1) both; }
 .hero__rings { z-index:2; overflow:hidden; mix-blend-mode:screen; }
@@ -28,4 +26,4 @@
 @keyframes spell-flash { 0% { opacity:0; } 7% { opacity:1; } 20% { opacity:.38; } 100% { opacity:0; } }
 @keyframes ring-one { to { transform:rotate(-4deg) translate3d(3%,-3%,0) scale(1.06); } } @keyframes ring-two { to { transform:rotate(21deg) translate3d(-3%,2%,0) scale(1.05); } } @keyframes ring-three { to { transform:rotate(16deg) translate3d(2%,-3%,0) scale(1.06); } }
 @media (max-width:860px) { .hero__content { grid-template-columns:minmax(0,1fr);align-content:space-between;padding-block:clamp(4.5rem,14vw,7rem); } .hero__name,.hero__aside { grid-column:1; } .hero__name { align-self:start; } .hero__aside { justify-self:start;align-self:end;max-width:34ch; } .hero__ring--one { width:130vw;height:65vw;left:-18%;top:49%; } .hero__ring--three { width:120vw;height:100vw;left:-10%;top:45%; } }
-@media (prefers-reduced-motion:reduce) { .hero__ring { animation:none; } .hero__library-hover,.hero__flash { display:none; } }
+@media (prefers-reduced-motion:reduce) { .hero__ring { animation:none; } .hero__flash { display:none; } }
