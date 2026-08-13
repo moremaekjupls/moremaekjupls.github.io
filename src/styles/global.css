@@ -587,10 +587,28 @@ body.is-screen { height: 100svh; overflow: hidden; }
 .screen-root { position: relative; }
 /* The hero's caption is gone, so the socials take the bottom-centre slot. */
 .screen-socials { left: 50%; right: auto; transform: translateX(-50%); bottom: 22px; gap: 10px; }
-@media (max-width: 600px) { .screen-socials { bottom: 16px; } }
+@media (max-width: 600px) { .screen-socials { bottom: 16px; } .screen-music { left: 12px; bottom: 16px; } }
 
 /* The hero's own layers carry z-index 0-5; the floating chrome had none and
    was therefore painted underneath the canvas. It has to sit above the scene. */
-.screen-nav, .screen-lang, .screen-socials { z-index: 20; }
+.screen-nav, .screen-lang, .screen-socials, .screen-music { z-index: 20; }
 .screen-socials a { color: var(--color-ash); }
 .screen-socials a:hover { color: var(--color-gold); }
+.screen-music {
+  position: absolute; left: clamp(16px, 3vw, 34px); bottom: 22px;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+  padding: 0 14px; border: 1px solid var(--hairline); border-radius: 999px;
+  background: rgba(14, 13, 12, .68); color: var(--color-ash);
+  backdrop-filter: blur(12px); font-size: 12px; letter-spacing: .05em;
+  transition: color .25s ease, border-color .25s ease, background-color .25s ease;
+}
+.screen-music:hover, .screen-music:focus-visible, .screen-music.is-playing {
+  color: var(--color-gold); border-color: rgba(240,184,85,.58); background: rgba(35,27,14,.78);
+}
+.screen-music:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; }
+.screen-music__icon { width: 16px; height: 16px; flex: 0 0 auto; }
+.screen-music__icon--pause { display: none; }
+.screen-music.is-playing .screen-music__icon--play { display: none; }
+.screen-music.is-playing .screen-music__icon--pause { display: block; }
+.screen-music.is-playing [data-music-text] { font-size: 0; }
+.screen-music.is-playing [data-music-text]::after { content: '♪'; font-size: 16px; }

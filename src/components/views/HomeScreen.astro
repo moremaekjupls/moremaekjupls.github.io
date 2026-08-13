@@ -38,6 +38,21 @@ const enUrl = altLangUrl(path, 'en');
     <a href={enUrl} aria-current={lang === 'en' ? 'true' : 'false'} hreflang="en">EN</a>
   </div>
 
+  <button
+    class="screen-music"
+    type="button"
+    data-music-toggle
+    data-label-off={lang === 'ru' ? 'Включить музыку' : 'Play ambient music'}
+    data-label-on={lang === 'ru' ? 'Поставить музыку на паузу' : 'Pause ambient music'}
+    aria-pressed="false"
+    aria-label={lang === 'ru' ? 'Включить музыку' : 'Play ambient music'}
+  >
+    <svg class="screen-music__icon screen-music__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" /></svg>
+    <svg class="screen-music__icon screen-music__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7V5Zm7 0h3v14h-3V5Z" fill="currentColor" /></svg>
+    <span data-music-text>{lang === 'ru' ? 'Музыка' : 'Music'}</span>
+  </button>
+  <audio data-site-music preload="metadata" loop src="/fairy-library-ambient.mp3"></audio>
+
   <ul class="screen-socials">
     {socials.map((s) => (
       <li>
@@ -48,3 +63,31 @@ const enUrl = altLangUrl(path, 'en');
     ))}
   </ul>
 </div>
+
+<script>
+  const musicButton = document.querySelector<HTMLButtonElement>('[data-music-toggle]');
+  const music = document.querySelector<HTMLAudioElement>('[data-site-music]');
+  const musicText = musicButton?.querySelector<HTMLElement>('[data-music-text]');
+  if (musicButton && music) {
+    music.volume = 0.32;
+    musicButton.addEventListener('click', async () => {
+      if (music.paused) {
+        try {
+          await music.play();
+          musicButton.classList.add('is-playing');
+          musicButton.setAttribute('aria-pressed', 'true');
+          musicButton.setAttribute('aria-label', musicButton.dataset.labelOn || 'Pause ambient music');
+          if (musicText) musicText.textContent = '♪';
+        } catch {
+          musicButton.setAttribute('aria-label', musicButton.dataset.labelOff || 'Play ambient music');
+        }
+      } else {
+        music.pause();
+        musicButton.classList.remove('is-playing');
+        musicButton.setAttribute('aria-pressed', 'false');
+        musicButton.setAttribute('aria-label', musicButton.dataset.labelOff || 'Play ambient music');
+        if (musicText) musicText.textContent = 'Музыка';
+      }
+    });
+  }
+</script>
