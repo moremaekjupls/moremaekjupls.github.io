@@ -8,28 +8,69 @@ const t = useTranslations(lang);
 const L = (p: string) => localizeUrl(p, lang);
 const titleLines = (t('about.title') as string).split('\n');
 const body = t('about.body') as string[];
+const ru = lang === 'ru';
 ---
-<section class="hero" style="min-height:clamp(380px,52vh,500px);">
-  <div class="hero-bg"><Particles variant="sphere" density={1.1} /></div>
-  <div class="container hero-grid">
-    <div class="hero-copy">
-      <span class="eyebrow">{t('about.eyebrow')}</span>
-      <h1 class="hero-title">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
+<div class="about-page">
+  <section class="about-hero" aria-labelledby="about-title">
+    <div class="about-hero__particles" aria-hidden="true"><Particles variant="sphere" density={1.25} /></div>
+    <div class="about-hero__runes" aria-hidden="true">✦　◇　ᚫ　◌　✧　⌁　✦</div>
+    <div class="container about-hero__grid">
+      <div class="about-hero__copy">
+        <span class="eyebrow">{t('about.eyebrow')}</span>
+        <h1 id="about-title" class="about-hero__title">{titleLines.map((line, i) => (<>{line}{i < titleLines.length - 1 && <br />}</>))}</h1>
+        <p class="about-hero__lead">{ru ? 'Собираю идеи в работающие продукты, соединяя человеческий контекст, ясное мышление и возможности ИИ.' : 'I turn ideas into working products by connecting human context, clear thinking, and AI.'}</p>
+        <a class="btn btn-amber about-hero__link" href="#journey">{ru ? 'Посмотреть путь' : 'Explore the journey'} <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="about-hero__sigil" aria-hidden="true"><span>✦</span><i></i><b></b></div>
     </div>
-    <div class="hero-visual" aria-hidden="true"></div>
-  </div>
-</section>
+  </section>
 
-<section class="section">
-  <div class="container">
-    <div class="article" style="margin-left:0;">
-      <div class="prose">
-        {body.map((p) => (<p>{p}</p>))}
-      </div>
-      <div class="hero-cta" style="margin-top:36px;">
-        <a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a>
-      </div>
-      <ContactForm lang={lang} />
+  <section class="section about-intro">
+    <div class="container about-intro__grid">
+      <div class="about-section-label"><span class="eyebrow">01 / {ru ? 'Контекст' : 'Context'}</span><span class="about-section-label__line"></span></div>
+      <div class="about-intro__copy prose">{body.map((p) => <p>{p}</p>)}</div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="section about-journey" id="journey" aria-labelledby="journey-title">
+    <div class="container">
+      <div class="about-section-heading"><span class="eyebrow">02 / {ru ? 'Путь' : 'Journey'}</span><h2 id="journey-title">{ru ? 'От контекста к действию.' : 'From context to action.'}</h2><p>{ru ? 'Выбери этап, чтобы увидеть, какие навыки и проекты сформировали мой подход.' : 'Select a stage to see the skills and projects that shaped my approach.'}</p></div>
+      <div class="timeline" data-timeline>
+        <div class="timeline__rail" aria-hidden="true"></div>
+        <div class="timeline__items">
+          <button class="timeline-card is-active" type="button" data-timeline-item="0" aria-expanded="true"><span class="timeline-card__year">01</span><span class="timeline-card__title">{ru ? 'Контекст и переговоры' : 'Context and negotiation'}</span><span class="timeline-card__tag">{ru ? 'Международные отношения' : 'International relations'}</span><span class="timeline-card__detail">{ru ? 'Учился видеть систему целиком, слышать разные стороны и превращать сложные интересы в понятные решения.' : 'Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.'}</span></button>
+          <button class="timeline-card" type="button" data-timeline-item="1" aria-expanded="false"><span class="timeline-card__year">02</span><span class="timeline-card__title">{ru ? 'Продуктовое мышление' : 'Product thinking'}</span><span class="timeline-card__tag">{ru ? 'Исследование · стратегия' : 'Research · strategy'}</span><span class="timeline-card__detail">{ru ? 'Перенос фокуса с красивой идеи на задачу пользователя, быстрый прототип и измеримый результат.' : 'Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.'}</span></button>
+          <button class="timeline-card" type="button" data-timeline-item="2" aria-expanded="false"><span class="timeline-card__year">03</span><span class="timeline-card__title">{ru ? 'ИИ-продукты' : 'AI products'}</span><span class="timeline-card__tag">{ru ? 'Прототипирование · запуск' : 'Prototyping · shipping'}</span><span class="timeline-card__detail">{ru ? 'Собираю небольшие продукты от идеи до опубликованного интерфейса, проверяя, где ИИ действительно усиливает человека.' : 'Building small products from idea to published interface, testing where AI truly amplifies people.'}</span></button>
+          <button class="timeline-card" type="button" data-timeline-item="3" aria-expanded="false"><span class="timeline-card__year">04</span><span class="timeline-card__title">{ru ? 'Новая глубина' : 'A deeper layer'}</span><span class="timeline-card__tag">{ru ? 'AI Essentials · Elements of AI' : 'AI Essentials · Elements of AI'}</span><span class="timeline-card__detail">{ru ? 'Продолжаю систематизировать знания: от ответственного применения инструментов до понимания основ искусственного интеллекта.' : 'Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.'}</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about-certificates" aria-labelledby="certificates-title">
+    <div class="container">
+      <div class="about-section-heading"><span class="eyebrow">03 / {ru ? 'Сертификаты' : 'Certificates'}</span><h2 id="certificates-title">{ru ? 'Знания, которые остаются в работе.' : 'Knowledge that stays in the work.'}</h2></div>
+      <div class="certificate-grid">
+        <article class="certificate-card">
+          <div class="certificate-card__media"><img src="/certificate-google.png" alt={ru ? 'Сертификат Google AI Essentials' : 'Google AI Essentials certificate'} loading="lazy" /></div>
+          <div class="certificate-card__body"><span class="certificate-card__issuer">Google · Coursera</span><h3>Google AI Essentials</h3><p>{ru ? 'Специализация из пяти курсов: продуктивность, промптинг, ответственное использование ИИ и развитие AI-навыков.' : 'A five-course specialization covering productivity, prompting, responsible AI use, and practical AI skills.'}</p><a href="https://coursera.org/verify/specialization/VBI9HAKWVHFM" target="_blank" rel="noopener noreferrer">{ru ? 'Проверить сертификат' : 'Verify certificate'} ↗</a></div>
+        </article>
+        <article class="certificate-card">
+          <div class="certificate-card__media"><img src="/certificate-helsinki.png" alt={ru ? 'Сертификат Elements of AI Университета Хельсинки' : 'University of Helsinki Elements of AI certificate'} loading="lazy" /></div>
+          <div class="certificate-card__body"><span class="certificate-card__issuer">University of Helsinki · MinnaLearn</span><h3>Elements of AI</h3><p>{ru ? 'Курс на 2 ECTS о базовых принципах искусственного интеллекта. Завершен 20 апреля 2026 года.' : 'A 2 ECTS course on the foundations of artificial intelligence, completed on April 20, 2026.'}</p><a href="https://certificates.mooc.fi/validate/05jUe7Iinet" target="_blank" rel="noopener noreferrer">{ru ? 'Открыть подтверждение' : 'Open verification'} ↗</a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about-contact"><div class="container"><div class="article" style="margin-left:0;"><div class="hero-cta"><a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a></div><ContactForm lang={lang} /></div></div></section>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((timeline) => {
+    const cards = [...timeline.querySelectorAll<HTMLButtonElement>('[data-timeline-item]')];
+    cards.forEach((card) => card.addEventListener('click', () => {
+      cards.forEach((item) => { const active = item === card; item.classList.toggle('is-active', active); item.setAttribute('aria-expanded', String(active)); });
+    }));
+  });
+</script>
