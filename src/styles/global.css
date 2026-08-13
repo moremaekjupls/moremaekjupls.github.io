@@ -824,3 +824,45 @@ body.is-screen { height: 100svh; overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .about-page [data-about-reveal] { opacity: 1; transform: none; }
 }
+
+
+/* ---------- About hero v3: focused arcane editorial ---------- */
+.about-hero { min-height: clamp(610px, 78svh, 760px); padding-block: clamp(44px, 6vw, 78px) clamp(62px, 8vw, 96px); background: #050505; }
+.about-hero__particles { opacity: .30; }
+.about-hero__glow { opacity: .10; filter: blur(90px); }
+.about-hero__glow--one { top: 8%; right: 6%; }
+.about-hero__glow--two { bottom: -35%; left: 12%; opacity: .07; }
+.about-hero__grid { grid-template-columns: minmax(0, .9fr) minmax(360px, 1.1fr); gap: clamp(30px, 7vw, 110px); }
+.about-hero__copy { max-width: 580px; }
+.about-hero__kicker { margin-top: -8px; margin-bottom: 26px; color: rgba(255,255,255,.48); font-size: 10px; letter-spacing: .18em; }
+.about-hero__title { max-width: 8.8ch; font-size: clamp(72px, 8.4vw, 132px); line-height: .84; letter-spacing: -.055em; text-wrap: unset; }
+.about-hero__lead { max-width: 40ch; margin-top: 34px; font-size: clamp(15px, 1.35vw, 18px); line-height: 1.65; }
+.about-hero__link { margin-top: 28px; }
+.about-hero__artifact { min-height: 440px; }
+.about-hero__sigil { width: min(39vw, 470px); border-color: rgba(240,201,121,.28); box-shadow: 0 0 120px rgba(72,147,187,.13), inset 0 0 60px rgba(240,184,85,.06); }
+.about-hero__sigil::before { inset: 14%; border-color: rgba(112,202,235,.24); }
+.about-hero__sigil::after { inset: 31%; border-color: rgba(240,201,121,.28); }
+.about-hero__sigil span { font-size: clamp(34px, 5vw, 70px); }
+.about-hero__artifact-label { position: absolute; right: 4%; bottom: 18px; display: grid; gap: 6px; width: 158px; padding-top: 12px; border-top: 1px solid rgba(240,201,121,.45); }
+.about-hero__artifact-label span { color: var(--color-gold); font-size: 10px; letter-spacing: .14em; }
+.about-hero__artifact-label strong { color: var(--color-bone); font-size: 13px; font-weight: 500; }
+@media (max-width: 900px) {
+  .about-hero { min-height: 680px; }
+  .about-hero__grid { grid-template-columns: minmax(0, .95fr) minmax(260px, .8fr); gap: 28px; }
+  .about-hero__title { font-size: clamp(62px, 9vw, 94px); }
+  .about-hero__artifact { min-height: 320px; }
+  .about-hero__sigil { width: min(38vw, 320px); }
+}
+@media (max-width: 720px) {
+  .about-hero { min-height: 720px; padding-block: 46px 78px; }
+  .about-hero__grid { grid-template-columns: 1fr; gap: 4px; }
+  .about-hero__title { max-width: 100%; font-size: clamp(62px, 17vw, 92px); line-height: .86; }
+  .about-hero__lead { max-width: 36ch; margin-top: 26px; }
+  .about-hero__artifact { min-height: 260px; margin-top: 4px; }
+  .about-hero__sigil { width: min(66vw, 290px); }
+  .about-hero__artifact-label { right: 4%; bottom: 0; }
+}
+@media (max-width: 420px) {
+  .about-hero { min-height: 700px; }
+  .about-hero__title { font-size: clamp(56px, 16.5vw, 74px); }
+}
