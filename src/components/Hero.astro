@@ -1,137 +1,39 @@
 ---
-/**
- * Hero.astro — первый экран.
- *
- * Порт Hero.tsx на Astro: React не нужен, разметка перенесена один в один,
- * логика сведена к вызову createHeroScene. Сцена лежит под контентом и не
- * мешает читать текст.
- */
 import '../styles/hero.css';
 import type { Lang } from '../i18n/ui';
 
-interface Props {
-  lang: Lang;
-  modelUrl?: string;
-  posterUrl?: string;
-}
-const { lang, modelUrl = '/models/mage.glb', posterUrl = '/hero-poster.png' } = Astro.props;
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
 
 const COPY = {
-  en: {
-    name: ['Khondamir', 'Begmatov'],
-    lede: 'AI products, and the notes of someone building them. The tools keep changing — the thinking is the work.',
-    cta: 'Read the notes',
-    hint: 'Drag to look around',
-  },
-  ru: {
-    name: ['Хондамир', 'Бегматов'],
-    lede: 'ИИ-продукты и заметки того, кто их собирает. Инструменты меняются — мышление остаётся работой.',
-    cta: 'Читать заметки',
-    hint: 'Потяните, чтобы осмотреть',
-  },
+  en: { name: ['Khondamir', 'Begmatov'], lede: 'AI products, and the notes of someone building them. The tools keep changing — the thinking is the work.', cta: 'Read the notes' },
+  ru: { name: ['Хондамир', 'Бегматов'], lede: 'ИИ-продукты и заметки того, кто их собирает. Инструменты меняются — мышление остаётся работой.', cta: 'Читать заметки' },
 } as const;
-
 const t = COPY[lang];
 const blogHref = lang === 'en' ? '/en/blog' : '/blog';
 ---
 
-<section class="hero" data-hero data-model={modelUrl} aria-label={t.name.join(' ')}>
+<section class="hero" aria-label={t.name.join(' ')}>
+  <div class="hero__library" aria-hidden="true"></div>
+  <div class="hero__book-depth hero__book-depth--left" aria-hidden="true"></div>
+  <div class="hero__book-depth hero__book-depth--right" aria-hidden="true"></div>
+  <div class="hero__rings" aria-hidden="true">
+    <span class="hero__ring hero__ring--one"></span>
+    <span class="hero__ring hero__ring--two"></span>
+    <span class="hero__ring hero__ring--three"></span>
+  </div>
   <div class="hero__glow" aria-hidden="true"></div>
-
-  <canvas class="hero__canvas" aria-hidden="true"></canvas>
-
-  {posterUrl && <img class="hero__poster" data-poster={posterUrl} alt="" aria-hidden="true" draggable="false" />}
-
   <div class="hero__grain" aria-hidden="true"></div>
   <div class="hero__vignette" aria-hidden="true"></div>
 
   <div class="hero__content">
     <h1 class="hero__name">{t.name[0]}<br />{t.name[1]}</h1>
-
     <div class="hero__aside">
       <p class="hero__lede">{t.lede}</p>
       <a class="hero__cta" href={blogHref}>
         <span>{t.cta}</span>
-        <svg viewBox="0 0 28 8" width="28" height="8" aria-hidden="true">
-          <path d="M0 4h25M22 1l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1" />
-        </svg>
+        <svg viewBox="0 0 28 8" width="28" height="8" aria-hidden="true"><path d="M0 4h25M22 1l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1" /></svg>
       </a>
     </div>
   </div>
-
-  <p class="hero__hint" aria-hidden="true">{t.hint}</p>
 </section>
-
-<script>
-  import { createHeroScene, type HeroSceneHandle } from '../scripts/heroScene';
-
-  function webglAvailable(): boolean {
-    try {
-      const c = document.createElement('canvas');
-      return !!(c.getContext('webgl2') || c.getContext('webgl'));
-    } catch {
-      return false;
-    }
-  }
-
-  function initHero(section: HTMLElement): void {
-    if ((section as any)._init) return;
-    (section as any)._init = true;
-
-    const canvas = section.querySelector<HTMLCanvasElement>('.hero__canvas');
-    const poster = section.querySelector<HTMLImageElement>('.hero__poster');
-    const hint = section.querySelector<HTMLElement>('.hero__hint');
-    if (!canvas) return;
-
-    // Без поддержки WebGL остаётся постер: пустого экрана быть не должно.
-    // Постер — аварийный вариант, а не заставка. Показывать всем картинку,
-    // которая на живую сцену не похожа, хуже, чем короткое тёмное поле.
-    const showPoster = (): void => {
-      if (poster?.dataset.poster) poster.src = poster.dataset.poster;
-    };
-
-    if (!webglAvailable()) {
-      section.classList.add('is-failed');
-      showPoster();
-      return;
-    }
-
-    const ready = () => {
-      section.classList.add('is-ready');
-      canvas.classList.add('is-ready');
-      poster?.remove();
-      if (hint) hint.classList.add('is-visible');
-    };
-
-    let handle: HeroSceneHandle | null = null;
-    try {
-      handle = createHeroScene({
-        canvas,
-        modelUrl: section.dataset.model || undefined,
-        onReady: ready,
-        onError: () => { section.classList.add('is-failed'); showPoster(); },
-      });
-    } catch {
-      section.classList.add('is-failed');
-      showPoster();
-      return;
-    }
-
-    // Не греем процессор, когда экран уехал из вида.
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(
-        ([entry]) => handle?.setPaused(!entry.isIntersecting),
-        { threshold: 0.05 },
-      ).observe(section);
-    }
-
-    // Подсказка исчезает после первого касания — она нужна один раз.
-    section.addEventListener(
-      'pointerdown',
-      () => hint?.classList.add('is-gone'),
-      { once: true },
-    );
-  }
-
-  document.querySelectorAll<HTMLElement>('[data-hero]').forEach(initHero);
-</script>
