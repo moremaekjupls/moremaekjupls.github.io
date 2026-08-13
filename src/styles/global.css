@@ -907,3 +907,22 @@ body.is-screen { height: 100svh; overflow: hidden; }
 @media (max-width: 720px) {
   .nav-links.open { top: 68px; }
 }
+
+
+/* ---------- Narrow mobile polish ---------- */
+@media (max-width: 360px) {
+  .site-header .nav { gap: 8px; }
+  .logo { gap: 7px; font-size: 16px; }
+  .logo .mark { width: 19px; height: 19px; }
+  .nav-right { gap: 8px; }
+  .lang-toggle a { padding: 9px 10px; }
+  .menu-btn { padding: 9px 10px; }
+  .about-hero { min-height: 742px; padding-bottom: 92px; }
+  .about-hero__title { font-size: clamp(52px, 16vw, 66px); }
+  .about-hero__lead { font-size: 14px; line-height: 1.62; }
+  .about-hero__signal { min-height: 250px; }
+  .about-hero__signal-line { left: 3%; right: 3%; }
+  .about-hero__signal-nodes { margin-top: 62px; font-size: 10px; }
+  .about-hero__signal-nodes span { min-width: 0; }
+  .about-hero__signal-caption { max-width: 28ch; margin-top: 26px; font-size: 10px; text-align: center; }
+}
