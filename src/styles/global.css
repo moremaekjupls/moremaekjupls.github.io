@@ -745,3 +745,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 
 /* Кнопка музыки в шапке внутренних страниц */
+
+/* The second card is a quotation now: larger type, no label, attribution set
+   quiet underneath. "attributed" is doing honest work — the line is popular
+   but has no ancient source. */
+.hero .quote-card .quote{font-size:.9375rem;line-height:1.6;color:#fff}
+.hero .quote-card .who{margin-top:14px}
+.hero .quote-card .who small{color:var(--faint);font-style:italic}
+@media (min-width:640px){.hero .quote-card .quote{font-size:1rem}}
