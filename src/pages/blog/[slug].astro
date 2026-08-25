@@ -4,11 +4,11 @@ import Base from '../../layouts/Base.astro';
 import PostArticleView from '../../components/views/PostArticleView.astro';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', (e) => e.data.lang === 'ru' && !e.data.draft);
+  const posts = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
   return posts.map((entry) => ({ params: { slug: entry.data.transId }, props: { entry } }));
 }
 const { entry } = Astro.props;
 ---
-<Base lang="ru" title={entry.data.title} description={entry.data.excerpt}>
-  <PostArticleView lang="ru" entry={entry} />
+<Base lang="en" title={entry.data.title} description={entry.data.excerpt}>
+  <PostArticleView lang="en" entry={entry} />
 </Base>

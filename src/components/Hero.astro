@@ -1,71 +1,138 @@
 ---
-import '../styles/hero.css';
-import type { Lang } from '../i18n/ui';
+/**
+ * Hero.astro — первый экран.
+ *
+ * Перенос шаблона nexum-hero-v3 на Astro. Отличия от исходника:
+ * форма подписки убрана (бэкенда нет), карточки заполнены настоящим
+ * содержимым вместо вымышленного отзыва, добавлена кнопка фоновой музыки.
+ */
+import { getCollection } from 'astro:content';
+import { SOCIALS } from '../consts';
 
-interface Props { lang: Lang; }
-const { lang } = Astro.props;
+const posts = (await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const latest = posts[0];
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-const COPY = {
-  en: { name: ['Khondamir', 'Begmatov'], lede: 'AI products, and the notes of someone building them. The tools keep changing — the thinking is the work.', cta: 'Read the notes' },
-  ru: { name: ['Хондамир', 'Бегматов'], lede: 'ИИ-продукты и заметки того, кто их собирает. Инструменты меняются — мышление остаётся работой.', cta: 'Читать заметки' },
-} as const;
-const t = COPY[lang];
-const blogHref = lang === 'en' ? '/en/blog' : '/blog';
+const links = [
+  { href: '/blog', label: 'Blog' },
+  { href: '/about', label: 'About' },
+];
 ---
 
-<section class="hero" data-hero data-live-library aria-label={t.name.join(' ')}>
-  <picture class="hero__library" aria-hidden="true">
-    <source type="image/avif" srcset="/arcane-library.avif" />
-    <source type="image/webp" srcset="/arcane-library.webp" />
-    <img src="/arcane-library.png" alt="" decoding="async" fetchpriority="high" />
-  </picture>
-  <div class="hero__flash" aria-hidden="true"></div>
-  <div class="hero__rings" aria-hidden="true">
-    <span class="hero__ring hero__ring--one"></span>
-    <span class="hero__ring hero__ring--two"></span>
-    <span class="hero__ring hero__ring--three"></span>
-  </div>
-  <canvas class="hero__canvas" aria-hidden="true"></canvas>
-  <div class="hero__glow" aria-hidden="true"></div>
-  <div class="hero__grain" aria-hidden="true"></div>
-  <div class="hero__vignette" aria-hidden="true"></div>
+<section class="hero">
+  <video
+    src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260803_192301_9231ed6b-c55c-4a48-909c-4ebe11cf2e11.mp4"
+    autoplay loop muted playsinline preload="auto"
+    poster="/hero-frame.jpg"
+    aria-hidden="true"
+  ></video>
 
-  <div class="hero__content">
-    <h1 class="hero__name">{t.name[0]}<br />{t.name[1]}</h1>
-    <div class="hero__aside">
-      <p class="hero__lede">{t.lede}</p>
-      <a class="hero__cta" href={blogHref}>
-        <span>{t.cta}</span>
-        <svg viewBox="0 0 28 8" width="28" height="8" aria-hidden="true"><path d="M0 4h25M22 1l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+  <div class="layer">
+    <nav>
+      <a class="brand" href="/">
+        <svg width="24" height="24" viewBox="0 0 256 256" aria-hidden="true">
+          <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 128 128 C 128 57.308 185.308 0 256 0 C 256 70.692 198.692 128 128 128 Z M 128 128 C 57.308 128 0 70.692 0 0 C 70.692 0 128 57.308 128 128 Z" />
+        </svg>
+        <span>Khondamir</span>
       </a>
+
+      <div class="nav-right">
+        <div class="links">
+          {links.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+
+        <button class="music" data-music-toggle aria-pressed="false" aria-label="Play ambient music">
+          <svg class="music__icon music__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" /></svg>
+          <svg class="music__icon music__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7V5Zm7 0h3v14h-3V5Z" fill="currentColor" /></svg>
+          <span>Music</span>
+        </button>
+
+        <a class="cta nav-cta" href="/blog">Read the blog</a>
+      </div>
+
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">
+        <svg class="m" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+        <svg class="x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+      </button>
+    </nav>
+
+    <div class="content">
+      <div>
+        <h1>Building AI products, and writing down what actually works</h1>
+        <p class="sub">Khondamir Begmatov — from international relations to shipping products with AI.</p>
+      </div>
+
+      <div class="cards">
+        {latest && (
+          <a class="card stat-card" href={`/blog/${latest.data.transId}`}>
+            <div class="stat">{fmt(latest.data.pubDate)}</div>
+            <p><b>{latest.data.title}</b></p>
+            <p class="quote">{latest.data.excerpt}</p>
+          </a>
+        )}
+        <div class="card">
+          <div class="mark"><i>K</i>About</div>
+          <p class="quote">I build small AI products alone and write about what changes the work of a builder — no corporate fog.</p>
+          <div class="who">
+            <div>
+              <b>Khondamir Begmatov</b>
+              <small>Builder · {posts.length} posts</small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <audio data-site-music preload="metadata" loop src="/fairy-library-ambient.mp3"></audio>
 </section>
 
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <a href="/blog">Blog</a>
+  <a href="/about">About</a>
+  {Object.entries(SOCIALS).filter(([k]) => k !== 'email').map(([k, href]) => (
+    <a href={href} target="_blank" rel="noopener noreferrer">{k[0].toUpperCase() + k.slice(1)}</a>
+  ))}
+  <a class="cta" href="/blog">Read the blog</a>
+</aside>
+
 <script>
-  import { createHeroScene } from '../scripts/heroScene';
-
-  document.querySelectorAll<HTMLElement>('[data-hero]').forEach((section) => {
-    const canvas = section.querySelector<HTMLCanvasElement>('.hero__canvas');
-    if (!canvas) return;
-
-    try {
-      const scene = createHeroScene({ canvas, modelUrl: '/models/mage.glb' });
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const flash = section.querySelector<HTMLElement>('.hero__flash');
-      let flashTimer = 0;
-      canvas.addEventListener('spellcast', () => {
-        if (!flash || reduceMotion) return;
-        flash.classList.remove('is-flashing');
-        window.clearTimeout(flashTimer);
-        requestAnimationFrame(() => flash.classList.add('is-flashing'));
-        flashTimer = window.setTimeout(() => flash.classList.remove('is-flashing'), 520);
-      });
-      if ('IntersectionObserver' in window) {
-        new IntersectionObserver(([entry]) => scene.setPaused(!entry.isIntersecting), { threshold: 0.05 }).observe(section);
-      }
-    } catch {
-      canvas.remove();
-    }
+  const burger = document.getElementById('burger');
+  const scrim = document.getElementById('scrim');
+  const close = () => {
+    document.body.classList.remove('open');
+    burger?.setAttribute('aria-expanded', 'false');
+  };
+  burger?.addEventListener('click', () => {
+    const open = document.body.classList.toggle('open');
+    burger.setAttribute('aria-expanded', String(open));
   });
+  scrim?.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  const musicButton = document.querySelector<HTMLButtonElement>('[data-music-toggle]');
+  const music = document.querySelector<HTMLAudioElement>('[data-site-music]');
+  if (musicButton && music) {
+    music.volume = 0.32;
+    musicButton.addEventListener('click', async () => {
+      if (music.paused) {
+        try {
+          await music.play();
+          musicButton.classList.add('is-playing');
+          musicButton.setAttribute('aria-pressed', 'true');
+          musicButton.setAttribute('aria-label', 'Pause ambient music');
+        } catch {
+          /* браузер отказал в автозапуске — кнопка остаётся выключенной */
+        }
+      } else {
+        music.pause();
+        musicButton.classList.remove('is-playing');
+        musicButton.setAttribute('aria-pressed', 'false');
+        musicButton.setAttribute('aria-label', 'Play ambient music');
+      }
+    });
+  }
 </script>

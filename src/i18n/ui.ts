@@ -3,9 +3,9 @@
 //  Default language: Russian. To tweak any wording, edit below.
 // ============================================================
 
-export const languages = ['ru', 'en'] as const;
+export const languages = ['en'] as const;
 export type Lang = (typeof languages)[number];
-export const defaultLang: Lang = 'ru';
+export const defaultLang: Lang = 'en';
 
 // Build a URL for the given language. RU has no prefix; EN is /en/...
 // Base path (e.g. '' at root, '/moremaekjupls' on a project page). Set via astro.config base.
@@ -20,19 +20,14 @@ export function stripBase(path: string): string {
 
 // Build a URL for the given language. RU has no lang prefix; EN is /en/...
 // Always base-prefixed so links work under a subpath deployment.
-export function localizeUrl(path: string, lang: Lang): string {
-  const clean = '/' + path.replace(/^\/+/, '');
-  const tail = lang === 'en' ? ('/en' + (clean === '/' ? '' : clean)) : clean;
-  const out = BASE + tail;
-  return out || '/';
+export function localizeUrl(path: string, _lang?: Lang): string {
+  // Single-locale site: URLs need no prefix.
+  return path;
 }
 
 // Swap the current (runtime, base-included) path to the other language.
-export function altLangUrl(path: string, to: Lang): string {
-  let p = stripBase(path);
-  if (p.startsWith('/en/')) p = p.slice(3);
-  else if (p === '/en') p = '/';
-  return localizeUrl(p, to);
+export function altLangUrl(path: string, _to?: Lang): string {
+  return path;
 }
 
 export const ui = {
