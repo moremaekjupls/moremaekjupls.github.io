@@ -585,3 +585,39 @@ h1,h2,h3{font-weight:600;letter-spacing:-.02em;line-height:1.1}
 /* The amber button is gone from the palette; the About page still asks for it. */
 .btn-amber{background:var(--glass);color:#fff;border-color:transparent}
 .btn-amber:hover{background:var(--glass-strong)}
+
+/* ===================== PAGE ATMOSPHERE =====================
+   Two fixed layers behind every inner page. The default is a near-black
+   field with one faint glow and film grain: a long read must not fight its
+   own background. The About page swaps the field for a blurred frame of the
+   hero footage, so the site reads as one place rather than two.
+   ============================================================ */
+.page-bg,.page-scrim{position:fixed;inset:0;z-index:0;pointer-events:none}
+.site-header,main,.site-footer{position:relative;z-index:1}
+
+.page-bg{
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -5%, rgba(255,255,255,.055) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 108%, rgba(255,255,255,.035) 0%, transparent 72%),
+    #000;
+}
+.page-scrim{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.55'/></svg>");
+  opacity:.05;mix-blend-mode:overlay;
+}
+
+/* About: the hero frame, blurred past recognition and dimmed hard, plus a
+   vertical wash so type stays readable over the bright centre of the shot. */
+body:has(.about-page) .page-bg{
+  background:url("/hero-frame.jpg") center/cover no-repeat;
+  filter:blur(30px) saturate(.85) brightness(.34);
+  transform:scale(1.12);
+}
+body:has(.about-page) .page-scrim{
+  opacity:1;mix-blend-mode:normal;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,.78) 55%,rgba(0,0,0,.9) 100%),
+    radial-gradient(ellipse 75% 60% at 50% 45%, transparent 30%, rgba(0,0,0,.55) 100%);
+}
+
+@media (prefers-reduced-motion:reduce){.page-bg{transform:none}}
