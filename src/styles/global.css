@@ -621,3 +621,66 @@ body:has(.about-page) .page-scrim{
 }
 
 @media (prefers-reduced-motion:reduce){.page-bg{transform:none}}
+
+/* ======================= MOBILE HERO =======================
+   The desktop layout hides .nav-right below 768px, which took the music
+   toggle with it. It now lives in its own container beside the burger, and
+   the content block is tightened so the cards stop falling off the screen.
+   ============================================================ */
+.hero .nav-mobile{display:flex;align-items:center;gap:10px}
+@media (min-width:768px){.hero .nav-mobile{display:none}}
+
+/* the footage is brightest exactly where the copy sits */
+.hero .layer::after{
+  content:"";position:absolute;inset:auto 0 0 0;height:62%;pointer-events:none;z-index:-1;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.30) 42%,rgba(0,0,0,.72) 100%);
+}
+
+@media (max-width:767px){
+  .hero nav{padding:14px 16px}
+  .hero .brand{font-size:1rem}
+  .hero .brand svg{width:20px;height:20px}
+  .hero .music{padding:8px 12px;font-size:.75rem}
+  .hero .music span{display:none}          /* на узком экране хватает значка */
+  .hero .music{width:40px;height:40px;justify-content:center;padding:0}
+
+  .hero .content{gap:14px;padding:0 16px 22px}
+  .hero h1{font-size:1.5rem;line-height:1.15;letter-spacing:-.02em}
+  .hero .sub{margin-top:10px;font-size:.8125rem;line-height:1.5}
+
+  /* Карточки съедали экран: ужимаем отступы и обрезаем описание, чтобы
+     первый экран оставался одним экраном. */
+  .hero .cards{gap:10px}
+  .hero .card{padding:14px 16px;border-radius:14px}
+  .hero .stat{font-size:.8125rem}
+  .hero .card p{font-size:.8125rem;line-height:1.5}
+  .hero .stat-card p:last-child{
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .hero .mark{margin-bottom:8px;font-size:.8125rem}
+  .hero .who{margin-top:10px}
+}
+
+/* Ниже 420px даже ужатые две карточки не помещаются: оставляем свежий пост,
+   а «About» никуда не девается — он в меню и в панели. */
+@media (max-width:420px){
+  .hero .cards .card:nth-child(2){display:none}
+  .hero h1{font-size:1.375rem}
+}
+
+/* ======================= DRAWER =======================
+   Was: five links spread over a full-height column with a void in the middle.
+   Now: a tight stack at the top, socials set apart by a rule, CTA at the foot.
+   ====================================================== */
+.drawer{width:min(86vw,320px);padding:84px 20px 28px;gap:2px}
+.drawer a{padding:12px 14px;font-size:.9375rem}
+.drawer__rule{display:block;height:1px;margin:12px 14px;background:var(--hairline);
+  opacity:0;transition:opacity .4s;transition-delay:.15s}
+body.open .drawer__rule{opacity:1}
+.drawer a:nth-of-type(n+3){font-size:.875rem;color:var(--smoke)}
+.drawer a:nth-of-type(n+3):hover{color:#fff}
+body.open .drawer a:nth-child(1){transition-delay:.05s}
+body.open .drawer a:nth-child(2){transition-delay:.10s}
+body.open .drawer a:nth-child(4){transition-delay:.18s}
+body.open .drawer a:nth-child(5){transition-delay:.22s}
+body.open .drawer a:nth-child(6){transition-delay:.26s}

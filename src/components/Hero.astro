@@ -42,12 +42,15 @@ const links = [
         <div class="links">
           {links.map((l) => <a href={l.href}>{l.label}</a>)}
         </div>
+      </div>
 
-        <button class="music" data-music-toggle aria-pressed="false" aria-label="Play ambient music">
-          <svg class="music__icon music__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" /></svg>
-          <svg class="music__icon music__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7V5Zm7 0h3v14h-3V5Z" fill="currentColor" /></svg>
-          <span>Music</span>
-        </button>
+      <div class="nav-mobile">
+
+          <button class="music" data-music-toggle aria-pressed="false" aria-label="Play ambient music">
+            <svg class="music__icon music__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" /></svg>
+            <svg class="music__icon music__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7V5Zm7 0h3v14h-3V5Z" fill="currentColor" /></svg>
+            <span>Music</span>
+          </button>
       </div>
 
       <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">
@@ -91,6 +94,7 @@ const links = [
 <aside class="drawer" id="drawer">
   <a href="/blog">Blog</a>
   <a href="/about">About</a>
+  <span class="drawer__rule" aria-hidden="true"></span>
   {Object.entries(SOCIALS).filter(([k]) => k !== 'email').map(([k, href]) => (
     <a href={href} target="_blank" rel="noopener noreferrer">{k[0].toUpperCase() + k.slice(1)}</a>
   ))}
