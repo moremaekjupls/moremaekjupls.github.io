@@ -91,78 +91,71 @@ const links = [
 </aside>
 
 <script>
-  /* View transitions swap the DOM without re-running scripts that already
-     executed, and `autoplay` only fires when the document is first parsed.
-     Coming back to the home page therefore left dead handlers and a frozen
-     video. Everything below re-binds on every navigation instead. */
-  function bindHero() {
-    const burger = document.getElementById('burger');
-    const scrim = document.getElementById('scrim');
+  /* Делегирование вместо привязки к элементам.
+     При мягких переходах разметка подменяется, и обработчики, навешенные на
+     конкретные узлы, приходится вешать заново на каждой навигации. Любая
+     ошибка в защите от повтора даёт второй обработчик — и переключатель
+     срабатывает дважды, отменяя сам себя. Отсюда «кнопки работают через раз».
+     Обработчик на document живёт один и переживает любую подмену DOM. */
+  const W = window as any;
 
-    const close = () => {
+  if (!W.__heroDelegated) {
+    W.__heroDelegated = true;
+
+    const closeDrawer = () => {
       document.body.classList.remove('open');
-      burger?.setAttribute('aria-expanded', 'false');
+      document.getElementById('burger')?.setAttribute('aria-expanded', 'false');
     };
 
-    if (burger && !(burger as any)._bound) {
-      (burger as any)._bound = true;
-      burger.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+      const el = e.target as HTMLElement | null;
+      if (!el || !el.closest) return;
+
+      if (el.closest('#burger')) {
         const open = document.body.classList.toggle('open');
-        burger.setAttribute('aria-expanded', String(open));
-      });
-    }
-    if (scrim && !(scrim as any)._bound) {
-      (scrim as any)._bound = true;
-      scrim.addEventListener('click', close);
-    }
-    if (!(document as any)._heroEsc) {
-      (document as any)._heroEsc = true;
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-    }
+        document.getElementById('burger')?.setAttribute('aria-expanded', String(open));
+        return;
+      }
+      if (el.closest('#scrim')) { closeDrawer(); return; }
+      if (el.closest('.drawer a')) { closeDrawer(); }
+    });
 
-    // Панель могла остаться открытой на момент ухода со страницы.
-    document.body.classList.remove('open');
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
 
-    /* Возврат на главную через мягкий переход даёт элемент <video>, вставленный
-       уже после загрузки документа. Атрибут autoplay в этот момент не действует,
-       а программный play() браузер отклоняет как воспроизведение без жеста
-       пользователя — и кадр застывает. Пересоздание узла возвращает ему статус
-       свежевставленного, а если политика всё равно откажет, включаем по первому
-       касанию страницы. */
-    const old = document.querySelector<HTMLVideoElement>('.hero video');
-    if (old) {
-      const video = old.cloneNode(true) as HTMLVideoElement;
-      video.muted = true;
-      video.defaultMuted = true;
-      video.autoplay = true;
-      video.playsInline = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
-      old.replaceWith(video);
-
-      const start = () => {
-        const p = video.play();
-        if (p) p.catch(() => {});
-      };
-      start();
-      video.addEventListener('loadeddata', start, { once: true });
-      video.addEventListener('canplay', start, { once: true });
-
-      // последний рубеж: политика автозапуска снимается любым жестом
-      const onGesture = () => {
-        if (video.paused) start();
-        document.removeEventListener('pointerdown', onGesture);
-        document.removeEventListener('touchstart', onGesture);
-      };
-      document.addEventListener('pointerdown', onGesture, { passive: true });
-      document.addEventListener('touchstart', onGesture, { passive: true });
-    }
+    // Снимает запрет автозапуска: вешается один раз и не накапливается.
+    document.addEventListener('pointerdown', () => {
+      const v = document.querySelector<HTMLVideoElement>('.hero video');
+      if (v && v.paused) { const p = v.play(); if (p) p.catch(() => {}); }
+    }, { passive: true });
   }
 
-  bindHero();
-  document.addEventListener('astro:page-load', bindHero);
-  // вкладку свернули и вернули — видео тоже могло встать
+  /* Видео: элемент, вставленный после загрузки документа, не подчиняется
+     autoplay. Пересоздание возвращает ему статус свежевставленного. */
+  function reviveVideo() {
+    document.body.classList.remove('open');
+    const old = document.querySelector<HTMLVideoElement>('.hero video');
+    if (!old) return;
+    const video = old.cloneNode(true) as HTMLVideoElement;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    old.replaceWith(video);
+    const start = () => { const p = video.play(); if (p) p.catch(() => {}); };
+    start();
+    video.addEventListener('loadeddata', start, { once: true });
+    video.addEventListener('canplay', start, { once: true });
+  }
+
+  reviveVideo();
+  document.addEventListener('astro:page-load', reviveVideo);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) bindHero();
+    if (document.hidden) return;
+    const v = document.querySelector<HTMLVideoElement>('.hero video');
+    if (v && v.paused) { const p = v.play(); if (p) p.catch(() => {}); }
   });
 </script>
