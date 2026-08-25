@@ -100,16 +100,53 @@ const links = [
 </aside>
 
 <script>
-  const burger = document.getElementById('burger');
-  const scrim = document.getElementById('scrim');
-  const close = () => {
+  /* View transitions swap the DOM without re-running scripts that already
+     executed, and `autoplay` only fires when the document is first parsed.
+     Coming back to the home page therefore left dead handlers and a frozen
+     video. Everything below re-binds on every navigation instead. */
+  function bindHero() {
+    const burger = document.getElementById('burger');
+    const scrim = document.getElementById('scrim');
+
+    const close = () => {
+      document.body.classList.remove('open');
+      burger?.setAttribute('aria-expanded', 'false');
+    };
+
+    if (burger && !(burger as any)._bound) {
+      (burger as any)._bound = true;
+      burger.addEventListener('click', () => {
+        const open = document.body.classList.toggle('open');
+        burger.setAttribute('aria-expanded', String(open));
+      });
+    }
+    if (scrim && !(scrim as any)._bound) {
+      (scrim as any)._bound = true;
+      scrim.addEventListener('click', close);
+    }
+    if (!(document as any)._heroEsc) {
+      (document as any)._heroEsc = true;
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    }
+
+    // Панель могла остаться открытой на момент ухода со страницы.
     document.body.classList.remove('open');
-    burger?.setAttribute('aria-expanded', 'false');
-  };
-  burger?.addEventListener('click', () => {
-    const open = document.body.classList.toggle('open');
-    burger.setAttribute('aria-expanded', String(open));
+
+    const video = document.querySelector<HTMLVideoElement>('.hero video');
+    if (video) {
+      // muted + playsinline — воспроизведение без жеста пользователя разрешено
+      video.muted = true;
+      const kick = () => { const p = video.play(); if (p) p.catch(() => {}); };
+      if (video.readyState >= 2) kick();
+      else video.addEventListener('loadeddata', kick, { once: true });
+      kick();
+    }
+  }
+
+  bindHero();
+  document.addEventListener('astro:page-load', bindHero);
+  // вкладку свернули и вернули — видео тоже могло встать
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) bindHero();
   });
-  scrim?.addEventListener('click', close);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 </script>
