@@ -86,8 +86,6 @@ const links = [
       </div>
     </div>
   </div>
-
-  <audio data-site-music preload="metadata" loop src="/fairy-library-ambient.mp3"></audio>
 </section>
 
 <div class="scrim" id="scrim"></div>
@@ -114,27 +112,4 @@ const links = [
   });
   scrim?.addEventListener('click', close);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-
-  const musicButton = document.querySelector<HTMLButtonElement>('[data-music-toggle]');
-  const music = document.querySelector<HTMLAudioElement>('[data-site-music]');
-  if (musicButton && music) {
-    music.volume = 0.32;
-    musicButton.addEventListener('click', async () => {
-      if (music.paused) {
-        try {
-          await music.play();
-          musicButton.classList.add('is-playing');
-          musicButton.setAttribute('aria-pressed', 'true');
-          musicButton.setAttribute('aria-label', 'Pause ambient music');
-        } catch {
-          /* браузер отказал в автозапуске — кнопка остаётся выключенной */
-        }
-      } else {
-        music.pause();
-        musicButton.classList.remove('is-playing');
-        musicButton.setAttribute('aria-pressed', 'false');
-        musicButton.setAttribute('aria-label', 'Play ambient music');
-      }
-    });
-  }
 </script>

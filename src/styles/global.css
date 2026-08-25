@@ -278,7 +278,12 @@ h1,h2,h3{font-weight:600;letter-spacing:-.02em;line-height:1.1}
   .post-row:hover{transform:none}
   .container{padding-inline:18px}
 }
-@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}}
+/* Motion off, feedback intact: killing every transition also kills the press
+   response, and then nothing on the page acknowledges a tap. */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;scroll-behavior:auto!important}
+  *{transition-duration:.08s!important}
+}
 
 /* Legacy tokens the About page still relies on, remapped onto the new
    palette so its layout survives the redesign without a rewrite. */
@@ -706,3 +711,62 @@ body.is-screen.open{overflow:hidden}
   .hero .content{padding-bottom:34px}
   .hero .layer::after{height:26%;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.10) 60%,rgba(0,0,0,.34) 100%)}
 }
+
+/* ===================== PRESS FEEDBACK =====================
+   Hover does not exist on a phone. Without an :active state a tap produces
+   nothing at all until the next page paints, and the interface reads as an
+   image rather than a control surface.
+   =========================================================== */
+.cta,.btn,.burger,.menu-btn,.music,
+.hero .links a,.nav-links a,.drawer a,
+a.card,.post-row,.link-arrow,.footer-socials a{
+  transition:background-color .2s,color .2s,border-color .2s,opacity .2s,
+             transform .12s cubic-bezier(.2,.8,.3,1);
+  -webkit-tap-highlight-color:transparent;
+}
+.cta:active,.btn:active,.burger:active,.menu-btn:active,.music:active,
+.hero .links a:active,.nav-links a:active,.drawer a:active,a.card:active{
+  transform:scale(.965);
+}
+.cta:active,.btn-primary:active{filter:brightness(1.15)}
+.music:active,.burger:active,.menu-btn:active,
+.hero .links a:active,.nav-links a:active{background:var(--glass-strong)}
+
+/* Строки блога кликабельны целиком — значит и вести себя должны как кнопка. */
+.post-row{cursor:pointer;border-radius:12px;padding-inline:14px;margin-inline:-14px}
+.post-row:hover{background:rgba(255,255,255,.04)}
+.post-row:active{background:rgba(255,255,255,.07);transform:scale(.995)}
+.link-arrow:active{opacity:.7}
+.footer-socials a:active{transform:scale(.9)}
+
+/* Фокус с клавиатуры — одним правилом на всё интерактивное, а не выборочно. */
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
+.post-row:focus-visible{
+  outline:2px solid rgba(255,255,255,.9);outline-offset:3px;border-radius:10px;
+}
+
+/* ===================== PAGE TRANSITIONS =====================
+   A hard reload flashes black between pages. A short cross-fade keeps the
+   two views related; the header and the music toggle stay put because they
+   are marked persistent.
+   ============================================================= */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:vt-out .18s ease both}
+::view-transition-new(root){animation:vt-in .26s ease both}
+@keyframes vt-out{to{opacity:0}}
+@keyframes vt-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+}
+
+/* Кнопка музыки в шапке внутренних страниц */
+.site-header .music{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--pill);
+  padding:0 16px;height:42px;font-size:.8125rem;font-weight:500;color:var(--ash);
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.site-header .music:hover{background:var(--glass-strong);color:#fff}
+.site-header .music .music__icon{width:14px;height:14px}
+.site-header .music__icon--pause{display:none}
+.site-header .music.is-playing .music__icon--play{display:none}
+.site-header .music.is-playing .music__icon--pause{display:block}
+.site-header .music.is-playing{color:#fff}
+@media (max-width:600px){.site-header .music span{display:none}.site-header .music{width:42px;padding:0;justify-content:center}}
