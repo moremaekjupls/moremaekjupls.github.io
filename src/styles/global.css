@@ -43,7 +43,9 @@ button{font-family:inherit;cursor:pointer}
 :focus-visible{outline:2px solid rgba(255,255,255,.9);outline-offset:3px;border-radius:6px}
 
 /* ============================ HERO ============================ */
-.hero{position:relative;height:100svh;width:100%;overflow:hidden;background:#000}
+/* dvh, не svh: svh считается по вьюпорту с раскрытой строкой браузера, и когда
+   она сжимается при прокрутке, под секцией открывается чёрная полоса. */
+.hero{position:relative;height:100svh;height:100dvh;width:100%;overflow:hidden;background:#000}
 .hero video{position:absolute;inset:0;height:100%;width:100%;object-fit:cover}
 .hero .layer{position:relative;z-index:10;display:flex;flex-direction:column;height:100%;color:#fff}
 /* the footage is bright in the centre and dark at the edges; a soft shadow on
@@ -102,7 +104,7 @@ body.open .drawer{transform:none}
   transition:opacity .4s,transform .4s,background .2s,color .2s}
 body.open .drawer a{opacity:1;transform:none}
 .drawer a:hover{background:var(--glass);color:#fff}
-.drawer .cta{margin-top:auto;width:100%;padding:12px 24px;
+.drawer .cta{margin-top:20px;width:100%;padding:13px 24px;
   opacity:0;transform:translateY(16px);transition:opacity .4s,transform .4s}
 body.open .drawer .cta{opacity:1;transform:none;transition-delay:.3s}
 
@@ -632,8 +634,8 @@ body:has(.about-page) .page-scrim{
 
 /* the footage is brightest exactly where the copy sits */
 .hero .layer::after{
-  content:"";position:absolute;inset:auto 0 0 0;height:62%;pointer-events:none;z-index:-1;
-  background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.30) 42%,rgba(0,0,0,.72) 100%);
+  content:"";position:absolute;inset:auto 0 0 0;height:34%;pointer-events:none;z-index:-1;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.14) 55%,rgba(0,0,0,.42) 100%);
 }
 
 @media (max-width:767px){
@@ -684,3 +686,9 @@ body.open .drawer a:nth-child(2){transition-delay:.10s}
 body.open .drawer a:nth-child(4){transition-delay:.18s}
 body.open .drawer a:nth-child(5){transition-delay:.22s}
 body.open .drawer a:nth-child(6){transition-delay:.26s}
+
+/* The drawer was a short list stranded above a tall void. Everything now sits
+   as one compact stack; the empty space belongs at the bottom, not the middle. */
+.drawer{justify-content:flex-start;padding-top:76px}
+.drawer .cta{align-self:stretch}
+@media (max-height:700px){.drawer{padding-top:64px}.drawer a{padding:10px 14px}}
