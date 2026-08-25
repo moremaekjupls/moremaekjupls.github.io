@@ -37,16 +37,24 @@ const isActive = (m: string) => rel === m || rel.startsWith(m + '/');
 </header>
 
 <script>
-  function bindMenu() {
-    const btn = document.getElementById('menuBtn');
-    const links = document.getElementById('navLinks');
-    if (!btn || !links || (btn as any)._b) return;
-    (btn as any)._b = true;
-    btn.addEventListener('click', () => {
-      const open = links.classList.toggle('open');
-      btn.setAttribute('aria-expanded', String(open));
+  /* Та же причина, что и в хиро: привязка к узлу требует перепривязки на
+     каждой навигации, и любой сбой защиты даёт двойное срабатывание. */
+  const W = window as any;
+  if (!W.__headerDelegated) {
+    W.__headerDelegated = true;
+    document.addEventListener('click', (e) => {
+      const el = e.target as HTMLElement | null;
+      const links = document.getElementById('navLinks');
+      if (!el || !el.closest || !links) return;
+      if (el.closest('#menuBtn')) {
+        const open = links.classList.toggle('open');
+        document.getElementById('menuBtn')?.setAttribute('aria-expanded', String(open));
+        return;
+      }
+      if (!el.closest('#navLinks')) links.classList.remove('open');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') document.getElementById('navLinks')?.classList.remove('open');
     });
   }
-  bindMenu();
-  document.addEventListener('astro:page-load', bindMenu);
 </script>
