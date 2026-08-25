@@ -67,40 +67,5 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
         document.addEventListener('astro:page-load', run);
       })();
     </script>
-    <audio data-site-music transition:persist preload="metadata" loop src="/fairy-library-ambient.mp3"></audio>
-
-    <script>
-      // The audio element is persisted across view transitions, so the toggle has
-      // to re-bind on every navigation and read state from the element, not from
-      // its own memory.
-      function bindMusic() {
-        const audio = document.querySelector<HTMLAudioElement>('[data-site-music]');
-        if (!audio) return;
-        audio.volume = 0.32;
-        for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-music-toggle]')) {
-          const sync = () => {
-            const on = !audio.paused;
-            btn.classList.toggle('is-playing', on);
-            btn.setAttribute('aria-pressed', String(on));
-            btn.setAttribute('aria-label', on ? 'Pause ambient music' : 'Play ambient music');
-          };
-          sync();
-          if ((btn as any)._bound) continue;
-          (btn as any)._bound = true;
-          btn.addEventListener('click', async () => {
-            if (audio.paused) {
-              try { await audio.play(); } catch { /* браузер отказал в автозапуске */ }
-            } else {
-              audio.pause();
-            }
-            sync();
-          });
-          audio.addEventListener('play', sync);
-          audio.addEventListener('pause', sync);
-        }
-      }
-      bindMusic();
-      document.addEventListener('astro:page-load', bindMusic);
-    </script>
   </body>
 </html>
