@@ -35,7 +35,7 @@ body{
   background:var(--void);color:var(--bone);
   font-family:var(--font);font-size:16px;line-height:1.6;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  min-height:100vh;overflow-x:hidden;
+  min-height:100dvh;overflow-x:hidden;
 }
 img,svg,canvas,video{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
@@ -692,3 +692,17 @@ body.open .drawer a:nth-child(6){transition-delay:.26s}
 .drawer{justify-content:flex-start;padding-top:76px}
 .drawer .cta{align-self:stretch}
 @media (max-height:700px){.drawer{padding-top:64px}.drawer a{padding:10px 14px}}
+
+/* The home page is exactly one screen. Without this the document stays taller
+   than the viewport and iOS reveals a black band under the hero on scroll. */
+body.is-screen{height:100dvh;overflow:hidden}
+body.is-screen.open{overflow:hidden}
+
+/* Mobile: the cards sat over the walking figure, which is the whole point of
+   the shot. On a phone the hero is the photograph plus a headline, nothing
+   else; the latest post is one tap away in the menu. */
+@media (max-width:767px){
+  .hero .cards{display:none}
+  .hero .content{padding-bottom:34px}
+  .hero .layer::after{height:26%;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.10) 60%,rgba(0,0,0,.34) 100%)}
+}
