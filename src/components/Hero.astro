@@ -132,14 +132,39 @@ const links = [
     // Панель могла остаться открытой на момент ухода со страницы.
     document.body.classList.remove('open');
 
-    const video = document.querySelector<HTMLVideoElement>('.hero video');
-    if (video) {
-      // muted + playsinline — воспроизведение без жеста пользователя разрешено
+    /* Возврат на главную через мягкий переход даёт элемент <video>, вставленный
+       уже после загрузки документа. Атрибут autoplay в этот момент не действует,
+       а программный play() браузер отклоняет как воспроизведение без жеста
+       пользователя — и кадр застывает. Пересоздание узла возвращает ему статус
+       свежевставленного, а если политика всё равно откажет, включаем по первому
+       касанию страницы. */
+    const old = document.querySelector<HTMLVideoElement>('.hero video');
+    if (old) {
+      const video = old.cloneNode(true) as HTMLVideoElement;
       video.muted = true;
-      const kick = () => { const p = video.play(); if (p) p.catch(() => {}); };
-      if (video.readyState >= 2) kick();
-      else video.addEventListener('loadeddata', kick, { once: true });
-      kick();
+      video.defaultMuted = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      old.replaceWith(video);
+
+      const start = () => {
+        const p = video.play();
+        if (p) p.catch(() => {});
+      };
+      start();
+      video.addEventListener('loadeddata', start, { once: true });
+      video.addEventListener('canplay', start, { once: true });
+
+      // последний рубеж: политика автозапуска снимается любым жестом
+      const onGesture = () => {
+        if (video.paused) start();
+        document.removeEventListener('pointerdown', onGesture);
+        document.removeEventListener('touchstart', onGesture);
+      };
+      document.addEventListener('pointerdown', onGesture, { passive: true });
+      document.addEventListener('touchstart', onGesture, { passive: true });
     }
   }
 
