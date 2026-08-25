@@ -1,13 +1,10 @@
 import { getCollection } from 'astro:content';
 import { SITE } from '../consts';
 export async function GET() {
-  const ru = await getCollection('blog', (e) => e.data.lang === 'ru' && !e.data.draft);
-  const en = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
+    const en = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
   const urls = [
     '/', '/about', '/blog',
-    '/en', '/en/about', '/en/blog',
-    ...ru.map((p) => `/blog/${p.data.transId}`),
-    ...en.map((p) => `/en/blog/${p.data.transId}`),
+    ...en.map((p) => `/blog/${p.data.transId}`),
   ];
   const body = urls.map((u) => `  <url><loc>${SITE.domain}${u}</loc></url>`).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

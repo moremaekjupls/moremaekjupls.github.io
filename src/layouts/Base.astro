@@ -3,15 +3,13 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
-import { altLangUrl, type Lang } from '../i18n/ui';
+import type { Lang } from '../i18n/ui';
 import { SITE } from '../consts';
 
 interface Props { lang: Lang; title: string; description?: string; }
 const { lang, title, description = '' } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
-const ruHref = SITE.domain + altLangUrl(path, 'ru');
-const enHref = SITE.domain + altLangUrl(path, 'en');
 ---
 <!doctype html>
 <html lang={lang}>
@@ -31,15 +29,11 @@ const enHref = SITE.domain + altLangUrl(path, 'en');
     <meta name="twitter:image" content={SITE.domain + "/og.png"} />
     <link rel="alternate" type="application/rss+xml" title="Khondamir Begmatov — Blog" href={lang === "en" ? "/en/rss.xml" : "/rss.xml"} />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="alternate" hreflang="ru" href={ruHref} />
-    <link rel="alternate" hreflang="en" href={enHref} />
-    <link rel="alternate" hreflang="x-default" href={ruHref} />
     <link rel="icon" href={import.meta.env.BASE_URL.replace(/\/$/, "") + "/favicon.svg"} type="image/svg+xml" />
     <Analytics />
   </head>
   <body>
     <a href="#main" class="skip-link">{lang === 'ru' ? '\u041a \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u043c\u0443' : 'Skip to content'}</a>
-    <div class="site-void" aria-hidden="true"></div>
     <Header lang={lang} path={path} />
     <main id="main">
       <slot />

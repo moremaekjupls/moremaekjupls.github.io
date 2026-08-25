@@ -14,9 +14,6 @@ const links = [
 const noBase = stripBase(path);
 const rel = noBase.startsWith('/en') ? (noBase.slice(3) || '/') : noBase;
 const isActive = (m: string) => rel === m || rel.startsWith(m + '/');
-
-const ruUrl = altLangUrl(path, 'ru');
-const enUrl = altLangUrl(path, 'en');
 ---
 <header class="site-header">
   <div class="container nav">
@@ -34,10 +31,6 @@ const enUrl = altLangUrl(path, 'en');
           <li><a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a></li>
         ))}
       </ul>
-      <div class="lang-toggle" role="group" aria-label="Language">
-        <a href={ruUrl} aria-current={lang === 'ru' ? 'true' : 'false'} hreflang="ru">RU</a>
-        <a href={enUrl} aria-current={lang === 'en' ? 'true' : 'false'} hreflang="en">EN</a>
-      </div>
       <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navLinks">{t('nav.menu')}</button>
     </nav>
   </div>
