@@ -70,16 +70,6 @@ button{font-family:inherit;cursor:pointer}
 .hero .nav-cta{align-self:stretch;display:flex;align-items:center;padding:0 20px}
 .hero .nav-right{display:none;align-items:center;gap:12px}
 
-.hero .music{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--pill);
-  padding:8px 16px;font-size:.8125rem;font-weight:500;color:var(--ash);
-  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  transition:background .2s,color .2s}
-.hero .music:hover{background:var(--glass-strong);color:#fff}
-.hero .music__icon{width:14px;height:14px}
-.hero .music__icon--pause{display:none}
-.hero .music.is-playing .music__icon--play{display:none}
-.hero .music.is-playing .music__icon--pause{display:block}
-.hero .music.is-playing{color:#fff}
 
 .burger{display:grid;place-items:center;position:relative;height:40px;width:40px;border:0;
   border-radius:var(--pill);background:var(--glass);backdrop-filter:blur(16px);
@@ -634,8 +624,6 @@ body:has(.about-page) .page-scrim{
    toggle with it. It now lives in its own container beside the burger, and
    the content block is tightened so the cards stop falling off the screen.
    ============================================================ */
-.hero .nav-mobile{display:flex;align-items:center;gap:10px}
-@media (min-width:768px){.hero .nav-mobile{display:none}}
 
 /* the footage is brightest exactly where the copy sits */
 .hero .layer::after{
@@ -646,10 +634,7 @@ body:has(.about-page) .page-scrim{
 @media (max-width:767px){
   .hero nav{padding:14px 16px}
   .hero .brand{font-size:1rem}
-  .hero .brand svg{width:20px;height:20px}
-  .hero .music{padding:8px 12px;font-size:.75rem}
-  .hero .music span{display:none}          /* на узком экране хватает значка */
-  .hero .music{width:40px;height:40px;justify-content:center;padding:0}
+  .hero .brand svg{width:20px;height:20px}          /* на узком экране хватает значка */
 
   .hero .content{gap:14px;padding:0 16px 22px}
   .hero h1{font-size:1.5rem;line-height:1.15;letter-spacing:-.02em}
@@ -717,19 +702,19 @@ body.is-screen.open{overflow:hidden}
    nothing at all until the next page paints, and the interface reads as an
    image rather than a control surface.
    =========================================================== */
-.cta,.btn,.burger,.menu-btn,.music,
+.cta,.btn,.burger,.menu-btn,
 .hero .links a,.nav-links a,.drawer a,
 a.card,.post-row,.link-arrow,.footer-socials a{
   transition:background-color .2s,color .2s,border-color .2s,opacity .2s,
              transform .12s cubic-bezier(.2,.8,.3,1);
   -webkit-tap-highlight-color:transparent;
 }
-.cta:active,.btn:active,.burger:active,.menu-btn:active,.music:active,
+.cta:active,.btn:active,.burger:active,.menu-btn:active,
 .hero .links a:active,.nav-links a:active,.drawer a:active,a.card:active{
   transform:scale(.965);
 }
 .cta:active,.btn-primary:active{filter:brightness(1.15)}
-.music:active,.burger:active,.menu-btn:active,
+.burger:active,.menu-btn:active,
 .hero .links a:active,.nav-links a:active{background:var(--glass-strong)}
 
 /* Строки блога кликабельны целиком — значит и вести себя должны как кнопка. */
@@ -760,13 +745,3 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 
 /* Кнопка музыки в шапке внутренних страниц */
-.site-header .music{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--pill);
-  padding:0 16px;height:42px;font-size:.8125rem;font-weight:500;color:var(--ash);
-  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.site-header .music:hover{background:var(--glass-strong);color:#fff}
-.site-header .music .music__icon{width:14px;height:14px}
-.site-header .music__icon--pause{display:none}
-.site-header .music.is-playing .music__icon--play{display:none}
-.site-header .music.is-playing .music__icon--pause{display:block}
-.site-header .music.is-playing{color:#fff}
-@media (max-width:600px){.site-header .music span{display:none}.site-header .music{width:42px;padding:0;justify-content:center}}
