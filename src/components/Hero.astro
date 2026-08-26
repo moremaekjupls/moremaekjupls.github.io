@@ -22,12 +22,12 @@ const links = [
 ---
 
 <section class="hero">
-  <video
-    src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260803_192301_9231ed6b-c55c-4a48-909c-4ebe11cf2e11.mp4"
-    autoplay loop muted playsinline preload="auto"
-    poster="/hero-frame.jpg"
-    aria-hidden="true"
-  ></video>
+  <video autoplay loop muted playsinline preload="auto" poster="/hero-frame.jpg" aria-hidden="true">
+    <!-- Локальная копия идёт первой. Если файла нет, браузер сам перейдёт
+         ко второму источнику — сайт не сломается ни в одном из случаев. -->
+    <source src="/hero.mp4" type="video/mp4" />
+    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260803_192301_9231ed6b-c55c-4a48-909c-4ebe11cf2e11.mp4" type="video/mp4" />
+  </video>
 
   <div class="layer">
     <nav>

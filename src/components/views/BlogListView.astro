@@ -23,8 +23,8 @@ const titleLines = (t('blog.title') as string).split('\n');
       <p class="muted">{t('blog.empty')}</p>
     ) : (
       <div class="post-list">
-        {posts.map((p) => (
-          <a class="post-row" href={localizeUrl(`/blog/${p.data.transId}`, lang)}>
+        {posts.map((p, i) => (
+          <a class={`post-row${i === 0 ? ' post-row--lead' : ''}`} href={localizeUrl(`/blog/${p.data.transId}`, lang)}>
             <div class="post-row-date">{fmt(p.data.pubDate)}<span class="post-row-read">{readingLabel(lang, readingMinutes(p.body))}</span></div>
             <div>
               <h2 class="post-row-title">{p.data.title}</h2>

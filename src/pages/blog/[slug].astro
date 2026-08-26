@@ -4,11 +4,17 @@ import Base from '../../layouts/Base.astro';
 import PostArticleView from '../../components/views/PostArticleView.astro';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
-  return posts.map((entry) => ({ params: { slug: entry.data.transId }, props: { entry } }));
+  const posts = (await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  // «Следующая» — та, что старше по дате; для самой старой замыкаем на свежую,
+  // чтобы читатель никогда не упирался в тупик.
+  return posts.map((entry, i) => ({
+    params: { slug: entry.data.transId },
+    props: { entry, next: posts[i + 1] ?? (posts.length > 1 ? posts[0] : undefined) },
+  }));
 }
-const { entry } = Astro.props;
+const { entry, next } = Astro.props;
 ---
 <Base lang="en" title={entry.data.title} description={entry.data.excerpt}>
-  <PostArticleView lang="en" entry={entry} />
+  <PostArticleView lang="en" entry={entry} next={next} />
 </Base>

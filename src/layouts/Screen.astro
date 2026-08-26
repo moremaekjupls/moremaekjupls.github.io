@@ -22,13 +22,14 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
     <meta property="og:title" content={SITE.name} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <link rel="canonical" href={SITE.domain + path} />
     <meta property="og:url" content={SITE.domain + path} />
     <meta property="og:image" content={SITE.domain + "/og.png"} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={SITE.domain + "/og.png"} />
-    <link rel="alternate" type="application/rss+xml" title="Khondamir Begmatov — Blog" href={lang === 'en' ? '/en/rss.xml' : '/rss.xml'} />
+    <link rel="alternate" type="application/rss+xml" title="Khondamir Begmatov — Blog" href="/rss.xml" />
     <link rel="icon" href={import.meta.env.BASE_URL.replace(/\/$/, '') + '/favicon.svg'} type="image/svg+xml" />
     <ViewTransitions />
     <Analytics />
