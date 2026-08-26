@@ -1,8 +1,8 @@
 ---
 import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
 import type { CollectionEntry } from 'astro:content';
-interface Props { lang: Lang; entry: CollectionEntry<'blog'>; }
-const { lang, entry } = Astro.props;
+interface Props { lang: Lang; entry: CollectionEntry<'blog'>; next?: CollectionEntry<'blog'>; }
+const { lang, entry, next } = Astro.props;
 const t = useTranslations(lang);
 const { Content } = await entry.render();
 const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(entry.data.pubDate);
@@ -17,7 +17,14 @@ const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: '
       <div class="prose">
         <Content />
       </div>
-      <div style="margin-top:48px;border-top:1px solid var(--hairline);padding-top:24px;">
+      <div class="article-end">
+        {next && (
+          <a class="next-post card" href={localizeUrl(`/blog/${next.data.transId}`, lang)}>
+            <span class="next-post__label">Read next</span>
+            <span class="next-post__title">{next.data.title}</span>
+            <span class="next-post__excerpt">{next.data.excerpt}</span>
+          </a>
+        )}
         <a class="link-arrow" href={localizeUrl('/blog', lang)}>{t('cta.allPosts')} →</a>
       </div>
     </div>
