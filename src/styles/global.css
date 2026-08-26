@@ -758,12 +758,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .footer-socials a{min-height:44px;padding-block:10px}
 .menu-btn{min-height:44px}
 
-/* 404 had been reusing .hero, which now means "full-viewport video section". */
-.notfound{position:relative;min-height:72vh;min-height:72dvh;display:grid;place-items:center;overflow:hidden}
-.notfound__bg{position:absolute;inset:0;z-index:0;opacity:.7}
-.notfound__inner{position:relative;z-index:2;text-align:center}
-.notfound .body{margin:24px auto 30px;max-width:46ch}
-.notfound__actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
 /* The freshest post is what most readers came for; it should not look
    identical to something written six months ago. */
