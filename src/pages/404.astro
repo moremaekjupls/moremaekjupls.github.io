@@ -1,18 +1,192 @@
 ---
-import Base from '../layouts/Base.astro';
-import Particles from '../components/Particles.astro';
+/**
+ * 404.astro — самостоятельная страница ошибки.
+ *
+ * Намеренно не использует общий макет: у него шапка, подвал и фоновые слои,
+ * которые легли бы поверх видео. Здесь нужен чистый холст, поэтому документ
+ * собран целиком, а стили помечены is:inline, чтобы Astro их не трогал.
+ * Классы с префиксом nf- — защита от пересечения с глобальной таблицей.
+ */
+import { SITE } from '../consts';
 ---
-<Base lang="en" title="Page not found" description="This page does not exist.">
-  <section class="section notfound">
-    <div class="notfound__bg" aria-hidden="true"><Particles variant="sphere" density={1} /></div>
-    <div class="container notfound__inner">
-      <span class="eyebrow">404</span>
-      <h1 class="display">Lost<br />in space.</h1>
-      <p class="body body--muted">This page drifted off into the void. The rest of the site is still here.</p>
-      <div class="notfound__actions">
-        <a class="btn btn-primary" href="/">Back home</a>
-        <a class="btn btn-ghost" href="/blog">Read the blog</a>
-      </div>
-    </div>
-  </section>
-</Base>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>404 — {SITE.name}</title>
+    <meta name="description" content="This page does not exist." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <style is:inline>
+
+  @font-face {
+    font-family: "Geist Mono:SemiBold";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("https://static.figma.com/font/GeistMono_wght__1") format("woff2");
+  }
+
+  *{ margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #000;
+    overflow-x: hidden;
+  }
+
+  .nf-page {
+    position: relative;
+    min-height: 100svh;
+    width: 100%;
+    background: #000;
+    overflow-x: hidden;
+  }
+
+  /* ---------------- background video: lowest layer, untouched ------------- */
+  .nf-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+    z-index: 0;
+  }
+
+  /* ---------------- header logo ------------------------------------------ */
+  .nf-brand {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transform-origin: top center;
+  }
+  .nf-brand__mark { width: 40px; height: 40px; display: block; flex: 0 0 auto; }
+  .nf-brand__type {
+    font-family: "Geist Mono:SemiBold", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: -1.5px;
+    color: #fff;
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  /* ---------------- centred 404 group ------------------------------------ */
+  .nf-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    width: 483px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 44px;
+  }
+
+  .nf-four {
+    font-family: "Geist Mono:SemiBold", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+    font-size: 295.751px;
+    line-height: 1.1;
+    letter-spacing: -24.6459px;
+    text-align: center;
+    /* room for the baseline so the numerals are never cropped */
+    padding-bottom: 0.12em;
+    height: auto;
+    min-height: 0;
+    background-image: linear-gradient(
+      247.3282658084845deg,
+      rgb(255, 255, 255) 2.5334%,
+      rgba(255, 255, 255, 0.4) 93.612%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nf-rule {
+    width: 425px;
+    height: 1px;
+    background: #fff;
+    flex: 0 0 auto;
+  }
+
+  .nf-message {
+    font-family: "Geist Mono:SemiBold", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    color: #fff;
+    text-align: center;
+    width: 100%;
+  }
+
+  /* ---------------- mobile ------------------------------------------------ */
+  @media (max-width: 640px) {
+    .nf-brand {
+      top: 32px;
+      transform: translateX(-50%) scale(0.75);
+    }
+    .nf-content {
+      width: min(100% - 40px, 360px);
+      gap: 28px;
+    }
+    .nf-four {
+      font-size: clamp(140px, 52vw, 200px);
+      letter-spacing: -0.09em;
+      height: auto;
+      min-height: 0;
+      padding-bottom: 0.14em;
+    }
+    .nf-rule { width: 100%; }
+    .nf-message {
+      font-size: clamp(16px, 4.5vw, 20px);
+      letter-spacing: -1.3px;
+    }
+  }
+    </style>
+  </head>
+  <body>
+    <main class="nf-page">
+
+  <video
+    class="nf-bg"
+    src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260801_001207_ec20d138-aa45-4b2b-ab8c-bdc71607f240.mp4"
+    autoplay
+    loop
+    muted
+    playsinline
+    aria-hidden="true"
+  ></video>
+
+  <div class="nf-brand" aria-label="Arch">
+    <svg class="nf-brand__mark" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+      <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 128 128 C 128 57.308 185.308 0 256 0 C 256 70.692 198.692 128 128 128 Z M 128 128 C 57.308 128 0 70.692 0 0 C 70.692 0 128 57.308 128 128 Z" fill="white"/>
+    </svg>
+    <span class="nf-brand__type">Arch</span>
+  </div>
+
+  <div class="nf-content">
+    <h1 class="nf-four">404</h1>
+    <div class="nf-rule" aria-hidden="true"></div>
+    <p class="nf-message">The path may be broken, but the journey isn't. Let's get you back.</p>
+  </div>
+    </main>
+  </body>
+</html>
