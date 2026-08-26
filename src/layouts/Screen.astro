@@ -24,13 +24,19 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
     <meta property="og:type" content="website" />
     <link rel="canonical" href={SITE.domain + path} />
     <meta property="og:url" content={SITE.domain + path} />
-    <meta property="og:image" content={SITE.domain + "/og.png"} />
+    <meta property="og:image" content={SITE.domain + "/og.jpg"} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content={SITE.domain + "/og.png"} />
+    <meta name="twitter:image" content={SITE.domain + "/og.jpg"} />
     <link rel="alternate" type="application/rss+xml" title="Khondamir Begmatov — Blog" href="/rss.xml" />
-    <link rel="icon" href={import.meta.env.BASE_URL.replace(/\/$/, '') + '/favicon.svg'} type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
+    <!-- iOS игнорирует SVG-иконки и без этого берёт случайную картинку со страницы -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
     <ViewTransitions />
     <Analytics />
   </head>
