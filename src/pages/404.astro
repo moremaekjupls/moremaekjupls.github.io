@@ -2,16 +2,17 @@
 import Base from '../layouts/Base.astro';
 import Particles from '../components/Particles.astro';
 ---
-<Base lang="en" title="404" description="Страница не найдена · Page not found">
-  <section class="hero" style="min-height:72vh;">
-    <div class="hero-bg"><Particles variant="sphere" density={1} /></div>
-    <div class="container" style="text-align:center;position:relative;z-index:2;">
+<Base lang="en" title="Page not found" description="This page does not exist.">
+  <section class="section notfound">
+    <div class="notfound__bg" aria-hidden="true"><Particles variant="sphere" density={1} /></div>
+    <div class="container notfound__inner">
       <span class="eyebrow">404</span>
-      <h1 class="display">Потерялся<br />в космосе.</h1>
-      <p class="body body--muted" style="margin:24px auto 30px;">
-        Такой страницы нет. · This page drifted off into the void.
-      </p>
-      <a class="btn btn-primary" href="/">На главную · Back home</a>
+      <h1 class="display">Lost<br />in space.</h1>
+      <p class="body body--muted">This page drifted off into the void. The rest of the site is still here.</p>
+      <div class="notfound__actions">
+        <a class="btn btn-primary" href="/">Back home</a>
+        <a class="btn btn-ghost" href="/blog">Read the blog</a>
+      </div>
     </div>
   </section>
 </Base>
