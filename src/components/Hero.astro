@@ -44,8 +44,7 @@ const links = [
       </div>
 
       <button class="burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
-        <svg class="m" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-        <svg class="x" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line class="l1" x1="4" y1="6" x2="20" y2="6" /><line class="l2" x1="4" y1="12" x2="20" y2="12" /><line class="l3" x1="4" y1="18" x2="20" y2="18" /></svg>
       </button>
     </nav>
 
@@ -58,7 +57,7 @@ const links = [
         {latest && (
           <a class="card stat-card" href={`/blog/${latest.data.transId}/`}>
             <div class="stat">{fmt(latest.data.pubDate)}</div>
-            <p><b>{latest.data.title}</b></p>
+            <p style={`view-transition-name:post-${latest.data.transId}`}><b>{latest.data.title}</b></p>
             <p class="quote">{latest.data.excerpt}</p>
           </a>
         )}
@@ -98,17 +97,23 @@ const links = [
   const drawer = document.getElementById('drawer');
   const scrim = document.getElementById('scrim');
 
-  function setOpen(open: boolean) {
+  const hero = document.querySelector<HTMLElement>('.hero video'); // фон, который отодвигается
+  let inertTimer = 0;
+
+  function setOpen(open: boolean, focus = true) {
     if (!burger || !drawer) return;
     document.body.classList.toggle('open', open);
     burger.setAttribute('aria-expanded', String(open));
     burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    // inert убирает закрытую панель из Tab-порядка и от скринридеров:
-    // без него фокус с клавиатуры уходил в невидимые ссылки за краем экрана.
-    drawer.toggleAttribute('inert', !open);
+    // inert убирает закрытую панель из Tab-порядка и от скринридеров. Ставим
+    // его после того, как панель уехала: inert блокирует и указатель, а
+    // уезжающую панель должно быть можно поймать пальцем.
+    clearTimeout(inertTimer);
+    if (open) drawer.removeAttribute('inert');
+    else inertTimer = window.setTimeout(() => drawer.setAttribute('inert', ''), 340);
     // Фокус внутрь — для клавиатуры и скринридеров; кольцо фокуса браузер
     // покажет только при навигации с клавиатуры (:focus-visible).
-    if (open) drawer.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
+    if (open && focus) drawer.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
   }
 
   burger?.addEventListener('click', () => setOpen(!document.body.classList.contains('open')));
@@ -122,36 +127,68 @@ const links = [
 
   /* Свайп вправо закрывает панель — как лист в iOS.
      · Панель едет за пальцем 1:1, с учётом точки захвата.
+     · Её можно поймать на лету — пока открывается или уже уезжает: жест
+       стартует с того места, где панель сейчас на экране, а не с конечной
+       точки анимации, поэтому скачка нет.
      · Потянуть влево можно, но с нарастающим сопротивлением (rubber-band).
      · Решение по отпусканию — по прогнозу, куда долетит жест с текущей
-       скоростью, а не по пройденному расстоянию: короткий резкий флик
-       закрывает, медленное дотягивание до середины — возвращает.
-     · Анимация после отпускания стартует с текущей позиции, а длительность
-       подобрана под скорость пальца, чтобы на стыке не было рывка. */
+       скоростью: короткий резкий флик закрывает, медленное дотягивание до
+       середины — возвращает.
+     · Длительность финиша подобрана под скорость пальца — на стыке нет рывка.
+     · Фон (видео) отодвигается вглубь пропорционально тому, насколько
+       открыта панель. */
   if (drawer && scrim) {
     const INTENT = 10;               // px до того, как решаем, чей это жест
     const DECEL = 0.998;             // замедление, как у прокрутки iOS
+    const PUSH = 0.04;               // насколько уменьшается фон при открытой панели
     const project = (v: number) => (v * DECEL) / (1 - DECEL); // v в px/мс → px
     const rubber = (d: number, dim: number, c = 0.55) => (d * dim * c) / (dim + c * Math.abs(d));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     let id: number | null = null;
-    let x0 = 0, y0 = 0, dx = 0, width = 0;
+    let x0 = 0, y0 = 0, dx = 0, base = 0, pos = 0, width = 0;
     let state: 'idle' | 'pending' | 'drag' | 'scroll' = 'idle';
+    let frozen = false;
     let samples: { x: number; t: number }[] = [];
     let suppressClick = false;
 
-    const apply = (x: number) => {
+    // Где панель сейчас на экране — с учётом идущей анимации.
+    const liveX = () => new DOMMatrixReadOnly(getComputedStyle(drawer).transform).m41;
+
+    const paint = (x: number) => {
+      pos = x;
       const offset = x >= 0 ? x : rubber(x, width);
+      const progress = 1 - Math.min(1, Math.max(0, x) / width); // 1 — открыта
       drawer.style.transform = `translateX(${offset}px)`;
-      scrim.style.opacity = String(Math.max(0, 1 - Math.max(0, x) / width));
+      scrim.style.opacity = String(progress);
+      if (hero && !reduce.matches) {
+        hero.style.transform = `scale(${1 - PUSH * progress})`;
+        hero.style.borderRadius = `${18 * progress}px`;
+      }
+    };
+
+    const grab = () => {
+      frozen = true;
+      drawer.classList.add('is-dragging');
+      scrim.classList.add('is-dragging');
+      hero?.classList.add('is-dragging');
+      paint(base);
     };
 
     drawer.addEventListener('pointerdown', (e) => {
-      if (id !== null || !document.body.classList.contains('open') || e.button > 0) return; // второй палец игнорируем
-      id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0;
+      if (id !== null || e.button > 0) return;              // второй палец игнорируем
       width = drawer.getBoundingClientRect().width;
+      base = liveX();
+      const moving = base > 0.5 && base < width - 0.5;
+      if (!document.body.classList.contains('open') && !moving) return;
+      id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0;
       samples = [{ x: e.clientX, t: e.timeStamp }];
-      state = 'pending';
+      state = 'pending'; frozen = false;
+      if (moving) {                                         // поймали на лету
+        grab();
+        drawer.setPointerCapture(e.pointerId);
+        if (!document.body.classList.contains('open')) setOpen(true, false);
+      }
     });
 
     drawer.addEventListener('pointermove', (e) => {
@@ -159,46 +196,46 @@ const links = [
       const mx = e.clientX - x0, my = e.clientY - y0;
       if (state === 'pending') {
         if (Math.hypot(mx, my) < INTENT) return;
-        // Вертикальное намерение — это прокрутка панели, не наш жест.
-        if (Math.abs(my) > Math.abs(mx)) { state = 'scroll'; return; }
+        // Вертикальное намерение у открытой панели — это её прокрутка.
+        if (!frozen && Math.abs(my) > Math.abs(mx)) { state = 'scroll'; return; }
         state = 'drag';
         x0 = e.clientX;              // старт с этой точки — без скачка на величину порога
-        drawer.setPointerCapture(e.pointerId);
-        drawer.classList.add('is-dragging');
-        scrim.classList.add('is-dragging');
+        if (!frozen) { drawer.setPointerCapture(e.pointerId); grab(); }
       }
       dx = e.clientX - x0;
       samples.push({ x: e.clientX, t: e.timeStamp });
       if (samples.length > 6) samples.shift();
-      apply(dx);
+      paint(base + dx);
     });
 
     const release = (e: PointerEvent) => {
       if (e.pointerId !== id) return;
-      const wasDrag = state === 'drag';
+      const dragged = state === 'drag';
       id = null; state = 'idle';
-      if (!wasDrag) return;
+      if (!frozen) return;           // обычный тап по ссылке — пусть работает
+      frozen = false;
       suppressClick = true;          // палец отпустили над ссылкой — это не клик
 
       const first = samples[0], last = samples[samples.length - 1];
       const dt = Math.max(1, last.t - first.t);
-      const v = e.type === 'pointercancel' ? 0 : (last.x - first.x) / dt; // px/мс, > 0 — вправо
-      const close = dx + project(v) > width / 2 || v > 0.5;
+      const v = !dragged || e.type === 'pointercancel' ? 0 : (last.x - first.x) / dt; // px/мс, > 0 — вправо
+      const close = pos + project(v) > width / 2;
 
       // Остаток пути делим на скорость пальца: быстрый флик — быстрый финиш.
-      const remaining = close ? width - Math.max(dx, 0) : Math.abs(dx);
+      const remaining = close ? width - Math.max(pos, 0) : Math.abs(pos);
       const ms = Math.abs(v) > 0.05 ? Math.min(420, Math.max(180, remaining / Math.abs(v))) : 320;
-      drawer.classList.remove('is-dragging');
-      scrim.classList.remove('is-dragging');
-      drawer.style.transition = `transform ${ms}ms var(--ease-drawer), visibility 0s ${close ? ms : 0}ms`;
-      scrim.style.transition = `opacity ${ms}ms var(--ease-drawer)`;
-      drawer.style.transform = '';
+      const curve = `${ms}ms var(--ease-drawer)`;
+      for (const el of [drawer, scrim, hero]) el?.classList.remove('is-dragging');
+      drawer.style.transition = `transform ${curve}, visibility 0s ${close ? ms : 0}ms`;
+      scrim.style.transition = `opacity ${curve}`;
+      if (hero) hero.style.transition = `transform ${curve}, border-radius ${curve}`;
+      for (const el of [drawer, hero]) { if (el) { el.style.transform = ''; } }
+      if (hero) hero.style.borderRadius = '';
       scrim.style.opacity = '';
-      if (close) setOpen(false);
-      drawer.addEventListener('transitionend', () => {
-        drawer.style.transition = '';
-        scrim.style.transition = '';
-      }, { once: true });
+      setOpen(!close, false);
+      window.setTimeout(() => {
+        for (const el of [drawer, scrim, hero]) if (el) el.style.transition = '';
+      }, ms + 20);
     };
     drawer.addEventListener('pointerup', release);
     drawer.addEventListener('pointercancel', release);
