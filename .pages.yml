@@ -29,10 +29,10 @@ content:
         label: Language
         type: select
         options:
-          values: [ru, en]
-        default: ru
+          values: [en]
+        default: en
       - name: transId
-        label: Post ID (SAME in the RU and EN version — this is the URL)
+        label: Post ID (this is the URL)
         type: string
         pattern:
           regex: '^[a-z0-9-]+$'

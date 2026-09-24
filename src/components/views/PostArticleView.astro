@@ -1,31 +1,30 @@
 ---
-import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
+import { t, readingMinutes, readingLabel } from '../../i18n/ui';
 import type { CollectionEntry } from 'astro:content';
-interface Props { lang: Lang; entry: CollectionEntry<'blog'>; next?: CollectionEntry<'blog'>; }
-const { lang, entry, next } = Astro.props;
-const t = useTranslations(lang);
+interface Props { entry: CollectionEntry<'blog'>; next?: CollectionEntry<'blog'>; }
+const { entry, next } = Astro.props;
 const { Content } = await entry.render();
-const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(entry.data.pubDate);
+const fmt = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(entry.data.pubDate);
 ---
 <div class="read-progress" id="readProgress"></div>
 <article class="section">
   <div class="container">
     <div class="article">
-      <a class="link-arrow" href={localizeUrl('/blog', lang)} style="margin-bottom:24px;">{t('cta.backToBlog')}</a>
-      <p class="article-meta" style="margin-top:24px;">{fmt} · {readingLabel(lang, readingMinutes(entry.body))}</p>
+      <a class="link-arrow" href="/blog" style="margin-bottom:24px;">{t('cta.backToBlog')}</a>
+      <p class="article-meta" style="margin-top:24px;">{fmt} · {readingLabel(readingMinutes(entry.body))}</p>
       <h1 style="margin-bottom:30px;">{entry.data.title}</h1>
       <div class="prose">
         <Content />
       </div>
       <div class="article-end">
         {next && (
-          <a class="next-post card" href={localizeUrl(`/blog/${next.data.transId}`, lang)}>
+          <a class="next-post card" href={`/blog/${next.data.transId}`}>
             <span class="next-post__label">Read next</span>
             <span class="next-post__title">{next.data.title}</span>
             <span class="next-post__excerpt">{next.data.excerpt}</span>
           </a>
         )}
-        <a class="link-arrow" href={localizeUrl('/blog', lang)}>{t('cta.allPosts')} →</a>
+        <a class="link-arrow" href="/blog">{t('cta.allPosts')} →</a>
       </div>
     </div>
   </div>

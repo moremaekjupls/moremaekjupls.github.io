@@ -1,23 +1,17 @@
 ---
-import { useTranslations, localizeUrl, altLangUrl, stripBase, type Lang } from '../i18n/ui';
-interface Props { lang: Lang; path: string; }
-const { lang, path } = Astro.props;
-const t = useTranslations(lang);
-const L = (p: string) => localizeUrl(p, lang);
+import { t } from '../i18n/ui';
+interface Props { path: string; }
+const { path } = Astro.props;
 
-const homeHref = L('/');
 const links = [
-  { href: L('/blog'), label: t('nav.blog'), match: '/blog' },
-  { href: L('/about'), label: t('nav.about'), match: '/about' },
+  { href: '/blog', label: t('nav.blog'), match: '/blog' },
+  { href: '/about', label: t('nav.about'), match: '/about' },
 ];
-// strip base + /en prefix for matching
-const noBase = stripBase(path);
-const rel = noBase.startsWith('/en') ? (noBase.slice(3) || '/') : noBase;
-const isActive = (m: string) => rel === m || rel.startsWith(m + '/');
+const isActive = (m: string) => path === m || path.startsWith(m + '/');
 ---
 <header class="site-header">
   <div class="container nav">
-    <a class="logo" href={homeHref} aria-label="Khondamir — home">
+    <a class="logo" href="/" aria-label="Khondamir — home">
       <svg class="mark" width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 128 128 C 128 57.308 185.308 0 256 0 C 256 70.692 198.692 128 128 128 Z M 128 128 C 57.308 128 0 70.692 0 0 C 70.692 0 128 57.308 128 128 Z" /></svg>
       <span>Khondamir</span>
     </a>

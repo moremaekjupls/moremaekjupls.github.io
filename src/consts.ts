@@ -5,11 +5,11 @@
 
 export const SITE = {
   name: 'Khondamir',
-  // REPLACE with your real URL once deployed (used for SEO/OG tags & sitemap).
+  // Used for SEO/OG tags & sitemap.
   domain: 'https://moremaekjupls.github.io',
 };
 
-// Footer social links — replace the URLs.
+// Footer social links.
 export const SOCIALS = {
   github: 'https://github.com/moremaekjupls',
   x: 'https://x.com/damcux?s=11',

@@ -1,12 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
-import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
-interface Props { lang: Lang; }
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const posts = (await getCollection('blog', (e) => e.data.lang === lang && !e.data.draft))
+import { t, readingMinutes, readingLabel } from '../../i18n/ui';
+const posts = (await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const fmt = (d: Date) => new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(d);
+const fmt = (d: Date) => new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(d);
 const titleLines = (t('blog.title') as string).split('\n');
 ---
 <section class="page-intro">
@@ -24,8 +21,8 @@ const titleLines = (t('blog.title') as string).split('\n');
     ) : (
       <div class="post-list">
         {posts.map((p, i) => (
-          <a class={`post-row${i === 0 ? ' post-row--lead' : ''}`} href={localizeUrl(`/blog/${p.data.transId}`, lang)}>
-            <div class="post-row-date">{fmt(p.data.pubDate)}<span class="post-row-read">{readingLabel(lang, readingMinutes(p.body))}</span></div>
+          <a class={`post-row${i === 0 ? ' post-row--lead' : ''}`} href={`/blog/${p.data.transId}`}>
+            <div class="post-row-date">{fmt(p.data.pubDate)}<span class="post-row-read">{readingLabel(readingMinutes(p.body))}</span></div>
             <div>
               <h2 class="post-row-title">{p.data.title}</h2>
               <p class="post-row-excerpt">{p.data.excerpt}</p>

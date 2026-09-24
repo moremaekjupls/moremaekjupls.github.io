@@ -4,16 +4,15 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
 import { ViewTransitions } from 'astro:transitions';
-import type { Lang } from '../i18n/ui';
 import { SITE } from '../consts';
 
-interface Props { lang: Lang; title: string; description?: string; }
-const { lang, title, description = '' } = Astro.props;
+interface Props { title: string; description?: string; }
+const { title, description = '' } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
 ---
 <!doctype html>
-<html lang={lang}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,14 +41,14 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
     <Analytics />
   </head>
   <body>
-    <a href="#main" class="skip-link">{lang === 'ru' ? '\u041a \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u043c\u0443' : 'Skip to content'}</a>
+    <a href="#main" class="skip-link">Skip to content</a>
     <div class="page-bg" aria-hidden="true"></div>
     <div class="page-scrim" aria-hidden="true"></div>
-    <Header lang={lang} path={path} />
+    <Header path={path} />
     <main id="main">
       <slot />
     </main>
-    <Footer lang={lang} />
+    <Footer />
     <script>
       (function () {
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
