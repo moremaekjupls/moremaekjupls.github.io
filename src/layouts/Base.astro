@@ -72,8 +72,13 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
       const sel = '.post-row, .article .prose, .article-end, .contact-form';
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
         const io = new IntersectionObserver((entries, obs) => {
+          // Блоки, въехавшие в экран одним кадром, появляются каскадом по 60ms.
+          let i = 0;
           for (const e of entries) {
-            if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); }
+            if (!e.isIntersecting) continue;
+            (e.target as HTMLElement).style.animationDelay = `${Math.min(i++ * 60, 240)}ms`;
+            e.target.classList.add('is-visible');
+            obs.unobserve(e.target);
           }
         }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
         for (const el of document.querySelectorAll(sel)) {

@@ -38,6 +38,10 @@
   /* iOS sheet curve: the drawer arrives with the same weight as a native one. */
   --ease-drawer:cubic-bezier(.32,.72,0,1);
 
+  /* Light catching the top edge of a glass control: reads as a surface with
+     thickness rather than a flat translucent rectangle. */
+  --edge:inset 0 1px 0 rgba(255,255,255,.09);
+
   /* iPhone notch / home indicator. Zero everywhere else. */
   --safe-t:env(safe-area-inset-top,0px);
   --safe-r:env(safe-area-inset-right,0px);
@@ -46,6 +50,9 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
+/* In-page jumps (skip link, "Explore my path") land below the sticky header,
+   not underneath it. */
+[id]{scroll-margin-top:calc(88px + var(--safe-t))}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth;background:var(--void);
   color-scheme:dark;-webkit-tap-highlight-color:transparent}
 body{
@@ -71,15 +78,26 @@ button,.btn,.burger,.menu-btn,.nav-links a,.hero .links a,.drawer a,.timeline-ca
 
 /* ============================ HERO ============================ */
 .hero{position:relative;height:100svh;height:100dvh;width:100%;overflow:hidden;background:#000}
-.hero video{position:absolute;inset:0;height:100%;width:100%;object-fit:cover}
-.hero .layer{position:relative;z-index:10;display:flex;flex-direction:column;height:100%;color:#fff}
+.hero video{position:absolute;inset:0;height:100%;width:100%;object-fit:cover;
+  transition:transform .3s var(--ease-drawer),border-radius .3s var(--ease-drawer)}
+/* Dim to focus, and push the page back: the menu is a layer above the page,
+   the way a sheet sits above the app on iOS. Only the footage moves — a
+   transform on .hero itself would trap the burger (the close button) in its
+   stacking context, underneath the drawer. */
+body.open .hero video{transform:scale(.96);border-radius:18px;transition-duration:.5s}
+.hero video.is-dragging{transition:none}
+/* No z-index on the layer: a stacking context here would cap the burger's
+   z-index at the layer's and put the close button underneath the drawer.
+   Nav and content are positioned so they paint above the gradient below. */
+.hero .layer{position:relative;display:flex;flex-direction:column;height:100%;color:#fff}
+.hero nav,.hero .content{position:relative}
 /* the footage is bright in the centre and dark at the edges; a soft shadow on
    type keeps it legible at phone widths without laying a gradient over it */
 .hero h1,.hero .stat,.hero .card p,.hero .who b,.hero .who small,
 .hero .brand span{text-shadow:0 1px 14px rgba(0,0,0,.45)}
 /* the footage is brightest exactly where the copy sits */
-.hero .layer::after{
-  content:"";position:absolute;inset:auto 0 0 0;height:34%;pointer-events:none;z-index:-1;
+.hero .layer::before{
+  content:"";position:absolute;inset:auto 0 0 0;height:34%;pointer-events:none;
   background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.14) 55%,rgba(0,0,0,.42) 100%);
 }
 
@@ -99,11 +117,16 @@ button,.btn,.burger,.menu-btn,.nav-links a,.hero .links a,.drawer a,.timeline-ca
   border-radius:var(--pill);background:var(--glass);color:#fff;
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .burger{z-index:50}
-.burger svg,.menu-btn svg{position:absolute;width:20px;height:20px;stroke:currentColor;fill:none;
-  stroke-width:2;stroke-linecap:round;transition:transform .3s var(--ease-out),opacity .2s}
-.burger .x,.menu-btn .x{transform:rotate(-90deg) scale(.4);opacity:0}
-body.open .burger .m,.menu-open .menu-btn .m{transform:rotate(90deg) scale(.4);opacity:0}
-body.open .burger .x,.menu-open .menu-btn .x{transform:none;opacity:1}
+.burger,.menu-btn,.hero .links,.hero .card,.card,.btn-ghost,.btn-amber,.drawer .drawer__latest{box-shadow:var(--edge)}
+/* Three lines fold into a cross instead of one icon swapping for another:
+   the state change is visible as a movement, not a replacement. The order
+   rotate → translate moves each line to the centre first, then turns it. */
+.burger svg,.menu-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;overflow:visible}
+.burger line,.menu-btn line{transform-box:view-box;transform-origin:12px 12px;
+  transition:transform .32s var(--ease-out),opacity .16s ease}
+body.open .burger .l1,.menu-open .menu-btn .l1{transform:rotate(45deg) translateY(6px)}
+body.open .burger .l2,.menu-open .menu-btn .l2{transform:scaleX(.2);opacity:0}
+body.open .burger .l3,.menu-open .menu-btn .l3{transform:rotate(-45deg) translateY(-6px)}
 
 .hero .content{margin-top:auto;display:flex;flex-direction:column;gap:14px;
   padding:0 calc(16px + var(--safe-r)) calc(34px + var(--safe-b)) calc(16px + var(--safe-l))}
@@ -246,7 +269,9 @@ html:has(body.is-screen){overscroll-behavior:none}
 
 .eyebrow{font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.16em;
   color:var(--smoke);margin-bottom:18px;display:inline-block}
-h1,h2,h3{font-weight:600;letter-spacing:-.02em;line-height:1.1}
+h1,h2,h3{font-weight:600;letter-spacing:-.02em;line-height:1.1;overflow-wrap:break-word}
+.prose h2,.prose h3,.post-row-title,.next-post__title{text-wrap:balance}
+.post-row-excerpt,.about-hero__lead,.about-section-heading p,.certificate-card p{text-wrap:pretty}
 .display{font-size:clamp(40px,7vw,72px);line-height:1;letter-spacing:-.03em;text-wrap:balance}
 .heading{font-size:clamp(24px,3.4vw,32px)}
 .body{font-size:1rem;line-height:1.7;color:var(--ash);max-width:62ch}
@@ -293,7 +318,7 @@ h1,h2,h3{font-weight:600;letter-spacing:-.02em;line-height:1.1}
 .article-meta{color:var(--smoke);font-size:.8125rem;margin-bottom:18px}
 .article h1{font-size:clamp(32px,5.6vw,52px);letter-spacing:-.03em;line-height:1.05;text-wrap:balance}
 .prose>*+*{margin-top:24px}
-.prose p{font-size:1.0625rem;line-height:1.75;color:var(--ash)}
+.prose p{font-size:1.0625rem;line-height:1.75;color:var(--ash);text-wrap:pretty}
 .prose h2{font-size:1.5rem;font-weight:600;color:#fff;margin-top:40px}
 .prose h3{font-size:1.1875rem;font-weight:600;color:#fff}
 .prose ul,.prose ol{padding-left:1.2em;color:var(--ash)}
@@ -638,6 +663,11 @@ body.open .drawer a:active{transform:scale(.97)}
 @view-transition{navigation:auto}
 ::view-transition-old(root){animation:vt-out .16s ease both}
 ::view-transition-new(root){animation:vt-in .24s var(--ease-out) both}
+/* A post's title travels from the list (or the home card) into the article
+   heading and back: the page change keeps its spatial thread. Names are set
+   inline per post; they only ever sit on block-level boxes, because a named
+   element broken across lines cancels the whole transition. */
+::view-transition-group(*){animation-duration:.42s;animation-timing-function:var(--ease-out)}
 @keyframes vt-out{to{opacity:0}}
 @keyframes vt-in{from{opacity:0}}
 
@@ -656,4 +686,6 @@ body.open .drawer a:active{transform:scale(.97)}
   .drawer{opacity:0;transition-property:opacity,visibility}
   body.open .drawer{opacity:1}
   .nav-links{transform:none!important}
+  .hero video,body.open .hero video{transform:none!important;border-radius:0!important}
+  ::view-transition-group(*){animation:none!important}
 }

@@ -13,7 +13,7 @@ const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: '
     <div class="article">
       <a class="link-arrow" href={localizeUrl('/blog', lang)}>{t('cta.backToBlog')}</a>
       <p class="article-meta" style="margin-top:20px;">{fmt} · {readingLabel(lang, readingMinutes(entry.body))}</p>
-      <h1 style="margin-bottom:32px;">{entry.data.title}</h1>
+      <h1 style={`margin-bottom:32px;view-transition-name:post-${entry.data.transId}`}>{entry.data.title}</h1>
       <div class="prose">
         <Content />
       </div>
@@ -21,7 +21,7 @@ const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: '
         {next && (
           <a class="next-post card" href={localizeUrl(`/blog/${next.data.transId}`, lang)}>
             <span class="next-post__label">Read next</span>
-            <span class="next-post__title">{next.data.title}</span>
+            <span class="next-post__title" style={`view-transition-name:post-${next.data.transId}`}>{next.data.title}</span>
             <span class="next-post__excerpt">{next.data.excerpt}</span>
           </a>
         )}

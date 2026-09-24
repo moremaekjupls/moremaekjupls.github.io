@@ -27,7 +27,7 @@ const titleLines = (t('blog.title') as string).split('\n');
           <a class={`post-row${i === 0 ? ' post-row--lead' : ''}`} href={localizeUrl(`/blog/${p.data.transId}`, lang)}>
             <div class="post-row-date">{fmt(p.data.pubDate)}<span class="post-row-read">{readingLabel(lang, readingMinutes(p.body))}</span></div>
             <div>
-              <h2 class="post-row-title">{p.data.title}</h2>
+              <h2 class="post-row-title" style={`view-transition-name:post-${p.data.transId}`}>{p.data.title}</h2>
               <p class="post-row-excerpt">{p.data.excerpt}</p>
             </div>
           </a>
