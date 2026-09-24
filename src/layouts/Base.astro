@@ -56,6 +56,9 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
     </main>
     <Footer />
     <script>
+      import { initSound } from '../lib/sound';
+      initSound();
+
       // iOS Safari не применяет :active при касании, пока на странице нет ни
       // одного обработчика touchstart. Пустого пассивного достаточно — без него
       // все кнопки на iPhone нажимаются молча.

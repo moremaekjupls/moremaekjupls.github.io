@@ -6,6 +6,7 @@
  * На телефоне карточек нет — свежий пост вынесен в выдвижное меню.
  */
 import { SOCIALS } from '../consts';
+import SoundToggle from './SoundToggle.astro';
 import { getPosts, postUrl, formatDate } from '../lib/site';
 
 const [latest] = await getPosts();
@@ -43,7 +44,7 @@ const links = [
         </div>
       </div>
 
-      <button class="burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
+      <button class="burger" id="burger" type="button" data-sound-skip aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
         <svg viewBox="0 0 24 24" aria-hidden="true"><line class="l1" x1="4" y1="6" x2="20" y2="6" /><line class="l2" x1="4" y1="12" x2="20" y2="12" /><line class="l3" x1="4" y1="18" x2="20" y2="18" /></svg>
       </button>
     </nav>
@@ -92,9 +93,11 @@ const links = [
     <a class="drawer__social" href={href} target="_blank" rel="noopener noreferrer">{LABELS[k] ?? k}</a>
   ))}
   <a class="drawer__social" href={SOCIALS.email}>Email</a>
+  <SoundToggle class="drawer__sound" />
 </aside>
 
 <script>
+  import { play as sound, haptic } from '../lib/sound';
   const burger = document.getElementById('burger');
   const drawer = document.getElementById('drawer');
   const scrim = document.getElementById('scrim');
@@ -118,8 +121,12 @@ const links = [
     if (open && focus) drawer.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
   }
 
-  burger?.addEventListener('click', () => setOpen(!document.body.classList.contains('open')));
-  scrim?.addEventListener('click', () => setOpen(false));
+  burger?.addEventListener('click', (e) => {
+    const open = !document.body.classList.contains('open');
+    setOpen(open);
+    if (e.detail > 0) sound(open ? 'open' : 'close');   // detail 0 — нажато с клавиатуры
+  });
+  scrim?.addEventListener('click', () => { setOpen(false); sound('close'); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.classList.contains('open')) { setOpen(false); burger?.focus(); }
   });
@@ -235,6 +242,7 @@ const links = [
       if (hero) hero.style.borderRadius = '';
       scrim.style.opacity = '';
       setOpen(!close, false);
+      if (close) { sound('close'); haptic(); }
       window.setTimeout(() => {
         for (const el of [drawer, scrim, hero]) if (el) el.style.transition = '';
       }, ms + 20);
