@@ -33,6 +33,7 @@ transId: "moy-post"          # адрес поста: /blog/moy-post/
 | Главная: видео, заголовок, карточки, меню | `src/components/Hero.astro` |
 | «Обо мне» | `src/components/views/AboutView.astro` |
 | Цвета, типографика, все стили | `src/styles/global.css` (токены в `:root`) |
+| Шрифт (один на весь сайт — Geist) | `public/fonts/geist-variable.woff2` + `@font-face` в начале `global.css` |
 | Выборка постов, даты, ссылки | `src/lib/site.ts` |
 
 ```
