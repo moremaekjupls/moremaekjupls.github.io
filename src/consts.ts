@@ -7,6 +7,7 @@ export const SITE = {
   name: 'Khondamir',
   // REPLACE with your real URL once deployed (used for SEO/OG tags & sitemap).
   domain: 'https://moremaekjupls.github.io',
+  repo: 'https://github.com/moremaekjupls/moremaekjupls.github.io',
 };
 
 // Footer social links — replace the URLs.

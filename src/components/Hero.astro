@@ -16,6 +16,7 @@ const LABELS: Record<string, string> = { github: 'GitHub', x: 'X', linkedin: 'Li
 
 const links = [
   { href: '/blog/', label: 'Blog' },
+  { href: '/history/', label: 'History' },
   { href: '/about/', label: 'About' },
 ];
 ---
@@ -75,6 +76,7 @@ const links = [
 <div class="scrim" id="scrim" aria-hidden="true"></div>
 <aside class="drawer" id="drawer" aria-label="Menu" inert>
   <a href="/blog/">Blog</a>
+  <a href="/history/">History</a>
   <a href="/about/">About</a>
   {latest && (
     <a class="drawer__latest" href={postUrl(latest)}>
