@@ -14,9 +14,7 @@ const VERSION = Date.now().toString(36);
 const PRECACHE = [
   '/', '/blog/', '/history/', '/about/', '/offline/',
   '/hero-frame.jpg',
-  '/fonts/geist-sans-latin-400-normal.woff2',
-  '/fonts/geist-sans-latin-500-normal.woff2',
-  '/fonts/geist-sans-latin-600-normal.woff2',
+  '/fonts/geist-variable.woff2',
 ];
 
 const source = `
