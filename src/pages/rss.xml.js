@@ -6,15 +6,15 @@ export async function GET() {
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
   const items = posts.map((p) => `    <item>
       <title>${esc(p.data.title)}</title>
-      <link>${SITE.domain}/en/blog/${p.data.transId}</link>
-      <guid>${SITE.domain}/en/blog/${p.data.transId}</guid>
+      <link>${SITE.domain}/blog/${p.data.transId}/</link>
+      <guid>${SITE.domain}/blog/${p.data.transId}/</guid>
       <pubDate>${p.data.pubDate.toUTCString()}</pubDate>
       <description>${esc(p.data.excerpt)}</description>
     </item>`).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
     <title>Khondamir — Blog</title>
-    <link>${SITE.domain}/en/blog</link>
+    <link>${SITE.domain}/blog/</link>
     <description>AI news and analysis through a builder's lens</description>
     <language>en</language>
 ${items}

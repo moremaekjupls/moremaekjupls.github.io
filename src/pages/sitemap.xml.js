@@ -3,8 +3,8 @@ import { SITE } from '../consts';
 export async function GET() {
     const en = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
   const urls = [
-    '/', '/about', '/blog',
-    ...en.map((p) => `/blog/${p.data.transId}`),
+    '/', '/about/', '/blog/',
+    ...en.map((p) => `/blog/${p.data.transId}/`),
   ];
   const body = urls.map((u) => `  <url><loc>${SITE.domain}${u}</loc></url>`).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

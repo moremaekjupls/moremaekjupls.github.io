@@ -7,13 +7,13 @@ const t = useTranslations(lang);
 const { Content } = await entry.render();
 const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(entry.data.pubDate);
 ---
-<div class="read-progress" id="readProgress"></div>
+<div class="read-progress" id="readProgress" aria-hidden="true"></div>
 <article class="section">
   <div class="container">
     <div class="article">
-      <a class="link-arrow" href={localizeUrl('/blog', lang)} style="margin-bottom:24px;">{t('cta.backToBlog')}</a>
-      <p class="article-meta" style="margin-top:24px;">{fmt} · {readingLabel(lang, readingMinutes(entry.body))}</p>
-      <h1 style="margin-bottom:30px;">{entry.data.title}</h1>
+      <a class="link-arrow" href={localizeUrl('/blog', lang)}>{t('cta.backToBlog')}</a>
+      <p class="article-meta" style="margin-top:20px;">{fmt} · {readingLabel(lang, readingMinutes(entry.body))}</p>
+      <h1 style="margin-bottom:32px;">{entry.data.title}</h1>
       <div class="prose">
         <Content />
       </div>
@@ -32,20 +32,20 @@ const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: '
 </article>
 
 <script>
-  function initProgress() {
-    const bar = document.getElementById('readProgress');
-    const art = document.querySelector('.article');
-    if (!bar || !art) return;
-    function update() {
-      const total = (art as HTMLElement).offsetHeight - window.innerHeight;
-      const scrolled = Math.min(Math.max(-art.getBoundingClientRect().top, 0), Math.max(total, 1));
-      bar.style.width = (scrolled / Math.max(total, 1) * 100) + '%';
-    }
+  const bar = document.getElementById('readProgress');
+  const art = document.querySelector<HTMLElement>('.article');
+  if (bar && art) {
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const total = Math.max(art.offsetHeight - window.innerHeight, 1);
+      const scrolled = Math.min(Math.max(-art.getBoundingClientRect().top, 0), total);
+      bar.style.transform = `scaleX(${scrolled / total})`;
+    };
+    // Не чаще одного пересчёта за кадр, сколько бы scroll-событий ни пришло.
+    const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
     update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
   }
-  if (document.readyState !== 'loading') initProgress();
-  else document.addEventListener('DOMContentLoaded', initProgress);
-  document.addEventListener('astro:page-load', initProgress);
 </script>

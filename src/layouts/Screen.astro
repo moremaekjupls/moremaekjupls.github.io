@@ -3,13 +3,14 @@
 // no scrolling: the page is exactly one viewport and the scene fills it.
 import '../styles/global.css';
 import Analytics from '../components/Analytics.astro';
-import { ViewTransitions } from 'astro:transitions';
 import type { Lang } from '../i18n/ui';
 import { SITE } from '../consts';
+import { withSlash } from '../i18n/ui';
 
 interface Props { lang: Lang; title?: string; description?: string; }
 const { lang, title = '', description = '' } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const canonical = SITE.domain + withSlash(path);
 ---
 <!doctype html>
 <html lang={lang}>
@@ -22,8 +23,8 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
     <meta property="og:title" content={SITE.name} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href={SITE.domain + path} />
-    <meta property="og:url" content={SITE.domain + path} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:image" content={SITE.domain + "/og.jpg"} />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
@@ -37,7 +38,7 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
     <!-- iOS игнорирует SVG-иконки и без этого берёт случайную картинку со страницы -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
-    <ViewTransitions />
+    <link rel="preload" href="/fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <Analytics />
   </head>
   <body class="is-screen">
