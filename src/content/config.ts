@@ -8,9 +8,7 @@ const blog = defineCollection({
     title: z.string(),
     excerpt: z.string(),
     pubDate: z.coerce.date(),
-    lang: z.enum(['ru', 'en']),
-    // transId links the RU and EN versions of the same post.
-    // Use the same value (and the same as the URL slug) in both files.
+    // transId is the URL slug: /blog/<transId>/
     transId: z.string(),
     draft: z.boolean().default(false),
   }),

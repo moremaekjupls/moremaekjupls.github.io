@@ -2,7 +2,6 @@
 title: "Tokens got 10x cheaper. What that changes for a solo builder"
 excerpt: "A falling token price isn't a press-release line — it's a shift in which products even make sense to build alone."
 pubDate: 2026-06-10
-lang: "en"
 transId: "token-economics"
 ---
 

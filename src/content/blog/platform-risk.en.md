@@ -2,7 +2,6 @@
 title: "When a government can switch off your model"
 excerpt: "Anthropic abruptly restricted its top models after a US export directive — and the real story isn't geopolitics, it's what your product stands on."
 pubDate: 2026-06-23
-lang: "en"
 transId: "platform-risk"
 draft: false
 ---

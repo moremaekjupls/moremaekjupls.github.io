@@ -2,7 +2,6 @@
 title: "Multimodality isn't a feature — it's a new input method"
 excerpt: "When the model can see a photo, a twenty-field form collapses into a single 'take a picture' button. That changes the product more than it looks."
 pubDate: 2026-05-28
-lang: "en"
 transId: "multimodal-ux"
 ---
 

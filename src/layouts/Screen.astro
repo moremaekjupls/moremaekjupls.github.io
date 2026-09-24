@@ -2,18 +2,16 @@
 // Screen.astro — layout for the single-screen home. No header, no footer,
 // no scrolling: the page is exactly one viewport and the scene fills it.
 import '../styles/global.css';
-import Analytics from '../components/Analytics.astro';
-import type { Lang } from '../i18n/ui';
 import { SITE } from '../consts';
-import { withSlash } from '../i18n/ui';
+import { withSlash } from '../lib/site';
 
-interface Props { lang: Lang; title?: string; description?: string; }
-const { lang, title = '', description = '' } = Astro.props;
+interface Props { title?: string; description?: string; }
+const { title = '', description = '' } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const canonical = SITE.domain + withSlash(path);
 ---
 <!doctype html>
-<html lang={lang}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -40,7 +38,6 @@ const canonical = SITE.domain + withSlash(path);
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preload" href="/fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
-    <Analytics />
   </head>
   <body class="is-screen">
     <slot />
