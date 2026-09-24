@@ -507,8 +507,8 @@ main,.site-footer{position:relative;z-index:1}
 .about-hero__copy{min-width:0;max-width:580px}
 .about-hero__kicker{margin:-8px 0 26px;color:rgba(255,255,255,.48);font-size:.625rem;
   letter-spacing:.18em;text-transform:uppercase}
-.about-hero__title{font-size:clamp(64px,7.4vw,116px);font-weight:600;line-height:.9;letter-spacing:-.05em;
-  text-shadow:0 0 34px rgba(240,201,121,.12)}
+/* Same headline as Blog and History (.display): one typeface, one style
+   for every page title. */
 .about-hero__title span{white-space:nowrap}
 .about-hero__lead{max-width:40ch;margin-top:34px;color:var(--ash);font-size:clamp(15px,1.35vw,18px);line-height:1.65}
 .about-hero__link{margin-top:28px}
@@ -622,7 +622,6 @@ main,.site-footer{position:relative;z-index:1}
 @media (max-width:900px){
   .about-hero{min-height:680px;padding-block:64px 92px}
   .about-hero__grid{grid-template-columns:minmax(0,.95fr) minmax(260px,.8fr);gap:28px}
-  .about-hero__title{font-size:clamp(56px,8.4vw,84px)}
   .about-hero__signal{min-height:300px}
   .about-intro__grid{grid-template-columns:1fr;gap:18px}
   .about-section-label__line{display:none}
@@ -637,7 +636,6 @@ main,.site-footer{position:relative;z-index:1}
   .about-hero{min-height:0;padding-block:40px 56px;align-items:flex-start}
   .about-hero__grid{grid-template-columns:1fr;gap:4px}
   .about-hero__copy{max-width:100%}
-  .about-hero__title{font-size:clamp(48px,14.6vw,80px);line-height:.92}
   .about-hero__lead{max-width:36ch;margin-top:26px}
   .about-hero__signal{min-height:235px;margin-top:8px;padding-top:14px}
   .about-hero__signal-core{width:76px;height:76px}
@@ -655,7 +653,6 @@ main,.site-footer{position:relative;z-index:1}
   .about-hero__kicker{max-width:28ch;line-height:1.5}
 }
 @media (max-width:360px){
-  .about-hero__title{font-size:clamp(44px,14vw,56px)}
   .about-hero__lead{font-size:.875rem;line-height:1.62}
   .about-hero__signal-line{left:3%;right:3%}
   .about-hero__signal-nodes{font-size:.625rem}
