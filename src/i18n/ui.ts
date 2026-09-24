@@ -21,8 +21,14 @@ export function stripBase(path: string): string {
 // Build a URL for the given language. RU has no lang prefix; EN is /en/...
 // Always base-prefixed so links work under a subpath deployment.
 export function localizeUrl(path: string, _lang?: Lang): string {
-  // Single-locale site: URLs need no prefix.
-  return path;
+  // Single-locale site: URLs need no prefix. Pages are built as directories
+  // (/blog/index.html), so GitHub Pages serves /blog/ and 301-redirects /blog.
+  // Linking with the slash saves that redirect on every click.
+  return withSlash(path);
+}
+
+export function withSlash(path: string): string {
+  return path.endsWith('/') || /\.[a-z0-9]+$/i.test(path) ? path : path + '/';
 }
 
 // Swap the current (runtime, base-included) path to the other language.

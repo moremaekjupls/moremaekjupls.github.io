@@ -2,9 +2,8 @@
 /**
  * Hero.astro — первый экран.
  *
- * Перенос шаблона nexum-hero-v3 на Astro. Отличия от исходника:
- * форма подписки убрана (бэкенда нет), карточки заполнены настоящим
- * содержимым вместо вымышленного отзыва, добавлена кнопка фоновой музыки.
+ * Полноэкранное видео, заголовок и две карточки (свежий пост и цитата).
+ * На телефоне карточек нет — свежий пост вынесен в выдвижное меню.
  */
 import { getCollection } from 'astro:content';
 import { SOCIALS } from '../consts';
@@ -15,23 +14,23 @@ const latest = posts[0];
 const fmt = (d: Date) =>
   d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+const socials = Object.entries(SOCIALS).filter(([k]) => k !== 'email');
+const LABELS: Record<string, string> = { github: 'GitHub', x: 'X', linkedin: 'LinkedIn' };
+
 const links = [
-  { href: '/blog', label: 'Blog' },
-  { href: '/about', label: 'About' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/about/', label: 'About' },
 ];
 ---
 
 <section class="hero">
   <video autoplay loop muted playsinline preload="auto" poster="/hero-frame.jpg" aria-hidden="true">
-    <!-- Локальная копия идёт первой. Если файла нет, браузер сам перейдёт
-         ко второму источнику — сайт не сломается ни в одном из случаев. -->
     <source src="/hero.mp4" type="video/mp4" />
-    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260803_192301_9231ed6b-c55c-4a48-909c-4ebe11cf2e11.mp4" type="video/mp4" />
   </video>
 
   <div class="layer">
     <nav>
-      <a class="brand" href="/">
+      <a class="brand" href="/" aria-current="page">
         <svg width="24" height="24" viewBox="0 0 256 256" aria-hidden="true">
           <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 128 128 C 128 57.308 185.308 0 256 0 C 256 70.692 198.692 128 128 128 Z M 128 128 C 57.308 128 0 70.692 0 0 C 70.692 0 128 57.308 128 128 Z" />
         </svg>
@@ -39,14 +38,14 @@ const links = [
       </a>
 
       <div class="nav-right">
-        <div class="links">
+        <div class="links" role="navigation" aria-label="Main">
           {links.map((l) => <a href={l.href}>{l.label}</a>)}
         </div>
       </div>
 
-      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">
-        <svg class="m" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-        <svg class="x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+      <button class="burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
+        <svg class="m" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+        <svg class="x" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
       </button>
     </nav>
 
@@ -57,7 +56,7 @@ const links = [
 
       <div class="cards">
         {latest && (
-          <a class="card stat-card" href={`/blog/${latest.data.transId}`}>
+          <a class="card stat-card" href={`/blog/${latest.data.transId}/`}>
             <div class="stat">{fmt(latest.data.pubDate)}</div>
             <p><b>{latest.data.title}</b></p>
             <p class="quote">{latest.data.excerpt}</p>
@@ -77,83 +76,60 @@ const links = [
   </div>
 </section>
 
-<div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer">
-  <a href="/blog">Blog</a>
-  <a href="/about">About</a>
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+<aside class="drawer" id="drawer" aria-label="Menu" inert>
+  <a href="/blog/">Blog</a>
+  <a href="/about/">About</a>
+  {latest && (
+    <a class="drawer__latest" href={`/blog/${latest.data.transId}/`}>
+      <small>Latest · {fmt(latest.data.pubDate)}</small>
+      <span>{latest.data.title}</span>
+    </a>
+  )}
   <span class="drawer__rule" aria-hidden="true"></span>
-  {Object.entries(SOCIALS).filter(([k]) => k !== 'email').map(([k, href]) => (
-    <a href={href} target="_blank" rel="noopener noreferrer">{k[0].toUpperCase() + k.slice(1)}</a>
+  {socials.map(([k, href]) => (
+    <a class="drawer__social" href={href} target="_blank" rel="noopener noreferrer">{LABELS[k] ?? k}</a>
   ))}
-  <a class="cta" href="/blog">Read the blog</a>
+  <a class="drawer__social" href={SOCIALS.email}>Email</a>
 </aside>
 
 <script>
-  /* Делегирование вместо привязки к элементам.
-     При мягких переходах разметка подменяется, и обработчики, навешенные на
-     конкретные узлы, приходится вешать заново на каждой навигации. Любая
-     ошибка в защите от повтора даёт второй обработчик — и переключатель
-     срабатывает дважды, отменяя сам себя. Отсюда «кнопки работают через раз».
-     Обработчик на document живёт один и переживает любую подмену DOM. */
-  const W = window as any;
+  const burger = document.getElementById('burger');
+  const drawer = document.getElementById('drawer');
+  const scrim = document.getElementById('scrim');
 
-  if (!W.__heroDelegated) {
-    W.__heroDelegated = true;
-
-    const closeDrawer = () => {
-      document.body.classList.remove('open');
-      document.getElementById('burger')?.setAttribute('aria-expanded', 'false');
-    };
-
-    document.addEventListener('click', (e) => {
-      const el = e.target as HTMLElement | null;
-      if (!el || !el.closest) return;
-
-      if (el.closest('#burger')) {
-        const open = document.body.classList.toggle('open');
-        document.getElementById('burger')?.setAttribute('aria-expanded', String(open));
-        return;
-      }
-      if (el.closest('#scrim')) { closeDrawer(); return; }
-      if (el.closest('.drawer a')) { closeDrawer(); }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeDrawer();
-    });
-
-    // Снимает запрет автозапуска: вешается один раз и не накапливается.
-    document.addEventListener('pointerdown', () => {
-      const v = document.querySelector<HTMLVideoElement>('.hero video');
-      if (v && v.paused) { const p = v.play(); if (p) p.catch(() => {}); }
-    }, { passive: true });
+  function setOpen(open: boolean) {
+    if (!burger || !drawer) return;
+    document.body.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    // inert убирает закрытую панель из Tab-порядка и от скринридеров:
+    // без него фокус с клавиатуры уходил в невидимые ссылки за краем экрана.
+    drawer.toggleAttribute('inert', !open);
+    if (open) drawer.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
   }
 
-  /* Видео: элемент, вставленный после загрузки документа, не подчиняется
-     autoplay. Пересоздание возвращает ему статус свежевставленного. */
-  function reviveVideo() {
-    document.body.classList.remove('open');
-    const old = document.querySelector<HTMLVideoElement>('.hero video');
-    if (!old) return;
-    const video = old.cloneNode(true) as HTMLVideoElement;
-    video.muted = true;
-    video.defaultMuted = true;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    old.replaceWith(video);
-    const start = () => { const p = video.play(); if (p) p.catch(() => {}); };
-    start();
-    video.addEventListener('loadeddata', start, { once: true });
-    video.addEventListener('canplay', start, { once: true });
-  }
-
-  reviveVideo();
-  document.addEventListener('astro:page-load', reviveVideo);
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) return;
-    const v = document.querySelector<HTMLVideoElement>('.hero video');
-    if (v && v.paused) { const p = v.play(); if (p) p.catch(() => {}); }
+  burger?.addEventListener('click', () => setOpen(!document.body.classList.contains('open')));
+  scrim?.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('open')) { setOpen(false); burger?.focus(); }
   });
+  window.matchMedia('(min-width: 768px)').addEventListener('change', () => setOpen(false));
+  // Возврат по «Назад» из bfcache: панель не должна остаться открытой.
+  window.addEventListener('pageshow', (e) => { if (e.persisted) setOpen(false); });
+
+  /* Автозапуск видео. iOS в режиме энергосбережения и некоторые Android-браузеры
+     блокируют autoplay — тогда запускаем по первому касанию. При возврате на
+     вкладку браузер ставит ролик на паузу — продолжаем. */
+  const video = document.querySelector<HTMLVideoElement>('.hero video');
+  const play = () => { if (video && video.paused) video.play()?.catch(() => {}); };
+  if (video) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduce.matches) { video.removeAttribute('autoplay'); video.pause(); }
+    else {
+      play();
+      document.addEventListener('pointerdown', play, { once: true, passive: true });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) play(); });
+    }
+  }
 </script>

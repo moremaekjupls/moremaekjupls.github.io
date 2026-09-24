@@ -27,7 +27,7 @@ const socials = [
       <ul class="footer-socials">
         {socials.map((s) => (
           <li>
-            <a href={s.href} target={s.key === 'email' ? undefined : '_blank'} rel="noopener noreferrer" aria-label={s.label}>
+            <a href={s.href} target={s.key === 'email' ? undefined : '_blank'} rel="noopener noreferrer">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={s.path}/></svg>
               <span>{s.label}</span>
             </a>

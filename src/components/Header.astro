@@ -22,36 +22,40 @@ const isActive = (m: string) => rel === m || rel.startsWith(m + '/');
       <span>Khondamir</span>
     </a>
 
-    <nav class="nav-right">
+    <nav class="nav-right" aria-label="Main">
       <ul class="nav-links" id="navLinks">
         {links.map((l) => (
           <li><a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a></li>
         ))}
       </ul>
-      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navLinks">{t('nav.menu')}</button>
+      <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">
+        <svg class="m" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+        <svg class="x" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+      </button>
     </nav>
   </div>
 </header>
 
 <script>
-  /* Та же причина, что и в хиро: привязка к узлу требует перепривязки на
-     каждой навигации, и любой сбой защиты даёт двойное срабатывание. */
-  const W = window as any;
-  if (!W.__headerDelegated) {
-    W.__headerDelegated = true;
-    document.addEventListener('click', (e) => {
-      const el = e.target as HTMLElement | null;
-      const links = document.getElementById('navLinks');
-      if (!el || !el.closest || !links) return;
-      if (el.closest('#menuBtn')) {
-        const open = links.classList.toggle('open');
-        document.getElementById('menuBtn')?.setAttribute('aria-expanded', String(open));
-        return;
-      }
-      if (!el.closest('#navLinks')) links.classList.remove('open');
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') document.getElementById('navLinks')?.classList.remove('open');
-    });
+  const btn = document.getElementById('menuBtn');
+  const links = document.getElementById('navLinks');
+  const header = document.querySelector('.site-header');
+
+  function setOpen(open: boolean) {
+    if (!btn || !links) return;
+    header?.classList.toggle('menu-open', open);
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   }
+
+  btn?.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('click', (e) => {
+    const el = e.target as HTMLElement;
+    if (!header?.contains(el)) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') { setOpen(false); btn.focus(); }
+  });
+  // Меню открыто, окно расширили до десктопа — состояние не должно залипнуть.
+  window.matchMedia('(min-width: 721px)').addEventListener('change', () => setOpen(false));
 </script>

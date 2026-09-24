@@ -3,28 +3,29 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
-import { ViewTransitions } from 'astro:transitions';
 import type { Lang } from '../i18n/ui';
 import { SITE } from '../consts';
+import { withSlash } from '../i18n/ui';
 
 interface Props { lang: Lang; title: string; description?: string; }
 const { lang, title, description = '' } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const canonical = SITE.domain + withSlash(path);
 const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
 ---
 <!doctype html>
 <html lang={lang}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#000000" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href={SITE.domain + path} />
-    <meta property="og:url" content={SITE.domain + path} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:image" content={SITE.domain + "/og.jpg"} />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
@@ -38,7 +39,7 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
     <!-- iOS игнорирует SVG-иконки и без этого берёт случайную картинку со страницы -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
-    <ViewTransitions />
+    <link rel="preload" href="/fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <Analytics />
   </head>
   <body>
@@ -51,28 +52,21 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
     </main>
     <Footer lang={lang} />
     <script>
-      (function () {
-        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-        function run() {
-          if (mq.matches) return;
-          const sel = '.section .feature, .posts-grid > *, .post-row, .case-section, .stat-row, .section-head, .article .prose, .contact-form';
-          const els = Array.from(document.querySelectorAll(sel));
-          const io = new IntersectionObserver((entries, obs) => {
-            for (const e of entries) {
-              if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); }
-            }
-          }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
-          for (const el of els) {
-            const top = el.getBoundingClientRect().top;
-            if (top < window.innerHeight * 0.92) { el.classList.add('is-visible'); continue; }
-            el.classList.add('reveal-init');
-            io.observe(el);
+      /* Мягкое появление блоков при прокрутке. Всё, что уже на экране при
+         загрузке, показывается сразу — иначе первый экран мигает пустотой. */
+      const sel = '.post-row, .article .prose, .article-end, .contact-form';
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries, obs) => {
+          for (const e of entries) {
+            if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); }
           }
+        }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+        for (const el of document.querySelectorAll(sel)) {
+          if (el.getBoundingClientRect().top < window.innerHeight * 0.92) continue;
+          el.classList.add('reveal-init');
+          io.observe(el);
         }
-        if (document.readyState !== 'loading') run();
-        else document.addEventListener('DOMContentLoaded', run);
-        document.addEventListener('astro:page-load', run);
-      })();
+      }
     </script>
   </body>
 </html>
