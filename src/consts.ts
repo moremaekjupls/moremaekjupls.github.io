@@ -16,21 +16,3 @@ export const SOCIALS = {
   linkedin: 'https://www.linkedin.com/in/xondamir-begmatov-950b553a0',
   email: 'mailto:moremaekjupls@gmail.com',
 };
-
-// Contact form — uses Formspree (free, no backend).
-// 1. Sign up at https://formspree.io, create a form, copy its endpoint.
-// 2. Paste it below. Until you do, the form is hidden automatically.
-export const CONTACT = {
-  formspreeEndpoint: '', // REPLACE e.g. 'https://formspree.io/f/abcdwxyz'
-};
-
-// Analytics — privacy-friendly, no cookies, no backend.
-// Leave enabled:false to ship without analytics.
-// Recommended: Plausible (plausible.io) or GoatCounter (goatcounter.com).
-export const ANALYTICS = {
-  enabled: false,                 // set true after filling the fields below
-  provider: 'plausible' as 'plausible' | 'goatcounter',
-  // For Plausible: your domain, e.g. 'khondamir.com'
-  // For GoatCounter: your code, e.g. 'khondamir' (from khondamir.goatcounter.com)
-  site: '',                       // REPLACE
-};

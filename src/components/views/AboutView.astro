@@ -1,13 +1,9 @@
 ---
-import { useTranslations, localizeUrl, type Lang } from '../../i18n/ui';
-import ContactForm from '../ContactForm.astro';
-interface Props { lang: Lang; }
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const L = (p: string) => localizeUrl(p, lang);
-const ru = lang === 'ru';
-const titleLines = ru ? ['Идеи,', 'которые работают.'] : ['Ideas', 'that work.'];
-const body = t('about.body') as string[];
+const body = [
+  'I started in international relations and diplomacy — a field where outcomes depend on reading someone else’s context, aligning interests, and turning an agreement into a concrete next step. The same skills turned out to be the core of product work.',
+  'Today I build products with AI. I’m less interested in model hype than in what actually reaches the user: which jobs AI closes faster and cheaper, where it breaks, and why a small team can now ship what used to take a whole department.',
+  'On the blog I unpack AI news through the eyes of someone who ships small products himself — no corporate fog, focused on what changes the work of a builder.',
+];
 ---
 <div class="about-page">
   <section class="about-hero" aria-labelledby="about-title">
@@ -15,42 +11,42 @@ const body = t('about.body') as string[];
     <div class="about-hero__glow about-hero__glow--two" aria-hidden="true"></div>
     <div class="container about-hero__grid">
       <div class="about-hero__copy" data-about-reveal="hero-copy">
-        <span class="eyebrow">{ru ? 'Обо мне' : 'About me'}</span>
-        <p class="about-hero__kicker">{ru ? 'Продукт · стратегия · ИИ' : 'Product · strategy · AI'}</p>
-        <h1 id="about-title" class="about-hero__title">{titleLines.map((line, i) => (<span>{line}{i < titleLines.length - 1 && <br />}</span>))}</h1>
-        <p class="about-hero__lead">{ru ? 'Соединяю человеческий контекст, ясное мышление и возможности ИИ — от первого вопроса до работающего продукта.' : 'I connect human context, clear thinking, and AI — from the first question to a working product.'}</p>
-        <a class="btn btn-amber about-hero__link" href="#journey">{ru ? 'Узнать мой путь' : 'Explore my path'} <span aria-hidden="true">↘</span></a>
+        <span class="eyebrow">About me</span>
+        <p class="about-hero__kicker">Product · strategy · AI</p>
+        <h1 id="about-title" class="about-hero__title"><span>Ideas<br /></span><span>that work.</span></h1>
+        <p class="about-hero__lead">I connect human context, clear thinking, and AI — from the first question to a working product.</p>
+        <a class="btn btn-amber about-hero__link" href="#journey">Explore my path <span aria-hidden="true">↘</span></a>
       </div>
       <div class="about-hero__signal" aria-hidden="true" data-about-reveal="hero-artifact">
         <div class="about-hero__signal-line"><span class="about-hero__signal-pulse"></span></div>
         <div class="about-hero__signal-core">✦</div>
         <div class="about-hero__signal-nodes">
-          <span><i>01</i>{ru ? 'Контекст' : 'Context'}</span>
-          <span><i>02</i>{ru ? 'Сборка' : 'Build'}</span>
+          <span><i>01</i>Context</span>
+          <span><i>02</i>Build</span>
           <span><i>03</i>AI</span>
         </div>
-        <p class="about-hero__signal-caption">{ru ? 'Из вопроса — в работающий продукт.' : 'From a question to a working product.'}</p>
+        <p class="about-hero__signal-caption">From a question to a working product.</p>
       </div>
     </div>
   </section>
 
   <section class="section about-intro">
     <div class="container about-intro__grid">
-      <div class="about-section-label"><span class="eyebrow">01 / {ru ? 'Контекст' : 'Context'}</span><span class="about-section-label__line"></span></div>
+      <div class="about-section-label"><span class="eyebrow">01 / Context</span><span class="about-section-label__line"></span></div>
       <div class="about-intro__copy prose">{body.map((p) => <p>{p}</p>)}</div>
     </div>
   </section>
 
   <section class="section about-journey" id="journey" aria-labelledby="journey-title">
     <div class="container">
-      <div class="about-section-heading"><span class="eyebrow">02 / {ru ? 'Путь' : 'Journey'}</span><h2 id="journey-title">{ru ? 'От контекста к действию.' : 'From context to action.'}</h2><p>{ru ? 'Выбери этап, чтобы увидеть, какие навыки и проекты сформировали мой подход.' : 'Select a stage to see the skills and projects that shaped my approach.'}</p></div>
+      <div class="about-section-heading"><span class="eyebrow">02 / Journey</span><h2 id="journey-title">From context to action.</h2><p>Select a stage to see the skills and projects that shaped my approach.</p></div>
       <div class="timeline" data-timeline>
         <div class="timeline__rail" aria-hidden="true"></div>
         <div class="timeline__items">
-          <button class="timeline-card is-active" data-about-reveal="timeline-item" type="button" data-timeline-item="0" aria-expanded="true" aria-controls="timeline-detail-0"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">01</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Контекст и переговоры' : 'Context and negotiation'}</strong><small class="timeline-card__tag">{ru ? 'Международные отношения' : 'International relations'}</small><span class="timeline-card__detail" id="timeline-detail-0"><span>{ru ? 'Учился видеть систему целиком, слышать разные стороны и превращать сложные интересы в понятные решения.' : 'Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.'}</span></span></span></button>
-          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="1" aria-expanded="false" aria-controls="timeline-detail-1"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">02</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Продуктовое мышление' : 'Product thinking'}</strong><small class="timeline-card__tag">{ru ? 'Исследование · стратегия' : 'Research · strategy'}</small><span class="timeline-card__detail" id="timeline-detail-1"><span>{ru ? 'Перенос фокуса с красивой идеи на задачу пользователя, быстрый прототип и измеримый результат.' : 'Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.'}</span></span></span></button>
-          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="2" aria-expanded="false" aria-controls="timeline-detail-2"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">03</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'ИИ-продукты' : 'AI products'}</strong><small class="timeline-card__tag">{ru ? 'Прототипирование · запуск' : 'Prototyping · shipping'}</small><span class="timeline-card__detail" id="timeline-detail-2"><span>{ru ? 'Собираю небольшие продукты от идеи до опубликованного интерфейса, проверяя, где ИИ действительно усиливает человека.' : 'Building small products from idea to published interface, testing where AI truly amplifies people.'}</span></span></span></button>
-          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="3" aria-expanded="false" aria-controls="timeline-detail-3"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">04</span><span class="timeline-card__main"><strong class="timeline-card__title">{ru ? 'Новая глубина' : 'A deeper layer'}</strong><small class="timeline-card__tag">AI Essentials · Elements of AI</small><span class="timeline-card__detail" id="timeline-detail-3"><span>{ru ? 'Продолжаю систематизировать знания: от ответственного применения инструментов до понимания основ искусственного интеллекта.' : 'Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.'}</span></span></span></button>
+          <button class="timeline-card is-active" data-about-reveal="timeline-item" type="button" data-timeline-item="0" aria-expanded="true" aria-controls="timeline-detail-0"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">01</span><span class="timeline-card__main"><strong class="timeline-card__title">Context and negotiation</strong><small class="timeline-card__tag">International relations</small><span class="timeline-card__detail" id="timeline-detail-0"><span>Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.</span></span></span></button>
+          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="1" aria-expanded="false" aria-controls="timeline-detail-1"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">02</span><span class="timeline-card__main"><strong class="timeline-card__title">Product thinking</strong><small class="timeline-card__tag">Research · strategy</small><span class="timeline-card__detail" id="timeline-detail-1"><span>Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.</span></span></span></button>
+          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="2" aria-expanded="false" aria-controls="timeline-detail-2"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">03</span><span class="timeline-card__main"><strong class="timeline-card__title">AI products</strong><small class="timeline-card__tag">Prototyping · shipping</small><span class="timeline-card__detail" id="timeline-detail-2"><span>Building small products from idea to published interface, testing where AI truly amplifies people.</span></span></span></button>
+          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="3" aria-expanded="false" aria-controls="timeline-detail-3"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">04</span><span class="timeline-card__main"><strong class="timeline-card__title">A deeper layer</strong><small class="timeline-card__tag">AI Essentials · Elements of AI</small><span class="timeline-card__detail" id="timeline-detail-3"><span>Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.</span></span></span></button>
         </div>
       </div>
     </div>
@@ -58,15 +54,15 @@ const body = t('about.body') as string[];
 
   <section class="section about-certificates" aria-labelledby="certificates-title">
     <div class="container">
-      <div class="about-section-heading"><span class="eyebrow">03 / {ru ? 'Сертификаты' : 'Certificates'}</span><h2 id="certificates-title">{ru ? 'Знания, которые остаются в работе.' : 'Knowledge that stays in the work.'}</h2></div>
+      <div class="about-section-heading"><span class="eyebrow">03 / Certificates</span><h2 id="certificates-title">Knowledge that stays in the work.</h2></div>
       <div class="certificate-grid">
-        <article class="certificate-card"><div class="certificate-card__media"><img src="/certificate-google.webp" alt={ru ? 'Сертификат Google AI Essentials' : 'Google AI Essentials certificate'} loading="lazy" /></div><div class="certificate-card__body"><span class="certificate-card__issuer">Google · Coursera</span><h3>Google AI Essentials</h3><p>{ru ? 'Специализация из пяти курсов: продуктивность, промптинг, ответственное использование ИИ и развитие AI-навыков.' : 'A five-course specialization covering productivity, prompting, responsible AI use, and practical AI skills.'}</p><a href="https://coursera.org/verify/specialization/VBI9HAKWVHFM" target="_blank" rel="noopener noreferrer">{ru ? 'Проверить сертификат' : 'Verify certificate'} ↗</a></div></article>
-        <article class="certificate-card certificate-card--helsinki"><div class="certificate-card__media"><img src="/certificate-helsinki.webp" alt={ru ? 'Сертификат Elements of AI Университета Хельсинки' : 'University of Helsinki Elements of AI certificate'} loading="lazy" /></div><div class="certificate-card__body"><span class="certificate-card__issuer">University of Helsinki · MinnaLearn</span><h3>Elements of AI</h3><p>{ru ? 'Курс на 2 ECTS о базовых принципах искусственного интеллекта. Завершен 20 апреля 2026 года.' : 'A 2 ECTS course on the foundations of artificial intelligence, completed on April 20, 2026.'}</p><a href="https://certificates.mooc.fi/validate/05jUe7Iinet" target="_blank" rel="noopener noreferrer">{ru ? 'Открыть подтверждение' : 'Open verification'} ↗</a></div></article>
+        <article class="certificate-card"><div class="certificate-card__media"><img src="/certificate-google.webp" alt=Google AI Essentials certificate loading="lazy" /></div><div class="certificate-card__body"><span class="certificate-card__issuer">Google · Coursera</span><h3>Google AI Essentials</h3><p>A five-course specialization covering productivity, prompting, responsible AI use, and practical AI skills.</p><a href="https://coursera.org/verify/specialization/VBI9HAKWVHFM" target="_blank" rel="noopener noreferrer">Verify certificate ↗</a></div></article>
+        <article class="certificate-card certificate-card--helsinki"><div class="certificate-card__media"><img src="/certificate-helsinki.webp" alt=University of Helsinki Elements of AI certificate loading="lazy" /></div><div class="certificate-card__body"><span class="certificate-card__issuer">University of Helsinki · MinnaLearn</span><h3>Elements of AI</h3><p>A 2 ECTS course on the foundations of artificial intelligence, completed on April 20, 2026.</p><a href="https://certificates.mooc.fi/validate/05jUe7Iinet" target="_blank" rel="noopener noreferrer">Open verification ↗</a></div></article>
       </div>
     </div>
   </section>
 
-  <section class="section about-contact"><div class="container"><div class="article"><div class="hero-cta"><a class="btn btn-ghost" href={L('/blog')}>{t('cta.readBlog')}</a></div><ContactForm lang={lang} /></div></div></section>
+  <section class="section about-contact"><div class="container"><div class="article"><div class="hero-cta"><a class="btn btn-ghost" href="/blog/">Read the blog</a></div></div></div></section>
 </div>
 
 <script>

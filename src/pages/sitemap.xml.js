@@ -1,10 +1,10 @@
-import { getCollection } from 'astro:content';
+import { getPosts, postUrl } from '../lib/site';
 import { SITE } from '../consts';
 export async function GET() {
-    const en = await getCollection('blog', (e) => e.data.lang === 'en' && !e.data.draft);
+  const posts = await getPosts();
   const urls = [
-    '/', '/about/', '/blog/',
-    ...en.map((p) => `/blog/${p.data.transId}/`),
+    '/', '/about/', '/blog/', '/history/',
+    ...posts.map(postUrl),
   ];
   const body = urls.map((u) => `  <url><loc>${SITE.domain}${u}</loc></url>`).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

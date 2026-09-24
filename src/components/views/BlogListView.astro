@@ -1,31 +1,24 @@
 ---
-import { getCollection } from 'astro:content';
-import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
-interface Props { lang: Lang; }
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const posts = (await getCollection('blog', (e) => e.data.lang === lang && !e.data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const fmt = (d: Date) => new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(d);
-const titleLines = (t('blog.title') as string).split('\n');
+import { getPosts, postUrl, formatDate, readingLabel } from '../../lib/site';
+const posts = await getPosts();
 ---
 <section class="page-intro">
   <div class="container">
-    <span class="eyebrow">{t('blog.eyebrow')}</span>
-    <h1 class="display">{titleLines.map((l, i) => (<>{l}{i < titleLines.length - 1 && <br />}</>))}</h1>
-    <p class="body body--muted" style="margin-top:24px;">{t('blog.intro')}</p>
+    <span class="eyebrow">Blog</span>
+    <h1 class="display">AI through<br />a builder’s eyes.</h1>
+    <p class="body body--muted" style="margin-top:24px;">News and analysis about artificial intelligence — from the point of view of someone shipping small products solo.</p>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
     {posts.length === 0 ? (
-      <p class="muted">{t('blog.empty')}</p>
+      <p class="muted">No posts yet.</p>
     ) : (
       <div class="post-list">
         {posts.map((p, i) => (
-          <a class={`post-row${i === 0 ? ' post-row--lead' : ''}`} href={localizeUrl(`/blog/${p.data.transId}`, lang)}>
-            <div class="post-row-date">{fmt(p.data.pubDate)}<span class="post-row-read">{readingLabel(lang, readingMinutes(p.body))}</span></div>
+          <a class={`post-row${i === 0 ? ' post-row--lead' : ''}`} href={postUrl(p)}>
+            <div class="post-row-date">{formatDate(p.data.pubDate, 'short')}<span class="post-row-read">{readingLabel(p.body)}</span></div>
             <div>
               <h2 class="post-row-title" style={`view-transition-name:post-${p.data.transId}`}>{p.data.title}</h2>
               <p class="post-row-excerpt">{p.data.excerpt}</p>

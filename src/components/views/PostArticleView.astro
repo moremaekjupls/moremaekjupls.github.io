@@ -1,31 +1,28 @@
 ---
-import { useTranslations, localizeUrl, readingMinutes, readingLabel, type Lang } from '../../i18n/ui';
-import type { CollectionEntry } from 'astro:content';
-interface Props { lang: Lang; entry: CollectionEntry<'blog'>; next?: CollectionEntry<'blog'>; }
-const { lang, entry, next } = Astro.props;
-const t = useTranslations(lang);
+import { postUrl, formatDate, readingLabel, type Post } from '../../lib/site';
+interface Props { entry: Post; next?: Post; }
+const { entry, next } = Astro.props;
 const { Content } = await entry.render();
-const fmt = new Intl.DateTimeFormat(lang === 'ru' ? 'ru-RU' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(entry.data.pubDate);
 ---
 <div class="read-progress" id="readProgress" aria-hidden="true"></div>
 <article class="section">
   <div class="container">
     <div class="article">
-      <a class="link-arrow" href={localizeUrl('/blog', lang)}>{t('cta.backToBlog')}</a>
-      <p class="article-meta" style="margin-top:20px;">{fmt} · {readingLabel(lang, readingMinutes(entry.body))}</p>
+      <a class="link-arrow" href="/blog/">← Back to blog</a>
+      <p class="article-meta" style="margin-top:20px;">{formatDate(entry.data.pubDate)} · {readingLabel(entry.body)}</p>
       <h1 style={`margin-bottom:32px;view-transition-name:post-${entry.data.transId}`}>{entry.data.title}</h1>
       <div class="prose">
         <Content />
       </div>
       <div class="article-end">
         {next && (
-          <a class="next-post card" href={localizeUrl(`/blog/${next.data.transId}`, lang)}>
+          <a class="next-post card" href={postUrl(next)}>
             <span class="next-post__label">Read next</span>
             <span class="next-post__title" style={`view-transition-name:post-${next.data.transId}`}>{next.data.title}</span>
             <span class="next-post__excerpt">{next.data.excerpt}</span>
           </a>
         )}
-        <a class="link-arrow" href={localizeUrl('/blog', lang)}>{t('cta.allPosts')} →</a>
+        <a class="link-arrow" href="/blog/">All posts →</a>
       </div>
     </div>
   </div>

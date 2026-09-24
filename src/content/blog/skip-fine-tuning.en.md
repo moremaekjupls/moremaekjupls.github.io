@@ -2,7 +2,6 @@
 title: "When you don't need to fine-tune your own model"
 excerpt: "The urge to train 'your own' model is strong. Usually it's months of work for something a good prompt handles in an evening."
 pubDate: 2026-05-12
-lang: "en"
 transId: "skip-fine-tuning"
 ---
 
