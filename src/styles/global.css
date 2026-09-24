@@ -79,7 +79,7 @@ button,.btn,.burger,.menu-btn,.nav-links a,.hero .links a,.drawer a,.timeline-ca
 /* ============================ HERO ============================ */
 .hero{position:relative;height:100svh;height:100dvh;width:100%;overflow:hidden;background:#000}
 .hero video{position:absolute;inset:0;height:100%;width:100%;object-fit:cover;
-  transition:transform .3s var(--ease-drawer),border-radius .3s var(--ease-drawer)}
+  transition:transform .3s var(--ease-drawer),border-radius .3s var(--ease-drawer),filter 1.6s ease}
 /* Dim to focus, and push the page back: the menu is a layer above the page,
    the way a sheet sits above the app on iOS. Only the footage moves — a
    transform on .hero itself would trap the burger (the close button) in its
@@ -176,25 +176,29 @@ body.open .burger .l3,.menu-open .menu-btn .l3{transform:rotate(-45deg) translat
 }
 
 /* ======================= TIME OF DAY =======================
-   One shot, five moods. The layer sits between the footage and the type and
-   blends into the video: soft-light warms, multiply darkens and cools. Only
-   opacity animates; the blend mode switches while the layer is invisible. */
-.hero__tint{position:absolute;inset:0;pointer-events:none;opacity:0;
-  transition:opacity 1.6s ease}
-.hero[data-period] .hero__tint{opacity:var(--tint-opacity,0)}
-.hero.is-retinting .hero__tint{opacity:0;transition-duration:1.2s}
-.hero[data-period="dawn"]{--tint-opacity:.55}
-.hero[data-period="dawn"] .hero__tint{mix-blend-mode:soft-light;
-  background:linear-gradient(180deg,rgb(255,160,190) 0%,rgb(255,205,160) 70%)}
-.hero[data-period="evening"]{--tint-opacity:.7}
-.hero[data-period="evening"] .hero__tint{mix-blend-mode:soft-light;
-  background:linear-gradient(180deg,rgb(255,150,50) 0%,rgb(255,95,55) 100%)}
-.hero[data-period="dusk"]{--tint-opacity:.85}
-.hero[data-period="dusk"] .hero__tint{mix-blend-mode:multiply;
-  background:linear-gradient(180deg,rgb(125,95,160) 0%,rgb(95,80,135) 100%)}
-.hero[data-period="night"]{--tint-opacity:.95}
-.hero[data-period="night"] .hero__tint{mix-blend-mode:multiply;
-  background:linear-gradient(180deg,rgb(16,26,66) 0%,rgb(40,50,92) 100%)}
+   One shot, five moods. The period is written onto <html> by an inline
+   script in <head>, before the first paint — the page is born in the right
+   tone, nothing fades in on load. Only a change of period while the page is
+   open animates (filter and background interpolate).
+
+   No mix-blend-mode here on purpose: blending a layer with <video> is
+   unreliable in Safari (it can blend against the black section instead of
+   the frame, turning "multiply" into a black screen). The grade is a filter
+   on the video itself plus a plain translucent colour cast on top. */
+html[data-period="dawn"]{--grade:saturate(1.1) sepia(.18) hue-rotate(-14deg) brightness(1.02);
+  --cast:linear-gradient(180deg,rgba(255,150,175,.16),rgba(255,200,150,.06))}
+html[data-period="evening"]{--grade:sepia(.32) saturate(1.4) hue-rotate(-10deg) brightness(.96);
+  --cast:linear-gradient(180deg,rgba(255,140,40,.14),rgba(255,80,40,.12))}
+html[data-period="dusk"]{--grade:brightness(.6) saturate(.85) hue-rotate(10deg);
+  --cast:linear-gradient(180deg,rgba(80,45,125,.34),rgba(40,30,85,.28))}
+html[data-period="night"]{--grade:brightness(.4) saturate(.65) hue-rotate(12deg) contrast(1.05);
+  --cast:linear-gradient(180deg,rgba(10,25,85,.42),rgba(8,18,60,.3))}
+.hero video{filter:var(--grade,none)}
+.hero__tint{position:absolute;inset:0;pointer-events:none;background:var(--cast,none);
+  transition:opacity 1.2s ease}
+/* A running change of period: the cast dips out, the video filter
+   interpolates, the new cast comes back. */
+html.is-retinting .hero__tint{opacity:0}
 
 .hero__time{margin-bottom:12px;font-size:.6875rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
   color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;text-shadow:0 1px 12px rgba(0,0,0,.5)}
