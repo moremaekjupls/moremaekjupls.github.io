@@ -175,6 +175,31 @@ body.open .burger .l3,.menu-open .menu-btn .l3{transform:rotate(-45deg) translat
   .hero .quote-card{display:none}
 }
 
+/* ======================= TIME OF DAY =======================
+   One shot, five moods. The layer sits between the footage and the type and
+   blends into the video: soft-light warms, multiply darkens and cools. Only
+   opacity animates; the blend mode switches while the layer is invisible. */
+.hero__tint{position:absolute;inset:0;pointer-events:none;opacity:0;
+  transition:opacity 1.6s ease}
+.hero[data-period] .hero__tint{opacity:var(--tint-opacity,0)}
+.hero.is-retinting .hero__tint{opacity:0;transition-duration:1.2s}
+.hero[data-period="dawn"]{--tint-opacity:.55}
+.hero[data-period="dawn"] .hero__tint{mix-blend-mode:soft-light;
+  background:linear-gradient(180deg,rgb(255,160,190) 0%,rgb(255,205,160) 70%)}
+.hero[data-period="evening"]{--tint-opacity:.7}
+.hero[data-period="evening"] .hero__tint{mix-blend-mode:soft-light;
+  background:linear-gradient(180deg,rgb(255,150,50) 0%,rgb(255,95,55) 100%)}
+.hero[data-period="dusk"]{--tint-opacity:.85}
+.hero[data-period="dusk"] .hero__tint{mix-blend-mode:multiply;
+  background:linear-gradient(180deg,rgb(125,95,160) 0%,rgb(95,80,135) 100%)}
+.hero[data-period="night"]{--tint-opacity:.95}
+.hero[data-period="night"] .hero__tint{mix-blend-mode:multiply;
+  background:linear-gradient(180deg,rgb(16,26,66) 0%,rgb(40,50,92) 100%)}
+
+.hero__time{margin-bottom:12px;font-size:.6875rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;text-shadow:0 1px 12px rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:no-preference){.hero__time{animation:enter-fade .6s ease .2s backwards}}
+
 /* ============================ DRAWER ============================ */
 .scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;touch-action:none;
@@ -195,6 +220,7 @@ body.open .drawer{transform:none;visibility:visible;transition:transform .5s var
    be clipped by the panel's own overflow). */
 .drawer{box-shadow:120px 0 0 0 rgba(0,0,0,.9)}
 .drawer.is-dragging,.drawer.is-dragging a{transition:none!important}
+.drawer a{-webkit-user-drag:none}
 .scrim.is-dragging{transition:none}
 .drawer a{display:flex;align-items:center;min-height:48px;border-radius:12px;padding:12px 14px;
   font-size:1rem;font-weight:500;color:var(--ash);
