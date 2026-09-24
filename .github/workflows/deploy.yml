@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # /history/ is built from the full git log
       - uses: withastro/action@v3
   deploy:
     needs: build

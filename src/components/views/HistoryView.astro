@@ -1,0 +1,158 @@
+---
+import { getChanges, type Change } from '../../lib/history';
+import { SITE } from '../../consts';
+
+const changes = getChanges();
+const fmtDay = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+const fmtFull = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const utc = (day: string) => new Date(day + 'T00:00:00Z');
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+// Bare numbers ("335") are the version counter used for quick uploads.
+const title = (c: Change) => (/^\d+$/.test(c.subject) ? `Version ${c.subject}` : c.subject);
+
+// ---- stats ----
+const perDay = new Map<string, number>();
+for (const c of changes) perDay.set(c.day, (perDay.get(c.day) ?? 0) + 1);
+const added = changes.reduce((n, c) => n + c.added, 0);
+const removed = changes.reduce((n, c) => n + c.removed, 0);
+const first = changes.at(-1);
+
+// ---- activity calendar: one column per week, Monday on top ----
+const level = (n: number) => (n === 0 ? 0 : n === 1 ? 1 : n <= 3 ? 2 : n <= 6 ? 3 : 4);
+const weeks: { day: string; count: number; level: number; future: boolean }[][] = [];
+const months: { col: number; label: string }[] = [];
+if (first) {
+  const today = utc(iso(new Date()));
+  const start = utc(first.day);
+  start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+  let lastMonth = -1;
+  for (const d = new Date(start); d <= today || d.getUTCDay() !== 1; d.setUTCDate(d.getUTCDate() + 1)) {
+    if (d.getUTCDay() === 1) {
+      weeks.push([]);
+      if (d.getUTCMonth() !== lastMonth) {
+        lastMonth = d.getUTCMonth();
+        months.push({ col: weeks.length, label: d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }) });
+      }
+    }
+    const day = iso(d);
+    const count = perDay.get(day) ?? 0;
+    weeks.at(-1)!.push({ day, count, level: level(count), future: d > today });
+  }
+}
+
+// ---- list grouped by month, newest first ----
+const groups: { label: string; items: Change[] }[] = [];
+for (const c of changes) {
+  const label = c.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  if (groups.at(-1)?.label !== label) groups.push({ label, items: [] });
+  groups.at(-1)!.items.push(c);
+}
+---
+<section class="page-intro">
+  <div class="container">
+    <span class="eyebrow">History</span>
+    <h1 class="display">Every change,<br />in order.</h1>
+    <p class="body body--muted" style="margin-top:24px;">
+      {first
+        ? `${changes.length} changes since ${fmtFull(first.date)}. Rebuilt from the git log on every deploy.`
+        : 'The git history was not available when this page was built.'}
+    </p>
+  </div>
+</section>
+
+{first && (
+  <section class="section history-overview">
+    <div class="container">
+      <dl class="history-stats">
+        <div><dt>Changes</dt><dd>{changes.length}</dd></div>
+        <div><dt>Active days</dt><dd>{perDay.size}</dd></div>
+        <div><dt>Lines added</dt><dd>+{added.toLocaleString('en-US')}</dd></div>
+        <div><dt>Lines removed</dt><dd>−{removed.toLocaleString('en-US')}</dd></div>
+      </dl>
+
+      <figure class="history-cal" aria-label="Changes per day">
+        <div class="history-cal__scroll">
+          <div class="history-cal__months" style={`--weeks:${weeks.length}`} aria-hidden="true">
+            {months.map((m) => <span style={`grid-column:${m.col}`}>{m.label}</span>)}
+          </div>
+          <div class="history-cal__grid" style={`--weeks:${weeks.length}`} data-cal>
+            {weeks.map((w) => w.map((c) => (
+              <i
+                class={`history-cal__cell${c.future ? ' is-future' : ''}`}
+                data-level={c.level}
+                data-day={c.day}
+                data-count={c.count}
+              ></i>
+            )))}
+          </div>
+        </div>
+        <figcaption class="history-cal__foot">
+          <span class="history-cal__readout" data-readout aria-live="polite">Hover or tap a day</span>
+          <span class="history-cal__legend" aria-hidden="true">
+            Less
+            {[0, 1, 2, 3, 4].map((l) => <i class="history-cal__cell" data-level={l}></i>)}
+            More
+          </span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+)}
+
+<section class="section">
+  <div class="container">
+    {groups.map((g) => (
+      <section class="history-month">
+        <h2 class="history-month__title">{g.label} <span>{g.items.length}</span></h2>
+        <ol class="history-list">
+          {g.items.map((c) => (
+            <li class="history-item">
+              <time class="history-item__day" datetime={c.date.toISOString()}>{fmtDay(c.date)}</time>
+              <div class="history-item__main">
+                {c.body ? (
+                  <details>
+                    <summary class="history-item__title">{title(c)}</summary>
+                    <p class="history-item__body">{c.body}</p>
+                  </details>
+                ) : (
+                  <p class="history-item__title">{title(c)}</p>
+                )}
+                <p class="history-item__meta">
+                  <a href={`${SITE.repo}/commit/${c.hash}`} target="_blank" rel="noopener noreferrer">{c.short}</a>
+                  {c.files > 0 && <span>{c.files} {c.files === 1 ? 'file' : 'files'}</span>}
+                  {c.added > 0 && <span class="is-add">+{c.added}</span>}
+                  {c.removed > 0 && <span class="is-del">−{c.removed}</span>}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+</section>
+
+<script>
+  // Одна подпись под календарём вместо сотни всплывающих подсказок: работает
+  // и мышью (наведение), и пальцем (касание).
+  const grid = document.querySelector<HTMLElement>('[data-cal]');
+  const out = document.querySelector<HTMLElement>('[data-readout]');
+  if (grid && out) {
+    const fmt = (day: string) => new Date(day + 'T00:00:00Z')
+      .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+    let active: HTMLElement | null = null;
+    const show = (e: PointerEvent) => {
+      const cell = (e.target as HTMLElement).closest<HTMLElement>('.history-cal__cell');
+      if (!cell || cell === active || cell.classList.contains('is-future')) return;
+      active?.classList.remove('is-active');
+      active = cell; cell.classList.add('is-active');
+      const n = +(cell.dataset.count || 0);
+      out.textContent = `${fmt(cell.dataset.day!)} · ${n === 0 ? 'no changes' : n === 1 ? '1 change' : `${n} changes`}`;
+    };
+    grid.addEventListener('pointerover', show);
+    grid.addEventListener('pointerdown', show);
+    // Свежие недели справа: на узком экране прокручиваем к ним.
+    const scroller = grid.closest<HTMLElement>('.history-cal__scroll');
+    if (scroller) scroller.scrollLeft = scroller.scrollWidth;
+  }
+</script>
