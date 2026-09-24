@@ -35,6 +35,8 @@
   /* One curve for everything that responds to the user: fast out, soft landing. */
   --ease-out:cubic-bezier(.23,1,.32,1);
   --ease-press:cubic-bezier(.2,.8,.3,1);
+  /* iOS sheet curve: the drawer arrives with the same weight as a native one. */
+  --ease-drawer:cubic-bezier(.32,.72,0,1);
 
   /* iPhone notch / home indicator. Zero everywhere else. */
   --safe-t:env(safe-area-inset-top,0px);
@@ -44,10 +46,11 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth;background:var(--void)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth;background:var(--void);
+  color-scheme:dark;-webkit-tap-highlight-color:transparent}
 body{
   background:var(--void);color:var(--bone);
-  font-family:var(--font);font-size:16px;line-height:1.6;
+  font-family:var(--font);font-size:1rem;line-height:1.6;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   min-height:100dvh;overflow-x:hidden;
 }
@@ -59,8 +62,12 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 /* Фокус с клавиатуры — одним правилом на всё интерактивное. */
 :focus-visible{outline:2px solid rgba(255,255,255,.9);outline-offset:3px;border-radius:10px}
 
-/* Tap feedback everywhere; no grey flash from the browser on top of it. */
-a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+/* No double-tap-zoom wait on anything tappable. */
+a,button{touch-action:manipulation}
+/* Controls are not content: a long press on a button must not select its
+   label or pop the copy callout. Body text stays selectable. */
+button,.btn,.burger,.menu-btn,.nav-links a,.hero .links a,.drawer a,.timeline-card{
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 /* ============================ HERO ============================ */
 .hero{position:relative;height:100svh;height:100dvh;width:100%;overflow:hidden;background:#000}
@@ -147,15 +154,25 @@ body.open .burger .x,.menu-open .menu-btn .x{transform:none;opacity:1}
 
 /* ============================ DRAWER ============================ */
 .scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s var(--ease-out)}
+  -webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;touch-action:none;
+  transition:opacity .3s var(--ease-drawer)}
 body.open .scrim{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;z-index:45;height:100%;width:min(86vw,320px);display:flex;
   flex-direction:column;gap:2px;overflow-y:auto;overscroll-behavior:contain;
   padding:calc(76px + var(--safe-t)) calc(20px + var(--safe-r)) calc(28px + var(--safe-b)) 20px;
-  background:rgba(0,0,0,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  background:rgba(0,0,0,.9);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
   transform:translateX(100%);visibility:hidden;
-  transition:transform .45s var(--ease-out),visibility 0s .45s}
-body.open .drawer{transform:none;visibility:visible;transition:transform .45s var(--ease-out),visibility 0s}
+  /* The browser keeps vertical scrolling; horizontal belongs to swipe-to-close. */
+  touch-action:pan-y;
+  /* Leaving is quicker than arriving: the system responds, the user decided. */
+  transition:transform .3s var(--ease-drawer),visibility 0s .3s}
+body.open .drawer{transform:none;visibility:visible;transition:transform .5s var(--ease-drawer),visibility 0s}
+/* Pulled left past its edge the panel would open a gap at the right of the
+   screen; a solid shadow of the same colour fills it (a pseudo-element would
+   be clipped by the panel's own overflow). */
+.drawer{box-shadow:120px 0 0 0 rgba(0,0,0,.9)}
+.drawer.is-dragging,.drawer.is-dragging a{transition:none!important}
+.scrim.is-dragging{transition:none}
 .drawer a{display:flex;align-items:center;min-height:48px;border-radius:12px;padding:12px 14px;
   font-size:1rem;font-weight:500;color:var(--ash);
   opacity:0;transform:translateX(16px);
@@ -179,7 +196,8 @@ body.open .drawer>:nth-child(8){transition-delay:.23s}
 
 /* The home page is exactly one screen. Without this the document stays taller
    than the viewport and iOS reveals a black band under the hero on scroll. */
-body.is-screen{height:100dvh;overflow:hidden}
+body.is-screen{height:100dvh;overflow:hidden;overscroll-behavior:none}
+html:has(body.is-screen){overscroll-behavior:none}
 
 /* ======================= INNER PAGES ======================= */
 .container{width:100%;max-width:var(--page-max);margin-inline:auto;
@@ -187,8 +205,18 @@ body.is-screen{height:100dvh;overflow:hidden}
 .section{padding-block:60px}
 .section+.section{padding-top:0}
 
+/* The header is a material, not a strip: at the top of the page it is just
+   type on the background; the glass appears only once content scrolls under
+   it. The edge is a soft fade, not a 1px rule. */
 .site-header{position:sticky;top:0;z-index:50;padding-block:calc(12px + var(--safe-t)) 12px;
-  background:rgba(0,0,0,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  background:rgba(0,0,0,0);backdrop-filter:blur(0) saturate(100%);-webkit-backdrop-filter:blur(0) saturate(100%);
+  transition:background-color .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
+.site-header::after{content:"";position:absolute;left:0;right:0;top:100%;height:18px;pointer-events:none;
+  background:linear-gradient(rgba(0,0,0,.28),transparent);opacity:0;transition:opacity .25s ease}
+.site-header.is-scrolled,.site-header.menu-open{background:rgba(0,0,0,.74);
+  backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%)}
+.site-header.is-scrolled::after{opacity:1}
+.scroll-sentinel{position:absolute;top:0;left:0;width:1px;height:1px;pointer-events:none}
 .site-header .nav{display:flex;align-items:center;justify-content:space-between;gap:18px;height:52px}
 .logo{display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:1.0625rem;border-radius:10px}
 .logo .mark{color:var(--bone)}
@@ -209,10 +237,10 @@ body.is-screen{height:100dvh;overflow:hidden}
   .nav-links{position:absolute;top:calc(100% - 4px);left:max(var(--gutter),var(--safe-l));right:max(var(--gutter),var(--safe-r));
     flex-direction:column;align-items:stretch;padding:8px;border-radius:var(--radius);
     background:#0c0c0c;border:1px solid var(--hairline);
-    opacity:0;visibility:hidden;transform:translateY(-8px) scale(.98);transform-origin:top right;
-    transition:opacity .18s ease,transform .25s var(--ease-out),visibility 0s .25s}
+    opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transform-origin:top right;
+    transition:opacity .12s ease,transform .15s var(--ease-out),visibility 0s .15s}
   .menu-open .nav-links{opacity:1;visibility:visible;transform:none;
-    transition:opacity .18s ease,transform .25s var(--ease-out),visibility 0s}
+    transition:opacity .16s ease,transform .22s var(--ease-out),visibility 0s}
   .nav-links a{height:48px;padding:0 16px;border-radius:12px;font-size:1rem}
 }
 
@@ -354,7 +382,7 @@ main,.site-footer{position:relative;z-index:1}
 .about-hero__grid{position:relative;z-index:2;display:grid;align-items:center;
   grid-template-columns:minmax(0,.9fr) minmax(360px,1.1fr);gap:clamp(30px,7vw,110px)}
 .about-hero__copy{min-width:0;max-width:580px}
-.about-hero__kicker{margin:-8px 0 26px;color:rgba(255,255,255,.48);font-size:10px;
+.about-hero__kicker{margin:-8px 0 26px;color:rgba(255,255,255,.48);font-size:.625rem;
   letter-spacing:.18em;text-transform:uppercase}
 .about-hero__title{max-width:8.8ch;font-family:var(--font-serif);font-size:clamp(72px,8.4vw,132px);
   font-weight:400;line-height:.84;letter-spacing:-.055em;text-shadow:0 0 34px rgba(240,201,121,.12)}
@@ -382,17 +410,17 @@ main,.site-footer{position:relative;z-index:1}
   box-shadow:0 0 10px #dffbff,0 0 30px #63d8ed,0 0 65px rgba(99,216,237,.65)}
 .about-hero__signal-core{position:relative;z-index:1;align-self:center;display:grid;place-items:center;
   width:94px;height:94px;border:1px solid rgba(240,201,121,.48);border-radius:50%;color:#fff2c8;
-  background:rgba(8,16,19,.82);font-size:38px;text-shadow:0 0 22px #b7f6ff;
+  background:rgba(8,16,19,.82);font-size:2.375rem;text-shadow:0 0 22px #b7f6ff;
   box-shadow:0 0 0 10px rgba(99,216,237,.025),0 0 55px rgba(91,210,237,.2),inset 0 0 26px rgba(240,201,121,.08);
   animation:about-signal-float 5s ease-in-out infinite}
 .about-hero__signal-nodes{position:relative;z-index:2;display:flex;justify-content:space-between;
-  align-items:flex-start;margin-top:82px;color:var(--smoke);font-size:12px;letter-spacing:.04em}
+  align-items:flex-start;margin-top:82px;color:var(--smoke);font-size:.75rem;letter-spacing:.04em}
 .about-hero__signal-nodes span{display:grid;gap:7px;min-width:72px}
 .about-hero__signal-nodes span:nth-child(2){text-align:center}
 .about-hero__signal-nodes span:last-child{text-align:right}
-.about-hero__signal-nodes i{color:#fff;font-size:10px;font-style:normal;letter-spacing:.14em}
+.about-hero__signal-nodes i{color:#fff;font-size:.625rem;font-style:normal;letter-spacing:.14em}
 .about-hero__signal-caption{position:relative;z-index:2;align-self:center;margin-top:48px;
-  color:rgba(255,255,255,.56);font-size:12px;letter-spacing:.06em;text-align:center}
+  color:rgba(255,255,255,.56);font-size:.75rem;letter-spacing:.06em;text-align:center}
 
 @keyframes about-signal-travel{
   0%{transform:translateX(-33%);opacity:0}
@@ -434,14 +462,14 @@ main,.site-footer{position:relative;z-index:1}
   border:1px solid #fff;border-radius:50%;background:#0a0a0a;box-shadow:0 0 0 5px #0a0a0a;
   transition:background-color .25s ease,box-shadow .25s ease}
 .timeline-card.is-active .timeline-card__marker{background:#fff;box-shadow:0 0 0 5px #0a0a0a,0 0 18px #fff}
-.timeline-card__year{padding-top:2px;color:#fff;font-size:12px;letter-spacing:.12em}
+.timeline-card__year{padding-top:2px;color:#fff;font-size:.75rem;letter-spacing:.12em}
 .timeline-card__main{min-width:0;display:grid;grid-template-columns:minmax(180px,.9fr) minmax(150px,.65fr);
   column-gap:24px;align-items:start}
-.timeline-card__title{font-size:19px;font-weight:500;line-height:1.2}
-.timeline-card__tag{color:var(--smoke);font-size:13px;line-height:1.4}
+.timeline-card__title{font-size:1.1875rem;font-weight:500;line-height:1.2}
+.timeline-card__tag{color:var(--smoke);font-size:.8125rem;line-height:1.4}
 /* Раскрытие через grid-rows 0fr→1fr: высота анимируется без замеров в JS. */
 .timeline-card__detail{grid-column:1/-1;display:grid;grid-template-rows:0fr;opacity:0;
-  color:var(--ash);font-size:14px;line-height:1.55;
+  color:var(--ash);font-size:.875rem;line-height:1.55;
   transition:grid-template-rows .35s var(--ease-out),opacity .25s ease}
 .timeline-card__detail>span{overflow:hidden;max-width:62ch}
 .timeline-card.is-active .timeline-card__detail{grid-template-rows:1fr;opacity:1}
@@ -456,11 +484,11 @@ main,.site-footer{position:relative;z-index:1}
 .certificate-card__media img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease-out)}
 .certificate-card--helsinki .certificate-card__media img{object-fit:contain;background:#f9f9fb}
 .certificate-card__body{padding:clamp(20px,3vw,30px)}
-.certificate-card__issuer{color:#fff;font-size:11px;letter-spacing:.13em;text-transform:uppercase}
-.certificate-card h3{margin-top:10px;font-size:25px;font-weight:400}
-.certificate-card p{max-width:42ch;margin-top:12px;color:var(--ash);font-size:14px;line-height:1.55}
+.certificate-card__issuer{color:#fff;font-size:.6875rem;letter-spacing:.13em;text-transform:uppercase}
+.certificate-card h3{margin-top:10px;font-size:1.5625rem;font-weight:400}
+.certificate-card p{max-width:42ch;margin-top:12px;color:var(--ash);font-size:.875rem;line-height:1.55}
 .certificate-card a{display:inline-flex;align-items:center;min-height:44px;margin-top:8px;color:rgba(255,255,255,.85);
-  font-size:13px;text-decoration:underline;text-decoration-color:rgba(255,184,41,.4);text-underline-offset:5px;
+  font-size:.8125rem;text-decoration:underline;text-decoration-color:rgba(255,184,41,.4);text-underline-offset:5px;
   transition:color .2s,text-decoration-color .2s}
 
 .about-contact{border-top:1px solid var(--hairline)}
@@ -487,9 +515,9 @@ main,.site-footer{position:relative;z-index:1}
   .about-hero__title{max-width:100%;font-size:clamp(56px,16.5vw,92px);line-height:.86}
   .about-hero__lead{max-width:36ch;margin-top:26px}
   .about-hero__signal{min-height:235px;margin-top:8px;padding-top:14px}
-  .about-hero__signal-core{width:76px;height:76px;font-size:30px}
-  .about-hero__signal-nodes{margin-top:62px;font-size:11px}
-  .about-hero__signal-caption{margin-top:28px;font-size:11px}
+  .about-hero__signal-core{width:76px;height:76px;font-size:1.875rem}
+  .about-hero__signal-nodes{margin-top:62px;font-size:.6875rem}
+  .about-hero__signal-caption{margin-top:28px;font-size:.6875rem}
   .about-section-heading{margin-bottom:32px}
   .timeline-card{grid-template-columns:30px 34px minmax(0,1fr);gap:10px;min-height:0;padding:18px 16px 18px 0}
   .timeline-card__marker{margin-left:10px}
@@ -503,11 +531,11 @@ main,.site-footer{position:relative;z-index:1}
 }
 @media (max-width:360px){
   .about-hero__title{font-size:clamp(52px,16vw,66px)}
-  .about-hero__lead{font-size:14px;line-height:1.62}
+  .about-hero__lead{font-size:.875rem;line-height:1.62}
   .about-hero__signal-line{left:3%;right:3%}
-  .about-hero__signal-nodes{font-size:10px}
+  .about-hero__signal-nodes{font-size:.625rem}
   .about-hero__signal-nodes span{min-width:0}
-  .about-hero__signal-caption{max-width:28ch;font-size:10px}
+  .about-hero__signal-caption{max-width:28ch;font-size:.625rem}
 }
 
 /* ============================ HOVER ============================
@@ -543,7 +571,7 @@ a.card,.link-arrow,.footer-socials a{
 }
 .drawer a{transition:opacity .35s var(--ease-out),transform .35s var(--ease-out),background-color .2s,color .2s}
 .btn:active,.burger:active,.menu-btn:active,
-.hero .links a:active,.nav-links a:active,a.card:active{transform:scale(.965)}
+.hero .links a:active,.nav-links a:active,a.card:active{transform:scale(.97)}
 body.open .drawer a:active{transform:scale(.97)}
 .btn-primary:active{filter:brightness(1.15)}
 .burger:active,.menu-btn:active,.hero .links a:active,.nav-links a:active,.drawer a:active{background:var(--glass-strong)}
@@ -574,6 +602,36 @@ body.open .drawer a:active{transform:scale(.97)}
   .about-page.about-reveal-ready [data-about-reveal].is-settled{transition-delay:0ms}
 }
 
+/* ===================== HOME ENTRANCE =====================
+   Seen once per visit, so it may take its time. The headline materialises out
+   of a blur rather than just fading; the glass cards follow 60ms apart. */
+@media (prefers-reduced-motion:no-preference){
+  .hero nav{animation:enter-fade .6s ease .05s backwards}
+  .hero h1{animation:enter-materialize .9s var(--ease-out) .12s backwards}
+  .hero .card{animation:enter-rise .7s var(--ease-out) backwards}
+  .hero .card:nth-child(1){animation-delay:.32s}
+  .hero .card:nth-child(2){animation-delay:.38s}
+}
+@keyframes enter-fade{from{opacity:0}}
+@keyframes enter-materialize{from{opacity:0;transform:translateY(10px);filter:blur(10px)}}
+@keyframes enter-rise{from{opacity:0;transform:translateY(14px) scale(.98)}}
+
+/* ===================== USER PREFERENCES =====================
+   Reduced transparency: every glass surface becomes solid.
+   More contrast: brighter secondary text, visible edges on controls. */
+@media (prefers-reduced-transparency:reduce){
+  :root{--glass:#1c1c1c;--glass-strong:#2a2a2a}
+  .site-header.is-scrolled,.site-header.menu-open{background:#050505;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .drawer{background:#050505;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .scrim{background:rgba(0,0,0,.88);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .hero .card,.hero .links,.burger,.menu-btn,.card{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(20,20,20,.92)}
+}
+@media (prefers-contrast:more){
+  :root{--ash:rgba(255,255,255,.94);--smoke:rgba(255,255,255,.82);--faint:rgba(255,255,255,.7);
+    --hairline:rgba(255,255,255,.4);--hairline-strong:rgba(255,255,255,.6)}
+  .btn,.burger,.menu-btn,.hero .links,.nav-links,.card{border:1px solid rgba(255,255,255,.55)}
+}
+
 /* ===================== PAGE TRANSITIONS =====================
    Native cross-document transitions: a short cross-fade between pages in
    Chrome, Edge and Safari 18.2+, an ordinary navigation elsewhere. */
@@ -585,10 +643,17 @@ body.open .drawer a:active{transform:scale(.97)}
 
 /* Motion off, feedback intact: killing every transition also kills the press
    response, and then nothing on the page acknowledges a tap. */
+/* Reduced motion is not "no feedback": movement goes, short opacity
+   cross-fades stay (page changes, press states, the menu appearing). */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  *,*::before,*::after{animation:none!important;transition-duration:.08s!important;transition-delay:0s!important}
-  ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+  *,*::before,*::after{animation:none!important;transition-duration:.12s!important;transition-delay:0s!important}
+  ::view-transition-old(root){animation:vt-out .12s ease both!important}
+  ::view-transition-new(root){animation:vt-in .16s ease both!important}
   .reveal-init{opacity:1}
   .about-page [data-about-reveal]{opacity:1;transform:none}
+  .drawer,body.open .drawer a,.drawer a{transform:none}
+  .drawer{opacity:0;transition-property:opacity,visibility}
+  body.open .drawer{opacity:1}
+  .nav-links{transform:none!important}
 }

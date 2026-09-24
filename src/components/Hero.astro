@@ -106,6 +106,8 @@ const links = [
     // inert убирает закрытую панель из Tab-порядка и от скринридеров:
     // без него фокус с клавиатуры уходил в невидимые ссылки за краем экрана.
     drawer.toggleAttribute('inert', !open);
+    // Фокус внутрь — для клавиатуры и скринридеров; кольцо фокуса браузер
+    // покажет только при навигации с клавиатуры (:focus-visible).
     if (open) drawer.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
   }
 
@@ -117,6 +119,94 @@ const links = [
   window.matchMedia('(min-width: 768px)').addEventListener('change', () => setOpen(false));
   // Возврат по «Назад» из bfcache: панель не должна остаться открытой.
   window.addEventListener('pageshow', (e) => { if (e.persisted) setOpen(false); });
+
+  /* Свайп вправо закрывает панель — как лист в iOS.
+     · Панель едет за пальцем 1:1, с учётом точки захвата.
+     · Потянуть влево можно, но с нарастающим сопротивлением (rubber-band).
+     · Решение по отпусканию — по прогнозу, куда долетит жест с текущей
+       скоростью, а не по пройденному расстоянию: короткий резкий флик
+       закрывает, медленное дотягивание до середины — возвращает.
+     · Анимация после отпускания стартует с текущей позиции, а длительность
+       подобрана под скорость пальца, чтобы на стыке не было рывка. */
+  if (drawer && scrim) {
+    const INTENT = 10;               // px до того, как решаем, чей это жест
+    const DECEL = 0.998;             // замедление, как у прокрутки iOS
+    const project = (v: number) => (v * DECEL) / (1 - DECEL); // v в px/мс → px
+    const rubber = (d: number, dim: number, c = 0.55) => (d * dim * c) / (dim + c * Math.abs(d));
+
+    let id: number | null = null;
+    let x0 = 0, y0 = 0, dx = 0, width = 0;
+    let state: 'idle' | 'pending' | 'drag' | 'scroll' = 'idle';
+    let samples: { x: number; t: number }[] = [];
+    let suppressClick = false;
+
+    const apply = (x: number) => {
+      const offset = x >= 0 ? x : rubber(x, width);
+      drawer.style.transform = `translateX(${offset}px)`;
+      scrim.style.opacity = String(Math.max(0, 1 - Math.max(0, x) / width));
+    };
+
+    drawer.addEventListener('pointerdown', (e) => {
+      if (id !== null || !document.body.classList.contains('open') || e.button > 0) return; // второй палец игнорируем
+      id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0;
+      width = drawer.getBoundingClientRect().width;
+      samples = [{ x: e.clientX, t: e.timeStamp }];
+      state = 'pending';
+    });
+
+    drawer.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== id || state === 'idle' || state === 'scroll') return;
+      const mx = e.clientX - x0, my = e.clientY - y0;
+      if (state === 'pending') {
+        if (Math.hypot(mx, my) < INTENT) return;
+        // Вертикальное намерение — это прокрутка панели, не наш жест.
+        if (Math.abs(my) > Math.abs(mx)) { state = 'scroll'; return; }
+        state = 'drag';
+        x0 = e.clientX;              // старт с этой точки — без скачка на величину порога
+        drawer.setPointerCapture(e.pointerId);
+        drawer.classList.add('is-dragging');
+        scrim.classList.add('is-dragging');
+      }
+      dx = e.clientX - x0;
+      samples.push({ x: e.clientX, t: e.timeStamp });
+      if (samples.length > 6) samples.shift();
+      apply(dx);
+    });
+
+    const release = (e: PointerEvent) => {
+      if (e.pointerId !== id) return;
+      const wasDrag = state === 'drag';
+      id = null; state = 'idle';
+      if (!wasDrag) return;
+      suppressClick = true;          // палец отпустили над ссылкой — это не клик
+
+      const first = samples[0], last = samples[samples.length - 1];
+      const dt = Math.max(1, last.t - first.t);
+      const v = e.type === 'pointercancel' ? 0 : (last.x - first.x) / dt; // px/мс, > 0 — вправо
+      const close = dx + project(v) > width / 2 || v > 0.5;
+
+      // Остаток пути делим на скорость пальца: быстрый флик — быстрый финиш.
+      const remaining = close ? width - Math.max(dx, 0) : Math.abs(dx);
+      const ms = Math.abs(v) > 0.05 ? Math.min(420, Math.max(180, remaining / Math.abs(v))) : 320;
+      drawer.classList.remove('is-dragging');
+      scrim.classList.remove('is-dragging');
+      drawer.style.transition = `transform ${ms}ms var(--ease-drawer), visibility 0s ${close ? ms : 0}ms`;
+      scrim.style.transition = `opacity ${ms}ms var(--ease-drawer)`;
+      drawer.style.transform = '';
+      scrim.style.opacity = '';
+      if (close) setOpen(false);
+      drawer.addEventListener('transitionend', () => {
+        drawer.style.transition = '';
+        scrim.style.transition = '';
+      }, { once: true });
+    };
+    drawer.addEventListener('pointerup', release);
+    drawer.addEventListener('pointercancel', release);
+    drawer.addEventListener('click', (e) => {
+      if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; }
+    }, true);
+    drawer.addEventListener('pointerdown', () => { suppressClick = false; }, true);
+  }
 
   /* Автозапуск видео. iOS в режиме энергосбережения и некоторые Android-браузеры
      блокируют autoplay — тогда запускаем по первому касанию. При возврате на
