@@ -428,6 +428,10 @@ h1,h2,h3{font-weight:600;letter-spacing:-.02em;line-height:1.1;overflow-wrap:bre
   .history-item{grid-template-columns:56px minmax(0,1fr);gap:12px}
 }
 
+/* ============================ OFFLINE ============================ */
+.offline-list{list-style:none;display:grid;gap:4px}
+.offline-list a{text-transform:capitalize}
+
 /* ===================== PAGE ATMOSPHERE =====================
    Two fixed layers behind every inner page: a near-black field with one faint
    glow and film grain. A long read must not fight its own background. */

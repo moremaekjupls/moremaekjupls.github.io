@@ -37,6 +37,11 @@ const canonical = SITE.domain + withSlash(path);
     <!-- iOS игнорирует SVG-иконки и без этого берёт случайную картинку со страницы -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- Установленное на iPhone приложение: без адресной строки, статус-бар
+         поверх страницы (отступы от выреза уже заложены через safe-area). -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Khondamir" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="preload" href="/fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body class="is-screen">
@@ -44,6 +49,11 @@ const canonical = SITE.domain + withSlash(path);
     <script>
       // iOS Safari не применяет :active без обработчика touchstart на странице.
       document.addEventListener('touchstart', () => {}, { passive: true });
+
+      // Service worker — только в продакшен-сборке, чтобы кэш не мешал pnpm dev.
+      if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+      }
     </script>
   </body>
 </html>
