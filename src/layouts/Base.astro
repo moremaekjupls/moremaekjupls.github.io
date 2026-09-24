@@ -21,6 +21,7 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -44,6 +45,7 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
   </head>
   <body>
     <a href="#main" class="skip-link">{lang === 'ru' ? '\u041a \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u043c\u0443' : 'Skip to content'}</a>
+    <div class="scroll-sentinel" aria-hidden="true"></div>
     <div class="page-bg" aria-hidden="true"></div>
     <div class="page-scrim" aria-hidden="true"></div>
     <Header lang={lang} path={path} />
@@ -52,6 +54,19 @@ const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
     </main>
     <Footer lang={lang} />
     <script>
+      // iOS Safari не применяет :active при касании, пока на странице нет ни
+      // одного обработчика touchstart. Пустого пассивного достаточно — без него
+      // все кнопки на iPhone нажимаются молча.
+      document.addEventListener('touchstart', () => {}, { passive: true });
+
+      // Шапка становится «стеклом», только когда под неё уезжает контент.
+      const header = document.querySelector('.site-header');
+      const sentinel = document.querySelector('.scroll-sentinel');
+      if (header && sentinel && 'IntersectionObserver' in window) {
+        new IntersectionObserver(([e]) => header.classList.toggle('is-scrolled', !e.isIntersecting))
+          .observe(sentinel);
+      }
+
       /* Мягкое появление блоков при прокрутке. Всё, что уже на экране при
          загрузке, показывается сразу — иначе первый экран мигает пустотой. */
       const sel = '.post-row, .article .prose, .article-end, .contact-form';

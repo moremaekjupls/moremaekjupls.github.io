@@ -20,6 +20,7 @@ const canonical = SITE.domain + withSlash(path);
     <title>{title ? `${SITE.name} — ${title}` : SITE.name}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
     <meta property="og:title" content={SITE.name} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -43,5 +44,9 @@ const canonical = SITE.domain + withSlash(path);
   </head>
   <body class="is-screen">
     <slot />
+    <script>
+      // iOS Safari не применяет :active без обработчика touchstart на странице.
+      document.addEventListener('touchstart', () => {}, { passive: true });
+    </script>
   </body>
 </html>
