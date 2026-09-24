@@ -43,10 +43,10 @@ const body = [
       <div class="timeline" data-timeline>
         <div class="timeline__rail" aria-hidden="true"></div>
         <div class="timeline__items">
-          <button class="timeline-card is-active" data-about-reveal="timeline-item" type="button" data-timeline-item="0" aria-expanded="true" aria-controls="timeline-detail-0"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">01</span><span class="timeline-card__main"><strong class="timeline-card__title">Context and negotiation</strong><small class="timeline-card__tag">International relations</small><span class="timeline-card__detail" id="timeline-detail-0"><span>Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.</span></span></span></button>
-          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="1" aria-expanded="false" aria-controls="timeline-detail-1"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">02</span><span class="timeline-card__main"><strong class="timeline-card__title">Product thinking</strong><small class="timeline-card__tag">Research · strategy</small><span class="timeline-card__detail" id="timeline-detail-1"><span>Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.</span></span></span></button>
-          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="2" aria-expanded="false" aria-controls="timeline-detail-2"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">03</span><span class="timeline-card__main"><strong class="timeline-card__title">AI products</strong><small class="timeline-card__tag">Prototyping · shipping</small><span class="timeline-card__detail" id="timeline-detail-2"><span>Building small products from idea to published interface, testing where AI truly amplifies people.</span></span></span></button>
-          <button class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="3" aria-expanded="false" aria-controls="timeline-detail-3"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">04</span><span class="timeline-card__main"><strong class="timeline-card__title">A deeper layer</strong><small class="timeline-card__tag">AI Essentials · Elements of AI</small><span class="timeline-card__detail" id="timeline-detail-3"><span>Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.</span></span></span></button>
+          <button data-sound-skip class="timeline-card is-active" data-about-reveal="timeline-item" type="button" data-timeline-item="0" aria-expanded="true" aria-controls="timeline-detail-0"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">01</span><span class="timeline-card__main"><strong class="timeline-card__title">Context and negotiation</strong><small class="timeline-card__tag">International relations</small><span class="timeline-card__detail" id="timeline-detail-0"><span>Learning to see systems whole, listen to different sides, and turn complex interests into clear decisions.</span></span></span></button>
+          <button data-sound-skip class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="1" aria-expanded="false" aria-controls="timeline-detail-1"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">02</span><span class="timeline-card__main"><strong class="timeline-card__title">Product thinking</strong><small class="timeline-card__tag">Research · strategy</small><span class="timeline-card__detail" id="timeline-detail-1"><span>Moving from a beautiful idea to a user problem, a fast prototype, and a measurable outcome.</span></span></span></button>
+          <button data-sound-skip class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="2" aria-expanded="false" aria-controls="timeline-detail-2"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">03</span><span class="timeline-card__main"><strong class="timeline-card__title">AI products</strong><small class="timeline-card__tag">Prototyping · shipping</small><span class="timeline-card__detail" id="timeline-detail-2"><span>Building small products from idea to published interface, testing where AI truly amplifies people.</span></span></span></button>
+          <button data-sound-skip class="timeline-card" data-about-reveal="timeline-item" type="button" data-timeline-item="3" aria-expanded="false" aria-controls="timeline-detail-3"><span class="timeline-card__marker" aria-hidden="true"></span><span class="timeline-card__year">04</span><span class="timeline-card__main"><strong class="timeline-card__title">A deeper layer</strong><small class="timeline-card__tag">AI Essentials · Elements of AI</small><span class="timeline-card__detail" id="timeline-detail-3"><span>Continuing to deepen the foundations: from responsible tool use to understanding the essentials of artificial intelligence.</span></span></span></button>
         </div>
       </div>
     </div>
@@ -66,6 +66,7 @@ const body = [
 </div>
 
 <script>
+  import { play } from '../../lib/sound';
   const aboutPage = document.querySelector<HTMLElement>('.about-page');
   const revealItems = [...document.querySelectorAll<HTMLElement>('[data-about-reveal]')];
   if (aboutPage && revealItems.length && 'IntersectionObserver' in window
@@ -94,6 +95,10 @@ const body = [
 
   document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((timeline) => {
     const cards = [...timeline.querySelectorAll<HTMLButtonElement>('[data-timeline-item]')];
+    // Звук — на касании, в тот же кадр, что и отклик :active.
+    cards.forEach((card) => card.addEventListener('pointerdown', (e) => {
+      if (e.button === 0 && !card.classList.contains('is-active')) play('select');
+    }));
     cards.forEach((card) => card.addEventListener('click', () => {
       cards.forEach((item) => {
         const active = item === card;

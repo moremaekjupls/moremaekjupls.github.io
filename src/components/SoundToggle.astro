@@ -1,0 +1,15 @@
+---
+// On/off switch for interface sounds. State lives in localStorage; the
+// label and aria-pressed are filled in by initSound() in src/lib/sound.ts.
+interface Props { class?: string; }
+const { class: className = '' } = Astro.props;
+---
+<button class={`sound-toggle ${className}`} type="button" data-sound-toggle data-sound-skip aria-pressed="true">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path class="spk" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" />
+    <path class="wave w1" d="M15.5 9.2a4 4 0 0 1 0 5.6" />
+    <path class="wave w2" d="M18 6.8a7.4 7.4 0 0 1 0 10.4" />
+    <path class="mute" d="M16 9.5l5 5M21 9.5l-5 5" />
+  </svg>
+  <span data-sound-label>Sound on</span>
+</button>

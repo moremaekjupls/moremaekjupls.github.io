@@ -47,6 +47,9 @@ const canonical = SITE.domain + withSlash(path);
   <body class="is-screen">
     <slot />
     <script>
+      import { initSound } from '../lib/sound';
+      initSound();
+
       // iOS Safari не применяет :active без обработчика touchstart на странице.
       document.addEventListener('touchstart', () => {}, { passive: true });
 

@@ -21,7 +21,7 @@ const isActive = (m: string) => path === m || path.startsWith(m + '/');
           <li><a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a></li>
         ))}
       </ul>
-      <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">
+      <button class="menu-btn" id="menuBtn" type="button" data-sound-skip aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">
         <svg viewBox="0 0 24 24" aria-hidden="true"><line class="l1" x1="4" y1="6" x2="20" y2="6" /><line class="l2" x1="4" y1="12" x2="20" y2="12" /><line class="l3" x1="4" y1="18" x2="20" y2="18" /></svg>
       </button>
     </nav>
@@ -29,6 +29,7 @@ const isActive = (m: string) => path === m || path.startsWith(m + '/');
 </header>
 
 <script>
+  import { play } from '../lib/sound';
   const btn = document.getElementById('menuBtn');
   const links = document.getElementById('navLinks');
   const header = document.querySelector('.site-header');
@@ -40,10 +41,15 @@ const isActive = (m: string) => path === m || path.startsWith(m + '/');
     btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   }
 
-  btn?.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  const isOpen = () => btn?.getAttribute('aria-expanded') === 'true';
+  btn?.addEventListener('click', (e) => {
+    const open = !isOpen();
+    setOpen(open);
+    if (e.detail > 0) play(open ? 'open' : 'close');
+  });
   document.addEventListener('click', (e) => {
     const el = e.target as HTMLElement;
-    if (!header?.contains(el)) setOpen(false);
+    if (isOpen() && !header?.contains(el)) { setOpen(false); play('close'); }
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') { setOpen(false); btn.focus(); }
