@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Offline" description="No connection.">
+  <section class="page-intro">
+    <div class="container">
+      <span class="eyebrow">Offline</span>
+      <h1 class="display">No connection<br />right now.</h1>
+      <p class="body body--muted" style="margin-top:24px;">
+        This page isn’t saved on the device yet. The ones below are — they open without a network.
+      </p>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <ul class="offline-list" data-offline-list></ul>
+    </div>
+  </section>
+</Base>
+
+<!-- is:inline: скрипт живёт прямо в HTML. Отдельный файл скрипта этой
+     страницы без сети мог ещё ни разу не загружаться — и не был бы в кэше. -->
+<script is:inline>
+  (async () => {
+    const list = document.querySelector('[data-offline-list]');
+    if (!list || !('caches' in window)) return;
+    const seen = new Set();
+    for (const key of await caches.keys()) {
+      for (const req of await (await caches.open(key)).keys()) {
+        const u = new URL(req.url);
+        if (u.origin === location.origin && u.pathname.endsWith('/') && u.pathname !== '/offline/') seen.add(u.pathname);
+      }
+    }
+    const label = (p) => p === '/' ? 'Home' : p.replace(/^\/|\/$/g, '').split('/').map((s) => s.replace(/-/g, ' ')).join(' / ');
+    for (const p of [...seen].sort()) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = p; a.className = 'link-arrow'; a.textContent = label(p) + ' →';
+      li.append(a); list.append(li);
+    }
+  })();
+</script>
