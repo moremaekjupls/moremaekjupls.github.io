@@ -14,6 +14,17 @@ const canonical = SITE.domain + withSlash(path);
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <!-- Время суток — до первой отрисовки, иначе кадр сначала светлый, а потом
+         темнеет. Таблица периодов продублирована в Hero.astro (там — часы и
+         смена периода, пока страница открыта). ?hour=N — предпросмотр. -->
+    <script is:inline>
+      (function () {
+        var d = new Date(), f = new URLSearchParams(location.search).get('hour');
+        var h = f !== null && !isNaN(+f) ? +f % 24 : d.getHours();
+        document.documentElement.dataset.period =
+          h < 5 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : h < 20 ? 'evening' : h < 22 ? 'dusk' : 'night';
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title ? `${SITE.name} — ${title}` : SITE.name}</title>
     <meta name="description" content={description} />

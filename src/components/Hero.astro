@@ -262,7 +262,6 @@ const links = [
      золотой час теплеет, ночью картинка уходит в холодный синий. Время —
      локальное, с устройства. Для проверки: ?hour=23 */
   if (hero) {
-    const section = document.querySelector<HTMLElement>('.hero');
     const clock = document.querySelector<HTMLElement>('[data-clock]');
     const forced = new URLSearchParams(location.search).get('hour');
     const PERIODS: [number, string, string][] = [
@@ -276,18 +275,17 @@ const links = [
     };
     const periodAt = (h: number) => PERIODS.filter(([start]) => h >= start).at(-1)!;
 
+    const root = document.documentElement;
     const tick = () => {
-      if (!section) return;
       const d = now();
       const [, id, label] = periodAt(d.getHours());
-      if (section.dataset.period !== id) {
-        // Смена периода при открытой странице — через растворение, а не щелчком.
-        if (section.dataset.period) {
-          section.classList.add('is-retinting');
-          window.setTimeout(() => { section.dataset.period = id; section.classList.remove('is-retinting'); }, 1200);
-        } else {
-          section.dataset.period = id;
-        }
+      // Начальный период уже поставлен скриптом в <head>. Здесь — только смена
+      // периода, пока страница открыта: цветной слой уходит, фильтр видео
+      // плавно перетекает, слой возвращается.
+      if (root.dataset.period !== id) {
+        root.classList.add('is-retinting');
+        root.dataset.period = id;
+        window.setTimeout(() => root.classList.remove('is-retinting'), 1600);
       }
       if (clock) {
         clock.textContent = `${label} · ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
