@@ -25,6 +25,8 @@ const links = [
   <video autoplay loop muted playsinline preload="auto" poster="/hero-frame.jpg" aria-hidden="true">
     <source src="/hero.mp4" type="video/mp4" />
   </video>
+  <!-- Тон кадра по времени суток: слой смешивается с видео через mix-blend-mode. -->
+  <div class="hero__tint" aria-hidden="true"></div>
 
   <div class="layer">
     <nav>
@@ -48,6 +50,7 @@ const links = [
 
     <div class="content">
       <div>
+        <p class="hero__time" data-clock hidden></p>
         <h1>Building products, and writing down what actually works</h1>
       </div>
 
@@ -236,12 +239,57 @@ const links = [
         for (const el of [drawer, scrim, hero]) if (el) el.style.transition = '';
       }, ms + 20);
     };
+    // Тянуть панель, взявшись за ссылку, — нормальный жест. Без этого браузер
+    // начинает перетаскивать саму ссылку и отменяет наш жест (pointercancel).
+    drawer.addEventListener('dragstart', (e) => e.preventDefault());
     drawer.addEventListener('pointerup', release);
     drawer.addEventListener('pointercancel', release);
     drawer.addEventListener('click', (e) => {
       if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; }
     }, true);
     drawer.addEventListener('pointerdown', () => { suppressClick = false; }, true);
+  }
+
+  /* Время суток. Кадр один и тот же, меняется его тон: рассвет розовеет,
+     золотой час теплеет, ночью картинка уходит в холодный синий. Время —
+     локальное, с устройства. Для проверки: ?hour=23 */
+  if (hero) {
+    const section = document.querySelector<HTMLElement>('.hero');
+    const clock = document.querySelector<HTMLElement>('[data-clock]');
+    const forced = new URLSearchParams(location.search).get('hour');
+    const PERIODS: [number, string, string][] = [
+      [0, 'night', 'Night'], [5, 'dawn', 'Dawn'], [8, 'day', 'Morning'], [12, 'day', 'Afternoon'],
+      [17, 'evening', 'Golden hour'], [20, 'dusk', 'Dusk'], [22, 'night', 'Night'],
+    ];
+    const now = () => {
+      const d = new Date();
+      if (forced !== null && !Number.isNaN(+forced)) d.setHours(+forced % 24, 0);
+      return d;
+    };
+    const periodAt = (h: number) => PERIODS.filter(([start]) => h >= start).at(-1)!;
+
+    const tick = () => {
+      if (!section) return;
+      const d = now();
+      const [, id, label] = periodAt(d.getHours());
+      if (section.dataset.period !== id) {
+        // Смена периода при открытой странице — через растворение, а не щелчком.
+        if (section.dataset.period) {
+          section.classList.add('is-retinting');
+          window.setTimeout(() => { section.dataset.period = id; section.classList.remove('is-retinting'); }, 1200);
+        } else {
+          section.dataset.period = id;
+        }
+      }
+      if (clock) {
+        clock.textContent = `${label} · ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        clock.hidden = false;
+      }
+    };
+    tick();
+    // Следующий тик — ровно на смене минуты, дальше раз в минуту.
+    window.setTimeout(() => { tick(); window.setInterval(tick, 60_000); }, 60_000 - (Date.now() % 60_000));
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
   }
 
   /* Автозапуск видео. iOS в режиме энергосбережения и некоторые Android-браузеры
