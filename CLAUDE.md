@@ -69,8 +69,8 @@ pnpm preview      # отдаёт dist/
    `--ease-press`, `--ease-drawer`. Закрытие быстрее открытия. Любая новая
    анимация должна корректно выключаться в секции USER PREFERENCES /
    `prefers-reduced-motion`.
-6. **Внутренние ссылки — со слэшем на конце** (`/blog/`, `/about/`); в
-   компонентах через `localizeUrl()` / `withSlash()` из `src/i18n/ui.ts`.
+6. **Внутренние ссылки — со слэшем на конце** (`/blog/`, `/about/`); посты —
+   через `postUrl()`, прочее — `withSlash()` из `src/lib/site.ts`.
    Без слэша GitHub Pages отвечает 301 на каждый клик.
 7. **`view-transition-name` — только на блочных элементах и уникально на
    странице** (`post-${transId}`). Именованный элемент, разорванный на строки,
