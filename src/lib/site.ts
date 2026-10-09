@@ -24,7 +24,7 @@ export function formatDate(d: Date, month: 'short' | 'long' = 'long'): string {
   return new Intl.DateTimeFormat('en-US', { year: 'numeric', month, day: 'numeric' }).format(d);
 }
 
-export function readingLabel(body: string): string {
+export function readingLabel(body?: string): string {
   const words = (body || '').trim().split(/\s+/).filter(Boolean).length;
   return `${Math.max(1, Math.round(words / 180))} min read`;
 }
