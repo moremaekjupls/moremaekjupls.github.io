@@ -23,6 +23,8 @@ jobs:
         with:
           fetch-depth: 0            # /history/ is built from the full git log
       - uses: withastro/action@v3
+        with:
+          node-version: 22          # Astro 7 needs Node >= 22.12; the action defaults to 20
   deploy:
     needs: build
     runs-on: ubuntu-latest

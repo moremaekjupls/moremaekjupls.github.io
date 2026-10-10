@@ -1,8 +1,9 @@
 ---
+import { render } from 'astro:content';
 import { postUrl, formatDate, readingLabel, type Post } from '../../lib/site';
 interface Props { entry: Post; next?: Post; }
 const { entry, next } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 <div class="read-progress" id="readProgress" aria-hidden="true"></div>
 <article class="section">

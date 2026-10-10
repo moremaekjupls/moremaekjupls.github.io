@@ -10,7 +10,15 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^4.16.18"
+    "astro": "^7.3.8"
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@9.15.0",
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "source-map-js": ">=1.2.2"
+    }
+  }
 }
